@@ -21,10 +21,8 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     command: tunnel run --config /etc/cloudflared/config.yml
-    # 1) конfig.yml з git
     volumes:
       - ./cloudflared:/etc/cloudflared:ro
-      # 2) credentials.json з диска (секрети)
       - /mnt/data/secrets/cloudflared:/etc/cloudflared/creds:ro
     depends_on: [vault]
     restart: unless-stopped
