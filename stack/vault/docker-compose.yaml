@@ -22,7 +22,7 @@ services:
     container_name: cloudflared
     command: tunnel run --config /etc/cloudflared/config.yml
     volumes:
-      - ./cloudflared:/etc/cloudflared:ro
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
       - /mnt/data/secrets/cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
     depends_on: [vault]
     restart: unless-stopped
