@@ -11,7 +11,8 @@ services:
     volumes:
       - /mnt/data/samba:/shares
 #      - ./conf/smb.conf:/etc/samba/smb.conf:ro
-      - /mnt/data/docker/samba/conf/smb.conf:/etc/samba/smb.conf:ro
+      - ./smb.conf:/etc/samba/smb.conf:ro
+#      - /mnt/data/docker/samba/conf/smb.conf:/etc/samba/smb.conf:ro
     restart: unless-stopped
     logging:
       driver: json-file
