@@ -1,0 +1,7 @@
+tunnel: home
+credentials-file: /etc/cloudflared/creds/<TUNNEL_UUID>.json
+
+ingress:
+  - hostname: vault.serhii.link
+    service: http://vault:8200
+  - service: http_status:404
