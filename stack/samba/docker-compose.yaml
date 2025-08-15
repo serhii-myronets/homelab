@@ -10,7 +10,7 @@ services:
       - AVAHI_NAME=Share
     volumes:
       - /mnt/data/samba:/shares
-      - ./config:/etc/samba
+      - ./smb.conf:/etc/samba/smb.conf:ro
     restart: unless-stopped
     logging:
       driver: json-file
