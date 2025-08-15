@@ -11,8 +11,8 @@ services:
     volumes:
       - ./config:/vault/config
       - /mnt/data/docker/vault/file:/vault/file
-      - /mnt/data/secrets/aws/credentials:/root/.aws/credentials:ro
-      - /mnt/data/secrets/aws/config:/root/.aws/config:ro
+      - /mnt/data/secrets/aws/credentials:/home/vault/.aws/credentials:ro
+      - /mnt/data/secrets/aws/config:/home/vault/.aws/config:ro
     ports:
       - "8200:8200"
     restart: unless-stopped
