@@ -10,8 +10,8 @@ services:
       - AVAHI_NAME=Share
     volumes:
       - /mnt/data/samba:/shares
-#      - ./conf/smb.conf:/etc/samba/smb.conf:ro
-      - ./smb.conf:/etc/samba/smb.conf:ro
+#      - ./smb.conf:/etc/samba/smb.conf:ro
+      - ./:/etc/samba/:ro
 #      - /mnt/data/docker/samba/conf/smb.conf:/etc/samba/smb.conf:ro
     restart: unless-stopped
     logging:
