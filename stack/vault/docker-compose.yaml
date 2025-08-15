@@ -9,7 +9,7 @@ services:
       AWS_PROFILE: "vault-kms"
     command: server
     volumes:
-      - ./config:/vault/config:ro
+      - ./config:/vault/config
       - /mnt/data/docker/vault/file:/vault/file
       - /mnt/data/secrets/aws/credentials:/root/.aws/credentials:ro
       - /mnt/data/secrets/aws/config:/root/.aws/config:ro
