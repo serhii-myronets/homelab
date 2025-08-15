@@ -11,7 +11,7 @@ services:
     volumes:
       - /mnt/data/samba:/shares
 #      - ./smb.conf:/etc/samba/smb.conf:ro
-      - ./:/etc/samba/:ro
+      - ./config:/etc/samba:ro
 #      - /mnt/data/docker/samba/conf/smb.conf:/etc/samba/smb.conf:ro
     restart: unless-stopped
     logging:
