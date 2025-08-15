@@ -1,5 +1,5 @@
 tunnel: home
-credentials-file: /etc/cloudflared/creds/<TUNNEL_UUID>.json
+credentials-file: /etc/cloudflared/creds/credentials.json
 
 ingress:
   - hostname: vault.serhii.link
