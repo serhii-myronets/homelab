@@ -9,7 +9,7 @@ services:
       - "6881:6881"
       - "6881:6881/udp"
     volumes:
-      - /mnt/data/qbittorrent/gluetun:/gluetun
+      - /mnt/data/docker/qbittorrent/gluetun:/gluetun
       - /mnt/data/secrets/nordvpn:/gluetun/creds:ro
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
@@ -31,6 +31,6 @@ services:
       - TZ=America/Los_Angeles
       - WEBUI_PORT=8080
     volumes:
-      - /mnt/data/qbittorrent/config:/config
+      - /mnt/data/docker/qbittorrent/config:/config
       - /mnt/data/samba/torrents:/downloads
     restart: unless-stopped
