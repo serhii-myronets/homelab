@@ -23,7 +23,7 @@ services:
     command: tunnel run --config /etc/cloudflared/config.yml
     volumes:
       - ./cloudflared:/etc/cloudflared:ro
-      - /mnt/data/secrets/cloudflared:/etc/cloudflared/creds:ro
+      - /mnt/data/secrets/cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
     depends_on: [vault]
     restart: unless-stopped
     networks: [vault_net]
