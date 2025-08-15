@@ -20,7 +20,7 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
-    command: tunnel run --config /etc/cloudflared/config.yml
+    command: tunnel run
     volumes:
       - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
       - /mnt/data/secrets/cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
