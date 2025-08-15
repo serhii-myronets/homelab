@@ -12,8 +12,8 @@ services:
       - /mnt/data/samba:/shares
 #      - ./smb.conf:/etc/samba/smb.conf:ro
 #      - ./config:/etc/samba:ro
-#      - /mnt/data/docker/samba/conf/smb.conf:/etc/samba/smb.conf:ro
-      - ./samba/config:/etc/samba:ro
+      - /mnt/data/docker/samba/conf/smb.conf:/etc/samba/smb.conf:ro
+#      - ./samba/config:/etc/samba:ro
     restart: unless-stopped
     logging:
       driver: json-file
