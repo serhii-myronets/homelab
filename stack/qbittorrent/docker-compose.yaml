@@ -9,13 +9,13 @@ services:
       - "6881:6881"
       - "6881:6881/udp"
     volumes:
-      - /mnt/data/secrets/nordvpn:/gluetun:ro
-      - /mnt/data/qbittorrent/gluetun:/gluetun-state
+      - /mnt/data/qbittorrent/gluetun:/gluetun
+      - /mnt/data/secrets/nordvpn:/gluetun/creds:ro
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=openvpn
-      - OPENVPN_USER_FILE=/gluetun/user
-      - OPENVPN_PASSWORD_FILE=/gluetun/pass
+      - OPENVPN_USER_FILE=/gluetun/creds/user
+      - OPENVPN_PASSWORD_FILE=/gluetun/creds/pass
       - SERVER_COUNTRIES=Netherlands
     restart: unless-stopped
 
