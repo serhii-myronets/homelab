@@ -8,8 +8,8 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - /mnt/data/docker/caddy/caddy_data:/data
-      - /mnt/data/docker/caddycaddy_config:/config
+      - /mnt/data/docker/caddy/data:/data
+      - /mnt/data/docker/caddy/config:/config
     restart: unless-stopped
 
 networks:
