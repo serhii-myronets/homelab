@@ -1,4 +1,4 @@
-jellyfin.local {
+jellyfin.home {
     reverse_proxy jellyfin:8096
 }
 
