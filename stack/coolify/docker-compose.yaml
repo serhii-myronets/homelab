@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: coolify
       POSTGRES_PASSWORD: change_me_strong
     volumes:
-      - /mnt/data/coolify/postgres:/var/lib/postgresql/data
+      - /mnt/data/docker/coolify/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U coolify -d coolify -h 127.0.0.1"]
       interval: 5s
@@ -20,7 +20,7 @@ services:
     container_name: coolify-redis
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - /mnt/data/coolify/redis:/data
+      - /mnt/data/docker//coolify/redis:/data
     restart: unless-stopped
 
   coolify:
@@ -32,7 +32,7 @@ services:
       coolify-redis:
         condition: service_started
     environment:
-      APP_URL: "http://<IP-хоста>:8000"   # або твій домен
+      APP_URL: "http://192.168.1.85:8000"
       DB_CONNECTION: pgsql
       DB_HOST: coolify-db
       DB_PORT: 5432
@@ -45,5 +45,5 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - /mnt/data/coolify/data:/data
+      - /mnt/data//docker/coolify/data:/data
     restart: unless-stopped
