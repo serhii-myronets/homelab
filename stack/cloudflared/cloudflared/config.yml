@@ -4,4 +4,6 @@ credentials-file: /etc/cloudflared/credentials.json
 ingress:
   - hostname: vault.serhii.link
     service: http://vault:8200
+  - hostname: torrent.serhii.link
+    service: http://vpn:8080
   - service: http_status:404
