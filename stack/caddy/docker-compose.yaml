@@ -1,0 +1,16 @@
+services:
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    networks: [edge]
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - /mnt/data/docker/caddy/caddy_data:/data
+      - /mnt/data/docker/caddycaddy_config:/config
+    restart: unless-stopped
+
+networks:
+  edge:
+    external: true
