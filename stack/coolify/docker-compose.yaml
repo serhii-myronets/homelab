@@ -20,7 +20,7 @@ services:
     container_name: coolify-redis
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - /mnt/data/docker//coolify/redis:/data
+      - /mnt/data/docker/coolify/redis:/data
     restart: unless-stopped
 
   coolify:
@@ -46,4 +46,5 @@ services:
       - "8000:8000"
     volumes:
       - /mnt/data//docker/coolify/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
