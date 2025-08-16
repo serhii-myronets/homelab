@@ -1,5 +1,5 @@
-jellyfin.home {
-    reverse_proxy jellyfin:8096
+http://jellyfin.home {
+    reverse_proxy http://jellyfin:8096
 }
 
 #qb.local {
