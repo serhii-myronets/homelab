@@ -14,8 +14,8 @@ services:
       - /mnt/data/secrets/aws/credentials:/home/vault/.aws/credentials:ro
       - /mnt/data/secrets/aws/config:/home/vault/.aws/config:ro
     restart: unless-stopped
-    networks: [vault_net]
-
+    networks:
+      - vault_net
 
 networks:
   vault_net:

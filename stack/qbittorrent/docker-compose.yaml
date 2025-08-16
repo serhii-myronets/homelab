@@ -18,6 +18,8 @@ services:
       - OPENVPN_PASSWORD_FILE=/gluetun/creds/pass
       - SERVER_COUNTRIES=Netherlands
     restart: unless-stopped
+    networks:
+      - torrents_edge
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -34,3 +36,9 @@ services:
       - /mnt/data/docker/qbittorrent/config:/config
       - /mnt/data/samba/torrents:/downloads
     restart: unless-stopped
+    networks:
+      - torrents_edge
+
+networks:
+  torrents_edge:
+    external: true
