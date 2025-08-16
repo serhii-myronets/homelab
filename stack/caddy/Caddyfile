@@ -8,9 +8,10 @@ torrent.home {
     reverse_proxy vpn:8080
 }
 
-#adguard.local {
-#    reverse_proxy adguard:3000
-#}
+adguard.local {
+    tls internal
+    reverse_proxy adguard:3000
+}
 
 ca.home {
     tls internal
