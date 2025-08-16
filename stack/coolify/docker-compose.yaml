@@ -1,32 +1,4 @@
 services:
-  coolify:
-    image: coollabsio/coolify:latest
-    container_name: coolify
-    depends_on:
-      - coolify-db
-      - coolify-redis
-    environment:
-
-      APP_URL: "http://localhost:8000"
-
-      # Postgres
-      DB_CONNECTION: pgsql
-      DB_HOST: coolify-db
-      DB_PORT: 5432
-      DB_DATABASE: coolify
-      DB_USERNAME: coolify
-      DB_PASSWORD: change_me_strong
-
-      # Redis
-      REDIS_HOST: coolify-redis
-      REDIS_PASSWORD: ""
-      QUEUE_CONNECTION: redis
-    ports:
-      - "8000:8000"
-    volumes:
-      - /mnt/data/docker/coolify/data:/data
-    restart: unless-stopped
-
   coolify-db:
     image: postgres:16-alpine
     container_name: coolify-db
@@ -35,7 +7,12 @@ services:
       POSTGRES_USER: coolify
       POSTGRES_PASSWORD: change_me_strong
     volumes:
-      - /mnt/data/docker/coolify/postgres:/var/lib/postgresql/data
+      - /mnt/data/coolify/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coolify -d coolify -h 127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
 
   coolify-redis:
@@ -43,5 +20,30 @@ services:
     container_name: coolify-redis
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - /mnt/data/docker/coolify/redis:/data
+      - /mnt/data/coolify/redis:/data
+    restart: unless-stopped
+
+  coolify:
+    image: coollabsio/coolify:latest
+    container_name: coolify
+    depends_on:
+      coolify-db:
+        condition: service_healthy
+      coolify-redis:
+        condition: service_started
+    environment:
+      APP_URL: "http://<IP-хоста>:8000"   # або твій домен
+      DB_CONNECTION: pgsql
+      DB_HOST: coolify-db
+      DB_PORT: 5432
+      DB_DATABASE: coolify
+      DB_USERNAME: coolify
+      DB_PASSWORD: change_me_strong
+      REDIS_HOST: coolify-redis
+      REDIS_PASSWORD: ""
+      QUEUE_CONNECTION: redis
+    ports:
+      - "8000:8000"
+    volumes:
+      - /mnt/data/coolify/data:/data
     restart: unless-stopped
