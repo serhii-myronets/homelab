@@ -4,11 +4,6 @@ services:
     container_name: jellyfin
     environment:
       - TZ=America/Los_Angeles
-    ports:
-      - "8096:8096"                   # веб-UI та клієнти
-      # нижче не обов'язково, якщо не користуєшся DLNA/автовідкриттям
-      # - "7359:7359/udp"             # LAN discovery
-      # - "1900:1900/udp"             # DLNA/SSDP
     volumes:
       - /mnt/data/docker/jellyfin/config:/config
       - /mnt/data/docker/jellyfin/cache:/cache
