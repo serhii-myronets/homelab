@@ -1,4 +1,5 @@
-http://jellyfin.home {
+jellyfin.home {
+    tls internal
     reverse_proxy http://jellyfin:8096
 }
 
