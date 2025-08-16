@@ -4,10 +4,6 @@ services:
     container_name: vpn
     cap_add:
       - NET_ADMIN
-    ports:
-      - "8080:8080"
-      - "6881:6881"
-      - "6881:6881/udp"
     volumes:
       - /mnt/data/docker/qbittorrent/gluetun:/gluetun
       - /mnt/data/secrets/nordvpn:/gluetun/creds:ro
@@ -17,9 +13,10 @@ services:
       - OPENVPN_USER_FILE=/gluetun/creds/user
       - OPENVPN_PASSWORD_FILE=/gluetun/creds/pass
       - SERVER_COUNTRIES=Netherlands
+      - FIREWALL_INPUT_PORTS=8080
     restart: unless-stopped
     networks:
-      - torrents_edge
+      - edge
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -38,5 +35,5 @@ services:
     restart: unless-stopped
 
 networks:
-  torrents_edge:
+  edge:
     external: true

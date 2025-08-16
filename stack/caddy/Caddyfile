@@ -3,9 +3,9 @@ jellyfin.home {
     reverse_proxy http://jellyfin:8096
 }
 
-#qb.local {
-#    reverse_proxy qbittorrent:8080
-#}
+torrent.home {
+    reverse_proxy vpn:8080
+}
 
 #adguard.local {
 #    reverse_proxy adguard:3000
