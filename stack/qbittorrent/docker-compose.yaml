@@ -36,8 +36,6 @@ services:
       - /mnt/data/docker/qbittorrent/config:/config
       - /mnt/data/samba/torrents:/downloads
     restart: unless-stopped
-    networks:
-      - torrents_edge
 
 networks:
   torrents_edge:
