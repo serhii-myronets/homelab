@@ -4,6 +4,7 @@ jellyfin.home {
 }
 
 torrent.home {
+    tls internal
     reverse_proxy vpn:8080
 }
 
