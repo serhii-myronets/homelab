@@ -1,0 +1,11 @@
+# dokploy/docker-compose.yml
+services:
+  dokploy:
+    image: dokploy/dokploy:latest
+    container_name: dokploy
+    ports:
+      - "3000:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/data/docker/dokploy/data:/app/data
+    restart: unless-stopped
