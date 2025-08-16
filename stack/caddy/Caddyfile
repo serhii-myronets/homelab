@@ -11,7 +11,8 @@ jellyfin.home {
 #    reverse_proxy adguard:3000
 #}
 
-http://ca.home {
+ca.home {
+    tls internal
     root * /data/caddy/pki/authorities/local
     @file path /root.crt
     handle @file {
