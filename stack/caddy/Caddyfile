@@ -13,6 +13,11 @@ adguard.home {
     reverse_proxy adguard:80
 }
 
+portainer.home {
+    tls internal
+    reverse_proxy portainer:9443
+}
+
 ca.home {
     tls internal
     root * /data/caddy/pki/authorities/local
