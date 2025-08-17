@@ -1,5 +1,8 @@
 services:
   portainer:
+    ports:
+      - "9000:9000"
+      - "9443:9443"
     image: portainer/portainer-ce:latest
     container_name: portainer
     environment:
