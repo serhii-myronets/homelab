@@ -15,7 +15,7 @@ adguard.home {
 
 portainer.home {
     tls internal
-    reverse_proxy portainer:9443
+    reverse_proxy portainer:9000
 }
 
 ca.home {
