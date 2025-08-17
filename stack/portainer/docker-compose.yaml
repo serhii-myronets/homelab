@@ -1,8 +1,5 @@
 services:
   portainer:
-    ports:
-      - "9000:9000"
-      - "9443:9443"
     image: portainer/portainer-ce:latest
     container_name: portainer
     environment:
@@ -11,6 +8,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /mnt/data/docker/portainer/data:/data
     restart: unless-stopped
+    networks:
+      - edge
 
 networks:
   edge:
