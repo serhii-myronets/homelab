@@ -18,10 +18,10 @@ portainer.home {
     reverse_proxy portainer:9000
 }
 
-infisical.home {
-    tls internal
-    reverse_proxy infisical:8080
-}
+#infisical.home {
+#    tls internal
+#    reverse_proxy infisical:8080
+#}
 
 ca.home {
     tls internal
