@@ -6,6 +6,9 @@ services:
     restart: unless-stopped
     network_mode: "host"
     privileged: true
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
     volumes:
       - /mnt/data/docker/tailscale/data:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
