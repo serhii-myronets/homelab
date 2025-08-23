@@ -11,8 +11,9 @@ services:
     volumes:
       - /mnt/data/docker/tailscale/data:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
+    env_file:
+      - /mnt/data/secrets/tailscale/auth.env
     environment:
-      - TS_AUTHKEY=
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_EXTRA_ARGS=--advertise-routes=192.168.1.0/24 --advertise-exit-node
 

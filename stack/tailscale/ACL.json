@@ -1,0 +1,17 @@
+{
+  "tagOwners": {
+    "tag:subnet-router": ["you@example.com"]
+  },
+  "acls": [
+    {
+      "action": "accept",
+      "users": ["*"],
+      "ports": ["192.168.1.0/24:*"]
+    }
+  ],
+  "autoApprovers": {
+    "routes": {
+      "192.168.1.0/24": ["tag:subnet-router"]
+    }
+  }
+}
