@@ -4,6 +4,9 @@ services:
     container_name: tailscale
     hostname: tailscale-subnet
     restart: unless-stopped
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
     networks:
       lan_infra:
         ipv4_address: 192.168.1.12
