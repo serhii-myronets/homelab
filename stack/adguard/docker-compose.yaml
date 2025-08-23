@@ -3,7 +3,7 @@ services:
     image: adguard/adguardhome
     container_name: adguard
     networks:
-      lan:
+      lan_infra:
         ipv4_address: 192.168.1.10
       edge: {}
     environment:
@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
 networks:
-  lan:
+  lan_infra:
     external: true
   edge:
     external: true

@@ -3,7 +3,7 @@ services:
     image: servercontainers/samba
     container_name: samba
     networks:
-      lan:
+      lan_infra:
         ipv4_address: 192.168.1.11
     environment:
       - TZ=America/Los_Angeles
@@ -14,5 +14,5 @@ services:
     restart: unless-stopped
 
 networks:
-  lan:
+  lan_infra:
     external: true
