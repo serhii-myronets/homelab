@@ -4,23 +4,20 @@ services:
     container_name: tailscale
     hostname: tailscale-subnet
     restart: unless-stopped
-    sysctls:
-      - net.ipv4.ip_forward=1
-      - net.ipv6.conf.all.forwarding=1
-    networks:
-      lan_infra:
-        ipv4_address: 192.168.1.12
+
+    network_mode: "host"
+
     privileged: true
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
     volumes:
       - /mnt/data/docker/tailscale/data:/var/lib/tailscale
-      - /dev/net/tun:/dev/net/tun
+
     env_file:
       - /mnt/data/secrets/tailscale/auth.env
+
     environment:
       - TS_USERSPACE=false
       - TS_STATE_DIR=/var/lib/tailscale
-      - TS_EXTRA_ARGS=--advertise-routes=192.168.1.0/24,10.1.1.0/24 --advertise-exit-node --advertise-tags=tag:subnet-router
-
-networks:
-  lan_infra:
-    external: true
+      - TS_EXTRA_ARGS=--advertise-routes=192.168.1.0/24,10.1.1.0/24 --advertise-tags=tag:subnet-router
