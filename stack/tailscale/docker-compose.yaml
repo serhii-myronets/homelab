@@ -4,20 +4,12 @@ services:
     container_name: tailscale
     hostname: tailscale-subnet
     restart: unless-stopped
-
-    network_mode: "host"
-
+    network_mode: host
     privileged: true
-    devices:
-      - /dev/net/tun:/dev/net/tun
-
     volumes:
-      - /mnt/data/docker/tailscale/data:/var/lib/tailscale
-
-    env_file:
-      - /mnt/data/secrets/tailscale/auth.env
-
+      - /var/lib/tailscale:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
     environment:
-      - TS_USERSPACE=false
+      - TS_AUTH_KEY=tskey-XXXXX
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_EXTRA_ARGS=--advertise-routes=192.168.1.0/24,10.1.1.0/24 --advertise-tags=tag:subnet-router
