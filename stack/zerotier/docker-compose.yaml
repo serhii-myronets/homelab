@@ -1,0 +1,23 @@
+services:
+  zerotier:
+    image: zyclonite/zerotier:latest
+    container_name: zerotier
+    restart: unless-stopped
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - /mnt/data/docker/zerotier:/var/lib/zerotier-one
+    environment:
+      - ZT_NC_NETWORK=154a350c8603450c
+    network_mode: host
+#    networks:
+#      lan_infra:
+#        ipv4_address: 192.168.1.12
+#
+#networks:
+#  lan_infra:
+#    external: true
