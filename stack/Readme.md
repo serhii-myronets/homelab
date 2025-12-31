@@ -13,3 +13,11 @@ sudo ip link set mac0 up
 
 # Route for host ↔ macvlan communication
 sudo ip route add 192.168.1.8/29 dev mac0
+
+
+Proxmox 
+
+mkdir -p /mnt/media
+mount /dev/sda1 /mnt/data
+
+pct set 100 -mp0 /mnt/data,mp=/mnt/data
