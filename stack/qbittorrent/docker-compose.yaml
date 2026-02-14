@@ -5,8 +5,8 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - /mnt/data/docker/qbittorrent/gluetun:/gluetun
-      - /mnt/data/secrets/nordvpn:/gluetun/creds:ro
+      - /srv/ssd/docker/qbittorrent/gluetun:/gluetun
+      - /srv/ssd/docker/secrets/nordvpn:/gluetun/creds:ro
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=openvpn
@@ -30,8 +30,8 @@ services:
       - TZ=America/Los_Angeles
       - WEBUI_PORT=8080
     volumes:
-      - /mnt/data/docker/qbittorrent/config:/config
-      - /mnt/data/samba/torrents:/downloads
+      - /srv/ssd/docker/qbittorrent/config:/config
+      - /srv/ssd/samba/torrents:/downloads
     restart: unless-stopped
 
 #networks:
