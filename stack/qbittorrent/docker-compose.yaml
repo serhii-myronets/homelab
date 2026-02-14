@@ -22,6 +22,8 @@ services:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
     network_mode: "service:vpn"
+    ports:
+      - 8080:8080
     depends_on:
       - vpn
     environment:
