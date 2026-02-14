@@ -2,6 +2,8 @@ services:
   vpn:
     image: qmcgaw/gluetun
     container_name: vpn
+    ports:
+      - "8082:8080"
     cap_add:
       - NET_ADMIN
     volumes:
@@ -22,8 +24,6 @@ services:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
     network_mode: "service:vpn"
-    ports:
-      - "8082:8080"
     depends_on:
       - vpn
     environment:
