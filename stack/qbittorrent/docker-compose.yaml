@@ -7,7 +7,7 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - /srv/ssd/docker/qbittorrent/gluetun:/gluetun
+      - /srv/ssd/docker/data/qbittorrent/gluetun:/gluetun
       - /srv/ssd/docker/secrets/nordvpn:/gluetun/creds:ro
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
@@ -32,7 +32,7 @@ services:
       - TZ=America/Los_Angeles
       - WEBUI_PORT=8080
     volumes:
-      - /srv/ssd/docker/qbittorrent/config:/config
+      - /srv/ssd/docker/data/qbittorrent/config:/config
       - /srv/ssd/samba/torrents:/downloads
     restart: unless-stopped
 
