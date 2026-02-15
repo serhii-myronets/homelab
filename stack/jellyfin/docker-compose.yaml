@@ -2,6 +2,8 @@ services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
+    ports:
+      - "8096:8096"
     environment:
       - TZ=America/Los_Angeles
     volumes:
