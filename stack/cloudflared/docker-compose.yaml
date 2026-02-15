@@ -2,12 +2,18 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
-    command: tunnel run
+    command: tunnel run --token-file /run/secrets/cf_token
     restart: unless-stopped
     networks:
       - backend
-    env_file:
-      - /srv/ssd/docker/secrets/cloudflared/auth.env
+#    env_file:
+#      - /srv/ssd/docker/secrets/cloudflared/auth.env
+    secrets:
+      - cf_token
+
+secrets:
+  cf_token:
+    file: /srv/ssd/docker/secrets/cloudflared/auth.env
 
 networks:
   backend:
