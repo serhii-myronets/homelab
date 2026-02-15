@@ -3,16 +3,12 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     command: tunnel run
-    volumes:
-      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
-      - /mnt/data/secrets/cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
     restart: unless-stopped
     networks:
-      - vault_net
-      - torrents_edge
+      - backend
+    env_file:
+      - /srv/ssd/docker/secrets/cloudflared/auth.env
 
 networks:
-  vault_net:
-    external: true
-  torrents_edge:
+  backend:
     external: true
