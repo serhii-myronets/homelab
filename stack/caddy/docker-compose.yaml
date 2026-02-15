@@ -10,7 +10,7 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - /srv/ssd/docker/data/caddy/data:/data
-      - /srv/ssd/docker/data/config:/config
+      - /srv/ssd/docker/data/caddy/config:/config
     restart: unless-stopped
 
 networks:
