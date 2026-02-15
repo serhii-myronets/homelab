@@ -11,8 +11,9 @@ services:
       - /srv/ssd/docker/data/jellyfin/cache:/cache
       - /srv/ssd/samba/torrents:/media:ro
     restart: unless-stopped
-#    networks: [edge]
-#
-#networks:
-#  edge:
-#    external: true
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
