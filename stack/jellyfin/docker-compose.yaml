@@ -5,9 +5,9 @@ services:
     environment:
       - TZ=America/Los_Angeles
     volumes:
-      - /mnt/data/docker/jellyfin/config:/config
-      - /mnt/data/docker/jellyfin/cache:/cache
-      - /mnt/data/samba:/media:ro
+      - /srv/ssd/docker/data/jellyfin/config:/config
+      - /srv/ssd/docker/data/jellyfin/cache:/cache
+      - /srv/ssd/samba/torrents:/media:ro
     restart: unless-stopped
 #    networks: [edge]
 #
