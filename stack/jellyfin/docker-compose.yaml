@@ -9,8 +9,8 @@ services:
       - /mnt/data/docker/jellyfin/cache:/cache
       - /mnt/data/samba:/media:ro
     restart: unless-stopped
-    networks: [edge]
-
-networks:
-  edge:
-    external: true
+#    networks: [edge]
+#
+#networks:
+#  edge:
+#    external: true
