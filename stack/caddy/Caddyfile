@@ -1,6 +1,6 @@
 jellyfin.home {
     tls internal
-    reverse_proxy http://jellyfin:8096
+    reverse_proxy jellyfin:8096
 }
 
 torrent.home {
@@ -8,10 +8,10 @@ torrent.home {
     reverse_proxy vpn:8080
 }
 
-adguard.home {
-    tls internal
-    reverse_proxy adguard:80
-}
+#adguard.home {
+#    tls internal
+#    reverse_proxy adguard:80
+#}
 
 portainer.home {
     tls internal

@@ -2,8 +2,6 @@ services:
   vpn:
     image: qmcgaw/gluetun
     container_name: vpn
-    ports:
-      - "8080:8080"
     cap_add:
       - NET_ADMIN
     volumes:
