@@ -17,8 +17,8 @@ services:
       - SERVER_COUNTRIES=Netherlands
       - FIREWALL_INPUT_PORTS=8080
     restart: unless-stopped
-#    networks:
-#      - edge
+    networks:
+      - backend
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -36,6 +36,6 @@ services:
       - /srv/ssd/samba/torrents:/downloads
     restart: unless-stopped
 
-#networks:
-#  edge:
-#    external: true
+networks:
+  backend:
+    driver: bridge
