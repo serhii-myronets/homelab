@@ -13,10 +13,10 @@ torrent.home {
 #    reverse_proxy adguard:80
 #}
 
-portainer.home {
-    tls internal
-    reverse_proxy portainer:9000
-}
+#portainer.home {
+#    tls internal
+#    reverse_proxy portainer:9000
+#}
 
 #infisical.home {
 #    tls internal
