@@ -6,8 +6,6 @@ services:
     restart: unless-stopped
     networks:
       - backend
-#    env_file:
-#      - /srv/ssd/docker/secrets/cloudflared/auth.env
     secrets:
       - cf_token
 
