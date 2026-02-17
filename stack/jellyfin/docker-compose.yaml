@@ -10,6 +10,7 @@ services:
       - /dev/dri/card0:/dev/dri/card0
     environment:
       - TZ=America/Los_Angeles
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.serhii.link
     volumes:
       - /srv/ssd/docker/data/jellyfin/config:/config
       - /srv/ssd/docker/data/jellyfin/cache:/cache
