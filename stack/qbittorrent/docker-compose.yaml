@@ -4,6 +4,8 @@ services:
     container_name: vpn
     cap_add:
       - NET_ADMIN
+    devices:
+    - /dev/net/tun:/dev/net/tun
     volumes:
       - /srv/ssd/docker/data/qbittorrent/gluetun:/gluetun
       - /srv/ssd/docker/secrets/nordvpn:/gluetun/creds:ro
@@ -14,6 +16,7 @@ services:
       - OPENVPN_PASSWORD_FILE=/gluetun/creds/pass
       - SERVER_COUNTRIES=Netherlands
       - FIREWALL_INPUT_PORTS=8080
+      - HEALTHCHECK=off
     restart: unless-stopped
     networks:
       - backend
