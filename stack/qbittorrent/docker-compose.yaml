@@ -53,6 +53,11 @@ services:
       # is also required for the qburl/qbuser/qbpass client config below to
       # be picked up automatically instead of prompting to add a client.
       - FLOOD_OPTION_AUTH=none
+      # Without this, Flood's db (UI settings, RSS feeds, notification rules)
+      # lives in its default rundir inside the container and is lost on every
+      # recreate. Requires chown 1001:1001 on the host dir (Flood runs as
+      # uid/gid 1001 "download", not configurable via PUID/PGID).
+      - FLOOD_OPTION_RUNDIR=/data
       - FLOOD_OPTION_QBURL=http://localhost:8080
       # Auth is bypassed via the AuthSubnetWhitelist=127.0.0.1/32 rule in
       # qBittorrent.conf, so any placeholder values work here.
