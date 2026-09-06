@@ -6,7 +6,7 @@
 #
 set -euo pipefail
 
-REPO_DIR=/var/backups/restic
+REPOS=(/var/backups/restic /srv/ssd/backups/restic)
 PASS_FILE=/etc/restic-password
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -36,15 +36,24 @@ else
   echo
 fi
 
-export RESTIC_REPOSITORY="$REPO_DIR"
 export RESTIC_PASSWORD_FILE="$PASS_FILE"
 
-if restic cat config >/dev/null 2>&1; then
-  ok "repository exists at $REPO_DIR"
-else
-  restic init >/dev/null
-  ok "repository initialised at $REPO_DIR"
-fi
+# One repository per disk: neither is redundant, so each covers the other's
+# failure. A copy of the password goes next to the repository on the data
+# disk, otherwise losing the system SSD would leave it unreadable.
+for repo in "${REPOS[@]}"; do
+  export RESTIC_REPOSITORY="$repo"
+  if restic cat config >/dev/null 2>&1; then
+    ok "repository exists at $repo"
+  else
+    mkdir -p "$(dirname "$repo")"
+    restic init >/dev/null
+    ok "repository initialised at $repo"
+  fi
+done
+
+install -m 600 "$PASS_FILE" /srv/ssd/backups/password
+ok "password copied next to the data-disk repository"
 
 # Point the unit at wherever this checkout happens to live.
 sed "s|__BACKUP_SH__|$HERE/backup.sh|" "$HERE/restic-backup.service" \
@@ -57,4 +66,4 @@ ok "daily timer enabled"
 echo
 echo "  Run it now:      systemctl start restic-backup.service"
 echo "  Watch it:        journalctl -u restic-backup -f"
-echo "  List snapshots:  RESTIC_REPOSITORY=$REPO_DIR RESTIC_PASSWORD_FILE=$PASS_FILE restic snapshots"
+echo "  List snapshots:  RESTIC_REPOSITORY=${REPOS[0]} RESTIC_PASSWORD_FILE=$PASS_FILE restic snapshots"
