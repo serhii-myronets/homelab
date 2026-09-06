@@ -1,9 +1,10 @@
 # homelab-docker-stack
 
 Docker stacks for the OpenMediaVault box at `192.168.8.100`.
-[`docs/INVENTORY.md`](docs/INVENTORY.md) describes the hardware and network
-either side of it; [`docs/DECISIONS.md`](docs/DECISIONS.md) records why the
-setup is shaped the way it is, and what is still open.
+[`docs/inventory.yaml`](docs/inventory.yaml) holds every fact about the
+hardware, network and services either side of it;
+[`docs/decisions/`](docs/decisions/) records why the setup is shaped the way it
+is, and what is still open.
 
 One directory per stack. Portainer deploys all of them straight from this
 repository — except Portainer itself, which is brought up by hand with plain

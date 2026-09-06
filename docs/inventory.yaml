@@ -1,0 +1,211 @@
+# Every hard fact about the homelab, kept as data so it can be queried rather
+# than read. Prose and reasoning live in docs/decisions/.
+#
+# Verified 2026-09-06 against the live machines.
+
+meta:
+  updated: 2026-09-06
+  tags: [inventory, hardware, network, homelab]
+
+hosts:
+  nas:
+    hostname: openmediavault
+    ip: 192.168.8.100
+    role: production
+    note: >-
+      Deliberately boring. Nothing experimental runs here, which is why it
+      keeps working.
+    os: OpenMediaVault on Debian 13
+    kernel: 7.1.8+deb13-amd64
+    timezone: America/Los_Angeles
+    virtualised: false
+    cpu:
+      model: Intel Celeron J4125
+      cores: 4
+      ghz: 2.0
+    ram_gb: 7.6
+    gpu: Intel UHD 600
+    docker:
+      engine: 29.8.0
+      compose: 5.5.1
+      source: OMV-Extras apt repository (omvdocker.sources)
+    disks:
+      - dev: sdb
+        model: M.2 SSD 128GB
+        size: 119G
+        role: system
+        layout: "/ (110G, ~9G used), /boot/efi, 6.2G swap"
+      - dev: sda
+        model: ORICO
+        size: 1.9T
+        role: data
+        transport: sata
+        rotational: false
+        fs: ext4
+        mount: /srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85
+        symlink: /srv/ssd            # what every compose file refers to
+        used: 1.7T
+        free: ~100G
+        smart: {reallocated: 0, uncorrectable: 0, power_on_hours: 11653}
+    redundancy: none                  # neither disk is mirrored
+    monitoring:
+      smartd: enabled                 # polls both disks every 1800s
+      alerting: none                  # no -m recipient, OMV SMTP unset
+    shares:
+      - {name: torrents, path: /srv/ssd/samba/torrents, size: 1.7T}
+      - {name: scan, path: /srv/ssd/samba/scan, size: 110M}
+    shares_auth: guest              # no unix users >=1000, no SMB accounts
+    nics:
+      - {name: enp1s0, state: up, addr: 192.168.8.100/24}
+      - {name: enp2s0, state: down}   # spare wired
+      - {name: wlo1, state: down}     # spare wifi
+    firewall: none                    # only Docker's own NAT rules
+    cruft:
+      - >-
+        /etc/cron.d/omv-compose-* remain from the removed OMV compose plugin
+        and no longer do anything.
+
+  proxmox:
+    hostname: proxmox
+    ip: 10.1.1.100
+    role: lab
+    note: >-
+      Clusters get built and destroyed here through Terraform. Nothing that
+      needs to stay up lives on it.
+    os: Proxmox VE 9.2.11
+    cpu:
+      model: Intel Core i9-12900HK
+      cores: 14
+      threads: 20
+      ghz_max: 5.0
+    ram_gb: 62
+    ram_used_gb: 28
+    gpu: Intel Iris Xe (Alder Lake-P GT2)   # QuickSync, well ahead of the NAS
+    disks:
+      - dev: nvme0n1
+        model: Samsung SSD 980 PRO 2TB
+        size: 1.8T
+        wear_percent: 7
+        power_on_hours: 4685
+    storage:
+      - {name: local-lvm, type: lvmthin, size: 1.67T, used_percent: 3.3}
+      - {name: local, type: dir, path: /var/lib/vz, size: 94G}
+    backups: none                     # no vzdump jobs configured
+    cluster: standalone               # not a Proxmox cluster
+    users: [root@pam]                 # no API tokens issued
+    iommu: disabled                   # no intel_iommu in cmdline; PCI
+                                      # passthrough would need that plus a reboot
+    nics:
+      - {name: enp2s0, state: up, role: vmbr0 bridge port}
+      - {name: enp3s0, state: down, note: unconfigured and uncabled}
+    spare_capacity:                   # what a consolidation could use
+      sata_controller: "00:17.0 Alder Lake-P AHCI, free"
+      nic: "enp3s0 — needs a cable before it is of any use"
+    guests:
+      - {vmid: 100, name: talos-controlplane-01, ram_gb: 6}
+      - {vmid: 101, name: talos-worker-02, ram_gb: 16}
+      - {vmid: 102, name: talos-worker-03, ram_gb: 16}
+      - {vmid: 103, name: talos-worker-01, ram_gb: 16}
+      - {vmid: 111, name: control-plane, ram_gb: 4}
+      - {vmid: 112, name: worker01, ram_gb: 4}
+      - {vmid: 113, name: worker02, ram_gb: 4}
+    note_ram: >-
+      Allocation exceeds physical RAM, which is fine while real use sits near
+      28 GB, but there is less headroom than the total suggests.
+
+network:
+  subnets:
+    - {cidr: 192.168.8.0/24, use: LAN, hosts: [nas]}
+    - {cidr: 10.1.1.0/24, use: lab, hosts: [proxmox]}
+  gateways:
+    - {ip: 192.168.8.1, subnet: 192.168.8.0/24}
+    - {ip: 10.1.1.1, subnet: 10.1.1.0/24}
+  router:
+    ip: 192.168.8.1
+    role: [gateway, dns, inter-subnet routing]
+    identified_as: nginx admin panel
+  dns:
+    wildcard: "*.home -> 192.168.8.100"
+    note: New internal hostnames need no DNS work.
+  tls:
+    internal: Caddy internal CA; root certificate served at ca.home
+    external: Cloudflare Tunnel to serhii.link
+    tunnel_note: >-
+      cloudflared runs with --token-file, so ingress rules live in the
+      Cloudflare Zero Trust dashboard, not in this repository.
+
+stacks:
+  - name: caddy
+    host: nas
+    deployed_by: portainer-gitops
+    relative_path_volumes: true
+    filesystem_path: /srv/ssd/docker/gitops/caddy
+    role: reverse proxy, internal TLS
+  - name: torrent
+    host: nas
+    deployed_by: portainer-gitops
+    relative_path_volumes: true
+    filesystem_path: /srv/ssd/docker/gitops/torrent
+    services: [vpn, qbittorrent, flood]
+    note: qbittorrent and flood share vpn's network namespace
+  - name: cloudflared
+    host: nas
+    deployed_by: portainer-gitops
+  - name: jellyfin
+    host: nas
+    deployed_by: portainer-gitops
+  - name: portainer
+    host: nas
+    deployed_by: bootstrap.sh          # see decisions/0001
+    edition: EE
+
+routes:
+  internal:                            # all via Caddy, TLS from its own CA
+    - {host: omv.home, target: "host.docker.internal:81"}
+    - {host: jellyfin.home, target: "jellyfin:8096"}
+    - {host: torrent.home, target: "vpn:3000"}
+    - {host: flood.home, target: "vpn:3000"}
+    - {host: proxmenux.home, target: "10.1.1.100:8008"}
+    - {host: proxmox.home, target: "https://10.1.1.100:8006", tls_skip_verify: true}
+    - {host: portainer.home, target: "portainer:9000"}
+    - {host: ca.home, target: Caddy's internal root certificate}
+  external:
+    - {host: jellyfin.serhii.link, target: "jellyfin:8096"}
+    - {host: omv.serhii.link, target: "host.docker.internal:81"}
+    - {host: torrent.serhii.link, target: "vpn:8080"}
+    - {host: portainer.serhii.link, target: "portainer:9000"}
+
+backups:
+  tool: restic
+  schedule: daily systemd timer, randomised delay
+  retention: 7 daily, 4 weekly, 6 monthly
+  repositories:
+    - path: /var/backups/restic
+      on_disk: sdb
+      holds: [docker/data, docker/secrets, samba/scan, samba/doc]
+      excludes: [jellyfin/cache, jellyfin/config/metadata, jellyfin/config/log]
+      size: 133M
+    - path: /srv/ssd/backups/restic
+      on_disk: sda
+      holds: [/etc/openmediavault/config.xml]
+      size: 1.1M
+  rationale: >-
+    Each disk holds the backup of what lives on the other, so losing either
+    leaves a copy on the survivor.
+  password:
+    - /etc/restic-password
+    - /srv/ssd/backups/password       # so the sda repo survives losing sdb
+  restore_verified: 2026-09-06
+  gaps:
+    - No off-box copy; fire or theft takes both repositories.
+    - samba/torrents (1.7T) is not backed up and is treated as re-downloadable.
+    - Package list is not captured; bootstrap.sh installs Docker if missing.
+
+secrets:
+  location: /srv/ssd/docker/secrets
+  in_git: false
+  files:
+    - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY}
+    - {path: cloudflared/auth.env, holds: Cloudflare tunnel token}
+    - {path: nordvpn/user, holds: OpenVPN username}
+    - {path: nordvpn/pass, holds: OpenVPN password}
