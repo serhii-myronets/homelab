@@ -55,7 +55,7 @@ services:
       - FLOOD_OPTION_AUTH=none
       # Its database — UI settings, RSS feeds, notification rules — otherwise
       # lives inside the container and dies with it. The host directory must
-      # be owned by 1001, which bootstrap.sh handles.
+      # be owned by 1001, which core/bootstrap.sh handles.
       - FLOOD_OPTION_RUNDIR=/data
       - FLOOD_OPTION_QBURL=http://localhost:8080
       # Ignored by qBittorrent, which trusts 127.0.0.1 per its AuthSubnetWhitelist,

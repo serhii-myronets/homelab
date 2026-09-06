@@ -4,7 +4,7 @@ title: restic, not OMV's rsync
 status: accepted
 date: 2026-09-06
 tags: [backup, restic, omv, disaster-recovery]
-hosts: [nas]
+hosts: [core]
 ---
 
 OMV cannot back up its own configuration. Its rsync jobs operate on shared

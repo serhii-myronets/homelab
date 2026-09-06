@@ -4,7 +4,7 @@ title: OpenMediaVault stays, for now
 status: accepted
 date: 2026-09-06
 tags: [omv, os, gitops, migration]
-hosts: [nas]
+hosts: [core]
 supersedes_consideration: [truenas, nixos, debian-ansible]
 ---
 

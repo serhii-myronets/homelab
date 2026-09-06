@@ -2,7 +2,7 @@
 date: 2026-09-06
 title: Restructure, backups, and a read-only router review
 tags: [portainer, caddy, flood, backup, restic, router, vpn, docs]
-hosts: [nas, router, proxmox]
+hosts: [core, router, proxmox]
 decisions: [0001, 0002, 0003, 0004, 0005, 0006, 0007]
 ---
 

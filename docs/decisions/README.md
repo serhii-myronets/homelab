@@ -21,5 +21,5 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 Open items, shortest path first: the two router fixes under
 [0007](0007-router-config-is-not-ours-to-edit.md) are toggles in the GL.iNet UI,
 and one of them is a live exposure; [0006](0006-nothing-is-off-box.md) is one
-line in `backup/backup.sh`; [0005](0005-consolidate-to-proxmox.md) is a
+line in `core/backup/backup.sh`; [0005](0005-consolidate-to-proxmox.md) is a
 project.

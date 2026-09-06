@@ -57,7 +57,7 @@ traps:
     applies_to: [torrent]
     symptom: Flood cannot write its database.
     cause: Flood runs as uid 1001 and ignores PUID/PGID.
-    fix: Its data directory must be owned by 1001:1001. bootstrap.sh handles it.
+    fix: Its data directory must be owned by 1001:1001. core/bootstrap.sh handles it.
 
   - id: flood-options-are-yargs-flags
     applies_to: [torrent]

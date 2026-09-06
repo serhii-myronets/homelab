@@ -1,5 +1,5 @@
-# Deployed with plain compose, by ./bootstrap.sh or:
-#   docker compose -f portainer/docker-compose.yaml up -d
+# Deployed with plain compose, by ./core/bootstrap.sh or:
+#   docker compose -f core/portainer/docker-compose.yaml up -d
 #
 # Deliberately not one of Portainer's own GitOps stacks: a failed
 # self-redeploy would take down the UI that manages every other stack.

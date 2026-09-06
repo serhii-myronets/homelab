@@ -1,5 +1,5 @@
-# GL.iNet GL-MT6000 (Flint 2). Gateway, DNS, firewall and VPN endpoint for
-# everything else in this repository.
+# GL.iNet GL-MT6000 (Flint 2), the boundary with the internet. Gateway,
+# DNS, firewall and VPN endpoint for everything behind it.
 #
 # Do not edit its uci config. Changes made outside GL.iNet's own UI drift from
 # what that UI believes, and the firmware may overwrite or hide them — see
@@ -43,7 +43,7 @@ dhcp:
     - {vlan: 1, range: 192.168.8.100-249}
     - {vlan: 10, range: 10.1.1.100-249}
   reservations:
-    - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: nas}
+    - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: core}
     - {mac: "F8:89:D2:5B:E3:1B", ip: 192.168.8.110}
     - {mac: "02:A5:88:66:E8:5E", ip: 10.1.1.10}
 
