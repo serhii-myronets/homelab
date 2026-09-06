@@ -47,6 +47,7 @@ services:
       - qbittorrent
     environment:
       - FLOOD_DISABLE_AUTH=true
+      - FLOOD_ENABLE_REVERSE_PROXY_AUTH=true
     volumes:
       - /srv/ssd/docker/data/flood/data:/data
     restart: unless-stopped
