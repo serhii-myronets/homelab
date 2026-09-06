@@ -9,8 +9,8 @@ services:
       - /mnt/data/docker/portainer/data:/data
     restart: unless-stopped
     networks:
-      - edge
+      - backend
 
 networks:
-  edge:
+  backend:
     external: true
