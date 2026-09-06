@@ -29,8 +29,9 @@ fi
 say "Data directories"
 # mkdir -p only fills in what is missing; existing directories and their
 # contents are left alone.
+# One directory per stack, mirroring the stack directories in this repo.
 for d in caddy/data caddy/config jellyfin/config jellyfin/cache \
-         qbittorrent/config qbittorrent/gluetun flood/data portainer/data; do
+         torrent/gluetun torrent/qbittorrent torrent/flood portainer/data; do
   if [[ -d "$DATA/$d" ]]; then
     ok "$d (exists)"
   else
@@ -42,11 +43,11 @@ done
 # Flood runs as uid/gid 1001 ("download") and honours neither PUID nor PGID,
 # so its rundir has to be owned by 1001 or it cannot write its database.
 # This is the one step that touches existing files, so only do it if needed.
-if [[ "$(stat -c '%u:%g' "$DATA/flood/data")" == "1001:1001" ]]; then
-  ok "flood/data already owned by 1001:1001"
+if [[ "$(stat -c '%u:%g' "$DATA/torrent/flood")" == "1001:1001" ]]; then
+  ok "torrent/flood already owned by 1001:1001"
 else
-  chown -R 1001:1001 "$DATA/flood/data"
-  ok "flood/data chowned to 1001:1001"
+  chown -R 1001:1001 "$DATA/torrent/flood"
+  ok "torrent/flood chowned to 1001:1001"
 fi
 
 say "Secrets"
