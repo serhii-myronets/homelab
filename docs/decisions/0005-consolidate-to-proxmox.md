@@ -20,8 +20,16 @@ that cannot. Backups become `vzdump` of a whole container, far simpler than
 restoring `config.xml`, mounting a disk and redeploying stacks.
 
 The moves are physically available: a free SATA controller for the disk, and
-`enp3s0` unused, so the container could sit on `192.168.8.0/24` without
-re-addressing anything.
+the network is easier than it first looked. `192.168.8.0/24` and `10.1.1.0/24`
+are VLAN 1 and VLAN 10 on the router's single `br-lan` bridge, with `lan1`
+untagged into VLAN 10 and `lan2`–`lan5` untagged into VLAN 1. So a container
+can reach the main LAN either by cabling `enp3s0` into any of `lan2`–`lan5`,
+or by making `lan1` a trunk and adding a tagged sub-interface on the Proxmox
+side — no second cable at all.
+
+Note that IOMMU is off, so handing the SATA controller to a *VM* would need a
+kernel cmdline change and a reboot. An LXC with a bind mount avoids that
+entirely, which is another reason to prefer one.
 
 ## Against
 
