@@ -1,0 +1,33 @@
+# The parts of the network that span hosts. Per-host detail lives in
+# docs/hosts/. Verified 2026-09-06.
+
+meta:
+  updated: 2026-09-06
+  tags: [network, subnets, dns, tls, vpn]
+
+subnets:
+  - {cidr: 192.168.8.0/24, use: LAN, vlan: 1, hosts: [nas], gateway: 192.168.8.1}
+  - {cidr: 10.1.1.0/24, use: lab, vlan: 10, hosts: [proxmox], gateway: 10.1.1.1}
+  - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1}
+  - {cidr: 10.1.0.0/24, use: wireguard clients, gateway: 10.1.0.1}
+
+dns:
+  server: AdGuard Home on the router at 192.168.8.1
+  wildcard: "*.home -> 192.168.8.100"
+  note: New internal hostnames need no DNS work — the wildcard covers them.
+
+tls:
+  internal: Caddy internal CA; root certificate served at ca.home
+  external: Cloudflare Tunnel to serhii.link
+  tunnel_note: >-
+    cloudflared runs with --token-file, so ingress rules live in the
+    Cloudflare Zero Trust dashboard, not in this repository.
+
+reachability:                      # who can reach whom, as configured today
+  lan_to_lab: yes                  # forwarding lan -> homelabzone
+  lab_to_lan: yes                  # forwarding homelabzone -> lan
+  vpn_to_lab: yes                  # forwarding wgserver -> homelabzone
+  vpn_to_lan: no                   # missing — see hosts/router.yaml gaps
+  guest_to_anything: no            # wan only
+  wan_to_lan: no                   # no port forwards; public access is the
+                                   # Cloudflare tunnel, which dials outward

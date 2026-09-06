@@ -1,0 +1,38 @@
+# What is backed up, where to, and what is not. Verified 2026-09-06,
+# including a restore in both directions.
+
+meta:
+  updated: 2026-09-06
+  tags: [backup, restic, disaster-recovery]
+
+tool: restic
+schedule: daily systemd timer, randomised delay
+retention: 7 daily, 4 weekly, 6 monthly
+
+repositories:
+  - path: /var/backups/restic
+    on_disk: sdb
+    holds: [docker/data, docker/secrets, samba/scan, samba/doc]
+    excludes: [jellyfin/cache, jellyfin/config/metadata, jellyfin/config/log]
+    size: 133M
+  - path: /srv/ssd/backups/restic
+    on_disk: sda
+    holds: [/etc/openmediavault/config.xml]
+    size: 1.1M
+
+rationale: >-
+  Each disk holds the backup of what lives on the other, so losing either
+  leaves a copy on the survivor.
+
+password:
+  - /etc/restic-password
+  - /srv/ssd/backups/password       # so the sda repo survives losing sdb
+
+restore_verified: 2026-09-06
+
+gaps:
+  - No off-box copy; fire or theft takes both repositories. See decisions/0006.
+  - samba/torrents (1.7T) is not backed up and is treated as re-downloadable.
+  - Package list is not captured; bootstrap.sh installs Docker if missing.
+  - Proxmox has no vzdump schedule; its guests are Terraform-rebuildable.
+  - The router's config is not backed up, only documented in hosts/router.yaml.
