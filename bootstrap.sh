@@ -27,16 +27,27 @@ else
 fi
 
 say "Data directories"
+# mkdir -p only fills in what is missing; existing directories and their
+# contents are left alone.
 for d in caddy/data caddy/config jellyfin/config jellyfin/cache \
          qbittorrent/config qbittorrent/gluetun flood/data portainer/data; do
-  mkdir -p "$DATA/$d"
+  if [[ -d "$DATA/$d" ]]; then
+    ok "$d (exists)"
+  else
+    mkdir -p "$DATA/$d"
+    ok "$d (created)"
+  fi
 done
-ok "created under $DATA"
 
 # Flood runs as uid/gid 1001 ("download") and honours neither PUID nor PGID,
 # so its rundir has to be owned by 1001 or it cannot write its database.
-chown -R 1001:1001 "$DATA/flood/data"
-ok "flood/data owned by 1001:1001"
+# This is the one step that touches existing files, so only do it if needed.
+if [[ "$(stat -c '%u:%g' "$DATA/flood/data")" == "1001:1001" ]]; then
+  ok "flood/data already owned by 1001:1001"
+else
+  chown -R 1001:1001 "$DATA/flood/data"
+  ok "flood/data chowned to 1001:1001"
+fi
 
 say "Secrets"
 # Never in git — recreate by hand, see README. Bootstrap only verifies them.
