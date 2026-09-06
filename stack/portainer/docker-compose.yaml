@@ -1,12 +1,17 @@
 services:
   portainer:
-    image: portainer/portainer-ce:latest
+    image: portainer/portainer-ee:latest
     container_name: portainer
-    environment:
-      - TZ=America/Los_Angeles
+    security_opt:
+      - no-new-privileges:true
+    env_file:
+      - /srv/ssd/docker/secrets/portainer/license.env
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /mnt/data/docker/portainer/data:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/ssd/docker/data/portainer/data:/data
+    ports:
+      - "9000:9000"
     restart: unless-stopped
     networks:
       - backend
