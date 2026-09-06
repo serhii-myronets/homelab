@@ -1,110 +1,62 @@
 # homelab-docker-stack
 
-Compose definitions for the OpenMediaVault box at `192.168.8.100`.
+Docker stacks for the OpenMediaVault box at `192.168.8.100`.
 
-Everything except Portainer itself is deployed by **Portainer GitOps stacks**
-pointed at this repository. Portainer is deliberately left out of that loop — a
-failed self-redeploy would take down the UI that manages every other stack — so
-it is brought up by hand with plain `docker compose`, which is also the
-bootstrap path below.
+One directory per stack. Portainer deploys all of them straight from this
+repository — except Portainer itself, which is brought up by hand with plain
+`docker compose`, because a failed self-redeploy would take down the UI that
+manages everything else. That manual path doubles as the bootstrap.
 
-## Bootstrap (from nothing)
-
-Order matters: the shared network and the secrets have to exist before any
-stack will come up.
-
-### 1. Shared network
-
-Every stack joins `backend` as an **external** network, so nothing creates it:
-
-```bash
-docker network create backend
-```
-
-### 2. Secrets
-
-None of these are in git. Recreate them on the host under
-`/srv/ssd/docker/secrets/` (mode `600`):
-
-| Path | Contents |
-|---|---|
-| `portainer/license.env` | `PORTAINER_LICENSE_KEY=...` (Portainer EE licence) |
-| `cloudflared/auth.env` | Cloudflare tunnel token |
-| `nordvpn/user`, `nordvpn/pass` | NordVPN OpenVPN credentials, one value per file |
-
-### 3. Data directories
-
-Bind mounts live under `/srv/ssd/docker/data/<service>/`. Create them as needed.
-One has a non-obvious owner — Flood runs as uid/gid `1001` and cannot be
-remapped with `PUID`/`PGID`:
-
-```bash
-mkdir -p /srv/ssd/docker/data/flood/data
-chown -R 1001:1001 /srv/ssd/docker/data/flood/data
-```
-
-### 4. Portainer
+## Bootstrap
 
 ```bash
 git clone https://github.com/serhii-myronets/homelab-docker-stack.git
 cd homelab-docker-stack
-docker compose -f stack/portainer/docker-compose.yaml up -d
+sudo ./bootstrap.sh
 ```
 
-`restart: unless-stopped` takes care of reboots; nothing else supervises it.
-The same command re-applies any change to that file.
+Creates the shared `backend` network, the data directories under
+`/srv/ssd/docker/data/`, verifies the secrets, and starts Portainer. Idempotent.
 
-> The running container is currently still owned by OpenMediaVault's Docker
-> Compose plugin, which generates its own copies under
-> `/srv/ssd/docker/compose/portainer/` and marks them "do not edit". While that
-> is the case, this repo is the source of truth and the OMV files have to be
-> kept in sync by hand — see the header in
-> [stack/portainer/docker-compose.yaml](stack/portainer/docker-compose.yaml).
+Secrets are never in git. Create them under `/srv/ssd/docker/secrets/`, mode
+`600`, before running:
 
-### 5. Everything else, via Portainer
+| File | Contents |
+|---|---|
+| `portainer/license.env` | `PORTAINER_LICENSE_KEY=...` |
+| `cloudflared/auth.env` | Cloudflare tunnel token |
+| `nordvpn/user`, `nordvpn/pass` | NordVPN OpenVPN credentials, one value per file |
 
-Add each of these as **Stacks → Add stack → Repository**, pointed at this repo,
-reference `refs/heads/main`:
+## Stacks
+
+Portainer stacks, added as **Stacks → Add stack → Repository** against this
+repo, reference `refs/heads/main`:
 
 | Stack | Compose path | Relative path volumes | Local filesystem path |
 |---|---|---|---|
-| `caddy` | `stack/caddy/docker-compose.yaml` | on | `/srv/ssd/docker/gitops/caddy` |
-| `torrent` | `stack/qbittorrent/docker-compose.yaml` | on | `/srv/ssd/docker/gitops/torrent` |
-| `cloudflared` | `stack/cloudflared/docker-compose.yaml` | off | — |
-| `jellyfin` | `stack/jellyfin/docker-compose.yaml` | off | — |
+| `caddy` | `caddy/docker-compose.yaml` | on | `/srv/ssd/docker/gitops/caddy` |
+| `torrent` | `torrent/docker-compose.yaml` | on | `/srv/ssd/docker/gitops/torrent` |
+| `cloudflared` | `cloudflared/docker-compose.yaml` | off | — |
+| `jellyfin` | `jellyfin/docker-compose.yaml` | off | — |
 
-Leave **Additional paths** empty. It takes additional *compose* files and merges
-them with `-f`, so putting a non-YAML file there (a `Caddyfile`, say) fails the
-deploy with `top-level object must be a mapping`.
+`portainer/` is not one of them — deploy it with `./bootstrap.sh`, or
+`docker compose -f portainer/docker-compose.yaml up -d`.
 
-**Relative path volumes** is only offered when the stack is *created*, and it is
-required by any stack that bind-mounts a file out of this repo (`./Caddyfile`).
-Without it Portainer resolves the path inside its own container, where the
-Docker daemon cannot see it; the daemon then creates an empty directory there
-and the mount fails with `ENOTDIR`.
+Leave **Additional paths** empty: it takes additional *compose* files and merges
+them with `-f`, so a non-YAML file there (a `Caddyfile`, say) fails the deploy
+with `top-level object must be a mapping`.
 
-## Gotchas
+**Relative path volumes** is offered only when a stack is *created*, never when
+editing one, and it is required by any stack that bind-mounts a file out of this
+repo (`./Caddyfile`, `./qBittorrent.conf`). Without it Portainer resolves the
+path inside its own container, where the Docker daemon cannot see it; the daemon
+then creates an empty directory there and the mount fails with `ENOTDIR`.
 
-**Editing the Caddyfile needs a container restart.** Bind-mounting a single file
-pins its inode, and git replaces files rather than editing them in place, so a
-*Pull and redeploy* alone leaves the container reading the old content — Compose
-does not recreate the container because the service definition did not change:
+## Routes
 
-```bash
-docker restart caddy
-```
-
-**`.home` hostnames need `tls internal`.** `*.home` resolves to this host via a
-wildcard record on the router at `192.168.8.1`. Without `tls internal` Caddy
-tries to get a public certificate, Let's Encrypt rejects `.home` as an invalid
-TLD, and it retries for 30 days — which risks rate-limiting the account used for
-the real `serhii.link` certificates.
-
-**The Cloudflare tunnel is not configured here.** It runs with `--token-file`,
-so its ingress rules are remotely managed from the Cloudflare Zero Trust
-dashboard, not from any file in this repo.
-
-## Services
+Caddy terminates TLS with its own internal CA. `*.home` resolves to this host
+via a wildcard record on the router at `192.168.8.1`, so new names need no DNS
+work. Grab the root certificate from `ca.home` to make browsers trust them.
 
 | Hostname | Backend |
 |---|---|
@@ -114,4 +66,28 @@ dashboard, not from any file in this repo.
 | `proxmenux.home` | ProxMenux Monitor, `10.1.1.100:8008` |
 | `proxmox.home` | Proxmox VE, `https://10.1.1.100:8006` |
 | `portainer.home` | `portainer:9000` |
-| `ca.home` | Caddy's internal root certificate, for trusting the above |
+| `ca.home` | Caddy's internal root certificate |
+
+Public hostnames on `serhii.link` go through Cloudflare Tunnel instead. It runs
+with `--token-file`, so its ingress rules live in the Cloudflare Zero Trust
+dashboard, not in this repo.
+
+## Gotchas
+
+**Editing the Caddyfile needs a container restart.** Bind-mounting a single file
+pins its inode, and git replaces files rather than editing them in place, so
+*Pull and redeploy* alone leaves the container reading the old content — Compose
+does not recreate it because the service definition never changed:
+
+```bash
+docker restart caddy
+```
+
+**`.home` hostnames need `tls internal`.** Without it Caddy goes to Let's
+Encrypt, which rejects `.home` as an invalid TLD, and then retries for 30 days —
+risking a rate limit on the account that issues the real `serhii.link`
+certificates.
+
+**Flood runs as uid 1001** and ignores `PUID`/`PGID`, so its data directory has
+to be owned by `1001:1001` or it cannot write its database. `bootstrap.sh`
+handles this.
