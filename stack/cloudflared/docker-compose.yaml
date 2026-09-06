@@ -4,6 +4,8 @@ services:
     container_name: cloudflared
     command: tunnel run --token-file /run/secrets/cf_token
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - backend
     secrets:
