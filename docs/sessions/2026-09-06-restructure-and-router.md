@@ -94,6 +94,18 @@ network existed; it never did, and the edit was reverted before it did harm.
 Adding the `Caddyfile` to Additional paths was advised before it was understood
 to be the cause of the failure.
 
+## The documentation itself
+
+Split `inventory.yaml` into one file per machine, and then found the split had
+not gone far enough: `README.md` still carried the routes table, the backup
+table and three of the traps, all of which now lived in `docs/` as well. That
+is exactly the mechanism behind the two stale facts found earlier in the day.
+README is now procedures for a human and links out for everything else.
+
+The operational traps moved to `docs/traps.yaml` as data, and the entry point
+was cut to routing and rules. It is `AGENTS.md` now, which several tools read;
+`CLAUDE.md` is a symlink to it, so there is one file under two names.
+
 ## Open
 
 - `wgserver → lan` forwarding, from the GL.iNet UI — [`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md)
