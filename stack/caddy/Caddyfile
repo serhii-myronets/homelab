@@ -24,7 +24,7 @@ proxmenux.home {
     reverse_proxy 10.1.1.100:8008
 }
 
-pve.home {
+proxmox.home {
     tls internal
     # Proxmox serves HTTPS on 8006 with a certificate signed by its own cluster
     # CA, so upstream verification has to be skipped.
