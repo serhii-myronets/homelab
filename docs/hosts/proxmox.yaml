@@ -1,5 +1,5 @@
-# The hypervisor. Clusters get built and destroyed here, so nothing that
-# needs to stay up lives on it.
+# The hypervisor. Clusters get built and destroyed here, so nothing
+# that needs to stay up lives on it.
 # Verified 2026-09-06 against the live machine.
 
 meta:

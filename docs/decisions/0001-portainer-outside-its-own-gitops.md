@@ -4,11 +4,11 @@ title: Portainer deploys the stacks, nothing deploys Portainer
 status: accepted
 date: 2026-09-06
 tags: [portainer, gitops, deployment, bootstrap]
-hosts: [nas]
+hosts: [core]
 ---
 
 Four stacks come straight from this repository through Portainer's GitOps.
-Portainer itself is brought up by `bootstrap.sh` with plain compose.
+Portainer itself is brought up by `core/bootstrap.sh` with plain compose.
 
 A self-redeploy that fails halfway would take down the UI that manages every
 other stack. Keeping it on the manual path also means that path is exercised

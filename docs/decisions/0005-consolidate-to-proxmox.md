@@ -4,7 +4,7 @@ title: Fold everything into the Proxmox box
 status: open
 date: 2026-09-06
 tags: [consolidation, proxmox, lxc, terraform, gitops]
-hosts: [nas, proxmox]
+hosts: [core, proxmox]
 ---
 
 Move the stacks and the data disk onto `proxmox`, and switch the NAS off.

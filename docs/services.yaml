@@ -14,38 +14,38 @@ portainer_stack_settings:      # Stacks -> Add stack -> Repository
 
 stacks:
   - name: caddy
-    host: nas
+    host: core
     deployed_by: portainer-gitops
-    compose_path: caddy/docker-compose.yaml
+    compose_path: core/caddy/docker-compose.yaml
     relative_path_volumes: true
     filesystem_path: /srv/ssd/docker/gitops/caddy
     role: reverse proxy, internal TLS
   - name: torrent
-    host: nas
+    host: core
     deployed_by: portainer-gitops
-    compose_path: torrent/docker-compose.yaml
+    compose_path: core/torrent/docker-compose.yaml
     relative_path_volumes: true
     filesystem_path: /srv/ssd/docker/gitops/torrent
     services: [vpn, qbittorrent, flood]
     note: qbittorrent and flood share vpn's network namespace
   - name: cloudflared
-    host: nas
+    host: core
     deployed_by: portainer-gitops
-    compose_path: cloudflared/docker-compose.yaml
+    compose_path: core/cloudflared/docker-compose.yaml
     relative_path_volumes: false
   - name: jellyfin
-    host: nas
+    host: core
     deployed_by: portainer-gitops
-    compose_path: jellyfin/docker-compose.yaml
+    compose_path: core/jellyfin/docker-compose.yaml
     relative_path_volumes: false
   - name: portainer
-    host: nas
-    deployed_by: bootstrap.sh       # see decisions/0001
-    compose_path: portainer/docker-compose.yaml
+    host: core
+    deployed_by: core/bootstrap.sh       # see decisions/0001
+    compose_path: core/portainer/docker-compose.yaml
     edition: EE
     note: >-
-      Not a Portainer stack. Deploy with ./bootstrap.sh or
-      docker compose -f portainer/docker-compose.yaml up -d
+      Not a Portainer stack. Deploy with ./core/bootstrap.sh or
+      docker compose -f core/portainer/docker-compose.yaml up -d
 
 routes:
   internal:                         # all via Caddy, TLS from its own CA.

@@ -1,10 +1,12 @@
-# The OpenMediaVault box. Everything that has to stay up runs here.
+# core — the OpenMediaVault box. Everything that has to stay up runs here,
+# which is what the name means: not a role as a file server, but the one
+# machine nothing else is allowed to depend on.
 # Verified 2026-09-06 against the live machine.
 
 meta:
-  host: nas
+  host: core
   updated: 2026-09-06
-  tags: [nas, omv, debian, docker, storage]
+  tags: [core, nas, omv, debian, docker, storage]
 
 identity:
   hostname: openmediavault

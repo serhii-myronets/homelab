@@ -6,7 +6,7 @@ meta:
   tags: [network, subnets, dns, tls, vpn]
 
 subnets:
-  - {cidr: 192.168.8.0/24, use: LAN, vlan: 1, hosts: [nas], gateway: 192.168.8.1}
+  - {cidr: 192.168.8.0/24, use: LAN, vlan: 1, hosts: [core], gateway: 192.168.8.1}
   - {cidr: 10.1.1.0/24, use: lab, vlan: 10, hosts: [proxmox], gateway: 10.1.1.1}
   - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1}
   - {cidr: 10.1.0.0/24, use: wireguard clients, gateway: 10.1.0.1}

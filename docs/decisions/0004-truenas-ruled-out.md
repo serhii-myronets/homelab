@@ -4,7 +4,7 @@ title: TrueNAS SCALE ruled out on hardware
 status: rejected
 date: 2026-09-06
 tags: [os, truenas, zfs, hardware]
-hosts: [nas]
+hosts: [core]
 ---
 
 Its minimum is 8 GB of RAM against the NAS's 7.6 GB, and TrueNAS does not

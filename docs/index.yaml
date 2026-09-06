@@ -3,15 +3,21 @@
 #
 # Facts are YAML and verified against the live hosts. Reasoning is Markdown
 # with YAML front matter under decisions/ and sessions/.
+#
+# The three machines are named for what they are for, not for what they run:
+#   core     the one nothing else may depend on  192.168.8.100  OpenMediaVault
+#   proxmox  built and destroyed on purpose      10.1.1.100     Proxmox VE
+#   router   the boundary with the internet      192.168.8.1    GL.iNet
+# Only core is deployed from this repository, out of core/.
 
 meta:
   updated: 2026-09-06
   tags: [index, entrypoint, homelab]
 
 files:
-  - path: docs/hosts/nas.yaml
+  - path: docs/hosts/core.yaml
     holds: OpenMediaVault box at 192.168.8.100 — hardware, disks, shares, cruft
-    tags: [nas, omv, hardware, storage]
+    tags: [core, nas, omv, hardware, storage]
   - path: docs/hosts/proxmox.yaml
     holds: hypervisor at 10.1.1.100 — hardware, guests, spare capacity
     tags: [proxmox, hypervisor, lab]
@@ -42,11 +48,12 @@ files:
 answers:                     # question -> file, so a lookup costs one read
   what hardware do I have: docs/hosts/
   what is the IP of X: docs/hosts/ or docs/network.yaml
+  what does this repository deploy: core/ — and only onto core
   why is it built this way: docs/decisions/
   what did we do last time: docs/sessions/
   what breaks if a disk dies: docs/backups.yaml
   which hostname serves what: docs/services.yaml
-  why can't the VPN reach the NAS: docs/hosts/router.yaml, decisions/0007
+  why can't the VPN reach core: docs/hosts/router.yaml, decisions/0007
   why is this deploy failing: docs/traps.yaml
   what options does this Portainer stack need: docs/services.yaml, docs/traps.yaml
 
