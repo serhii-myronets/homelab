@@ -1,10 +1,12 @@
 # Working in this repository
 
-Homelab configuration for two machines. Start with
-[`docs/inventory.yaml`](docs/inventory.yaml) — every hard fact about hardware,
-network, stacks, routes and backups is there as data, verified against the live
-hosts. Reasoning lives in [`docs/decisions/`](docs/decisions/), one file per
-decision with tags and status in front matter.
+Homelab configuration for three machines. Start with
+[`docs/index.yaml`](docs/index.yaml): it maps a question to the one file that
+answers it, so a lookup costs one read rather than a search. Facts are YAML and
+verified against the live hosts; reasoning is Markdown with YAML front matter
+under [`docs/decisions/`](docs/decisions/); what happened and why it was tried
+is in [`docs/sessions/`](docs/sessions/), newest last — read it before starting
+work.
 
 ## Layout
 
@@ -13,21 +15,33 @@ decision with tags and status in front matter.
 | `<stack>/docker-compose.yaml` | one directory per stack, at the root |
 | `bootstrap.sh` | bare host → Portainer running; idempotent |
 | `backup/` | restic script, installer, systemd units |
-| `docs/inventory.yaml` | the facts |
+| `docs/index.yaml` | which file answers which question |
+| `docs/hosts/*.yaml` | one file per machine |
+| `docs/network.yaml` | subnets, DNS, TLS, what can reach what |
+| `docs/services.yaml` | stacks, routes, where the secrets live |
+| `docs/backups.yaml` | repositories, coverage, gaps |
 | `docs/decisions/` | why things are the way they are |
+| `docs/sessions/` | what was done, and what was tried and failed |
 
 ## Access
 
-Both hosts take the key at `~/.ssh/id_ed25519`:
+All three take the key at `~/.ssh/id_ed25519`:
 
 ```bash
 ssh root@192.168.8.100   # nas
 ssh root@10.1.1.100      # proxmox
+ssh root@192.168.8.1     # router — read-only, see below
 ```
 
 The Proxmox box also answers unauthenticated on
 `http://10.1.1.100:8008/api/*` (ProxMenux Monitor) — handy for hardware and
 guest facts without a login.
+
+**The router is read-only over ssh.** GL.iNet's firmware regenerates uci from
+its own state, so a change made here can be invisible in the UI or reverted
+without warning. Gather facts, write them to `docs/hosts/router.yaml`, and
+describe fixes as UI steps — never apply them. See
+[`decisions/0007`](docs/decisions/0007-router-config-is-not-ours-to-edit.md).
 
 ## Things that will bite
 
@@ -56,7 +70,10 @@ be owned by `1001:1001`, which `bootstrap.sh` handles.
 ## Conventions
 
 Verify against the live host before writing a fact down — the two documentation
-errors found on 2026-09-06 were both stale claims that read as true. Compose
+errors found on 2026-09-06 were both stale claims that read as true. A fact
+belongs in exactly one file; if it is already in `docs/hosts/`, link to it
+rather than restating it. Close a working session by adding to
+`docs/sessions/`. Compose
 files validate with `docker compose config`; the Caddyfile validates with
 `caddy validate` in a throwaway container on the NAS, since there is no Docker
 daemon locally.

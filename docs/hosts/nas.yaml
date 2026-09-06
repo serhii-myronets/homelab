@@ -1,0 +1,82 @@
+# The OpenMediaVault box. Everything that has to stay up runs here.
+# Verified 2026-09-06 against the live machine.
+
+meta:
+  host: nas
+  updated: 2026-09-06
+  tags: [nas, omv, debian, docker, storage]
+
+identity:
+  hostname: openmediavault
+  ip: 192.168.8.100
+  vlan: 1
+  role: production
+  ssh: root@192.168.8.100          # key at ~/.ssh/id_ed25519
+  note: >-
+    Deliberately boring. Nothing experimental runs here, which is why it
+    keeps working.
+
+os:
+  distribution: OpenMediaVault on Debian 13
+  kernel: 7.1.8+deb13-amd64
+  timezone: America/Los_Angeles
+  virtualised: false
+
+hardware:
+  cpu: {model: Intel Celeron J4125, cores: 4, ghz: 2.0}
+  ram_gb: 7.6
+  gpu: Intel UHD 600
+
+docker:
+  engine: 29.8.0
+  compose: 5.5.1
+  source: OMV-Extras apt repository (omvdocker.sources)
+
+disks:
+  - dev: sdb
+    model: M.2 SSD 128GB
+    size: 119G
+    role: system
+    layout: "/ (110G, ~9G used), /boot/efi, 6.2G swap"
+  - dev: sda
+    model: ORICO
+    size: 1.9T
+    role: data
+    transport: sata
+    rotational: false
+    fs: ext4
+    mount: /srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85
+    symlink: /srv/ssd              # what every compose file refers to
+    used: 1.7T
+    free: ~100G
+    smart: {reallocated: 0, uncorrectable: 0, power_on_hours: 11653}
+
+redundancy: none                    # neither disk is mirrored
+
+monitoring:
+  smartd: enabled                   # polls both disks every 1800s
+  alerting: none                    # no -m recipient, OMV SMTP unset
+  gap: >-
+    SMART will notice a failing disk and tell nobody. Needs either an -m
+    recipient in smartd.conf or OMV's SMTP settings filled in.
+
+shares:
+  auth: guest                       # no unix users >=1000, no SMB accounts
+  list:
+    - {name: torrents, path: /srv/ssd/samba/torrents, size: 1.7T}
+    - {name: scan, path: /srv/ssd/samba/scan, size: 110M}
+
+nics:
+  - {name: enp1s0, state: up, addr: 192.168.8.100/24}
+  - {name: enp2s0, state: down}     # spare wired
+  - {name: wlo1, state: down}       # spare wifi
+
+firewall: none                      # only Docker's own NAT rules
+
+config_of_record: /etc/openmediavault/config.xml   # shares, mounts, SMART,
+                                                   # users, network — all of it
+
+cruft:
+  - >-
+    /etc/cron.d/omv-compose-* remain from the removed OMV compose plugin
+    and no longer do anything.

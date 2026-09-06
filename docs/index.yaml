@@ -1,0 +1,50 @@
+# Entry point. Read this first, then open only the file that answers the
+# question — every fact below lives in exactly one place.
+#
+# Facts are YAML and verified against the live hosts. Reasoning is Markdown
+# with YAML front matter under decisions/ and sessions/.
+
+meta:
+  updated: 2026-09-06
+  tags: [index, entrypoint, homelab]
+
+files:
+  - path: docs/hosts/nas.yaml
+    holds: OpenMediaVault box at 192.168.8.100 — hardware, disks, shares, cruft
+    tags: [nas, omv, hardware, storage]
+  - path: docs/hosts/proxmox.yaml
+    holds: hypervisor at 10.1.1.100 — hardware, guests, spare capacity
+    tags: [proxmox, hypervisor, lab]
+  - path: docs/hosts/router.yaml
+    holds: GL.iNet GL-MT6000 — VLANs, zones, DNS, DHCP, WireGuard, risks
+    tags: [router, openwrt, glinet, firewall, vpn]
+  - path: docs/network.yaml
+    holds: subnets, gateways, DNS, TLS — the parts that span hosts
+    tags: [network, dns, tls]
+  - path: docs/services.yaml
+    holds: the Docker stacks and every hostname Caddy or Cloudflare serves
+    tags: [stacks, docker, caddy, routes]
+  - path: docs/backups.yaml
+    holds: restic repositories, schedule, what is and is not covered
+    tags: [backup, restic, disaster-recovery]
+  - path: docs/decisions/
+    holds: one file per decision, with status and tags in front matter
+    tags: [decisions, adr, rationale]
+  - path: docs/sessions/
+    holds: what happened in past working sessions, newest last
+    tags: [sessions, handoff, history]
+
+answers:                     # question -> file, so a lookup costs one read
+  what hardware do I have: docs/hosts/
+  what is the IP of X: docs/hosts/ or docs/network.yaml
+  why is it built this way: docs/decisions/
+  what did we do last time: docs/sessions/
+  what breaks if a disk dies: docs/backups.yaml
+  which hostname serves what: docs/services.yaml
+  why can't the VPN reach the NAS: docs/hosts/router.yaml, decisions/0007
+
+rules:
+  - Verify against the live host before writing a fact down. Two documentation
+    errors found on 2026-09-06 were both stale claims that read as true.
+  - Do not edit the router's own uci config. See decisions/0007.
+  - Secrets are never committed. docs/services.yaml lists their paths only.

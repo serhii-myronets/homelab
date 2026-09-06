@@ -1,0 +1,56 @@
+# What runs, where it is deployed from, and every hostname that reaches it.
+# Verified 2026-09-06.
+
+meta:
+  updated: 2026-09-06
+  tags: [stacks, docker, portainer, caddy, routes, secrets]
+
+stacks:
+  - name: caddy
+    host: nas
+    deployed_by: portainer-gitops
+    relative_path_volumes: true
+    filesystem_path: /srv/ssd/docker/gitops/caddy
+    role: reverse proxy, internal TLS
+  - name: torrent
+    host: nas
+    deployed_by: portainer-gitops
+    relative_path_volumes: true
+    filesystem_path: /srv/ssd/docker/gitops/torrent
+    services: [vpn, qbittorrent, flood]
+    note: qbittorrent and flood share vpn's network namespace
+  - name: cloudflared
+    host: nas
+    deployed_by: portainer-gitops
+  - name: jellyfin
+    host: nas
+    deployed_by: portainer-gitops
+  - name: portainer
+    host: nas
+    deployed_by: bootstrap.sh       # see decisions/0001
+    edition: EE
+
+routes:
+  internal:                         # all via Caddy, TLS from its own CA
+    - {host: omv.home, target: "host.docker.internal:81"}
+    - {host: jellyfin.home, target: "jellyfin:8096"}
+    - {host: torrent.home, target: "vpn:3000"}
+    - {host: flood.home, target: "vpn:3000"}
+    - {host: proxmenux.home, target: "10.1.1.100:8008"}
+    - {host: proxmox.home, target: "https://10.1.1.100:8006", tls_skip_verify: true}
+    - {host: portainer.home, target: "portainer:9000"}
+    - {host: ca.home, target: Caddy's internal root certificate}
+  external:                         # via Cloudflare Tunnel
+    - {host: jellyfin.serhii.link, target: "jellyfin:8096"}
+    - {host: omv.serhii.link, target: "host.docker.internal:81"}
+    - {host: torrent.serhii.link, target: "vpn:8080"}
+    - {host: portainer.serhii.link, target: "portainer:9000"}
+
+secrets:
+  location: /srv/ssd/docker/secrets
+  in_git: false
+  files:
+    - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY}
+    - {path: cloudflared/auth.env, holds: Cloudflare tunnel token}
+    - {path: nordvpn/user, holds: OpenVPN username}
+    - {path: nordvpn/pass, holds: OpenVPN password}

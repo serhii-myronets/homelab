@@ -1,0 +1,132 @@
+# GL.iNet GL-MT6000 (Flint 2). Gateway, DNS, firewall and VPN endpoint for
+# everything else in this repository.
+#
+# Do not edit its uci config. Changes made outside GL.iNet's own UI drift from
+# what that UI believes, and the firmware may overwrite or hide them — see
+# decisions/0007. Facts below verified 2026-09-06 over ssh, read-only.
+
+meta:
+  host: router
+  updated: 2026-09-06
+  tags: [router, openwrt, glinet, firewall, vlan, dns, wireguard]
+
+identity:
+  model: GL.iNet GL-MT6000 (Flint 2)
+  ip: 192.168.8.1
+  ssh: root@192.168.8.1
+  os: OpenWrt 21.02-SNAPSHOT (GL.iNet build)
+  kernel: 5.4.238
+  arch: aarch64, mediatek/mt7986
+
+wan:
+  device: eth1
+  proto: dhcp
+  address: 50.38.32.155/21         # public, straight on the router
+  port_forwards: none              # nothing reaches the LAN from outside
+
+vlans:                             # both are VLANs on the one br-lan bridge
+  - {id: 1, device: br-lan.1, subnet: 192.168.8.0/24, ports: [lan2, lan3, lan4, lan5]}
+  - {id: 10, device: br-lan.10, subnet: 10.1.1.0/24, ports: [lan1], name: homelab}
+
+other_networks:
+  - {name: guest, subnet: 192.168.9.0/24}
+  - {name: wgserver, subnet: 10.1.0.0/24, port: 51820, peers: 5}
+
+dns:
+  resolver: AdGuard Home on the router, port 3053
+  rewrite: "*.home -> 192.168.8.100"   # this is where the wildcard comes from
+  note: >-
+    Explains why the adguard docker stack was redundant and got removed.
+
+dhcp:
+  pools:
+    - {vlan: 1, range: 192.168.8.100-249}
+    - {vlan: 10, range: 10.1.1.100-249}
+  reservations:
+    - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: nas}
+    - {mac: "F8:89:D2:5B:E3:1B", ip: 192.168.8.110}
+    - {mac: "02:A5:88:66:E8:5E", ip: 10.1.1.10}
+
+zones:
+  lan: {policy: accept}
+  homelabzone: {policy: accept, masquerade: true}
+  guest: {policy: reject}
+  iot: {policy: reject}
+  wgserver: {input: accept, output: accept, masquerade: true, mtu_fix: true}
+  wan: {input: drop, masquerade: true}
+
+forwardings:                       # uci index -> what may reach what
+  - {i: 0,  src: lan,         dest: wan}
+  - {i: 1,  src: guest,       dest: wan}
+  - {i: 2,  src: homelabzone, dest: wan}
+  - {i: 3,  src: lan,         dest: homelabzone}
+  - {i: 4,  src: lan,         dest: wgclient1, name: lan2wgclient1}
+  - {i: 5,  src: guest,       dest: wgclient1, name: guest2wgclient1}
+  - {i: 6,  src: wan,         dest: wgclient1, name: wan2wgclient1}
+  - {i: 7,  src: ovpnserver,  dest: wgclient1, name: ovpnserver2wgclient1}
+  - {i: 8,  src: wgserver,    dest: wgclient1, name: wgserver2wgclient1}
+  - {i: 9,  src: homelabzone, dest: lan}
+  - {i: 10, src: wgserver,    dest: homelabzone}
+  - {i: 11, src: homelabzone, dest: wgserver}
+  - {i: 12, src: iot,         dest: wan}
+  - {i: 13, src: wgserver,    dest: wan,       name: wgserver2wan}
+  - {i: 14, src: lan,         dest: wgserver,  name: lan2wgserver}
+forwardings_note: >-
+  GL.iNet names the rules it creates <src>2<dest>. Anonymous entries came from
+  LuCI or from the wizard. There is no wgserver -> lan: see gaps.vpn_cannot_reach_lan.
+
+masquerade_note: >-
+  The rule is `-o br-lan.10 -j MASQUERADE`, so traffic entering VLAN 10 is
+  NAT'd: Proxmox sees everything from the LAN as coming from 10.1.1.1 rather
+  than its real source. Traffic the other way is not translated.
+
+wireguard_server:
+  address_v4: 10.1.0.1/24
+  port: 51820
+  peers: 5                         # macbook, pixel and three others
+  client_to_client: false
+  masquerade: true
+  peer_config:                     # already correct, needs no change
+    dns: 192.168.8.1
+    allowed_ips: [192.168.8.0/24, 10.1.1.0/24]
+    persistent_keepalive: 25
+    mtu: 1420
+
+wifi:
+  - {ssid: gl.inet, band: 2.4G, network: lan, enabled: true}
+  - {ssid: gl.inet-5G, band: 5G, network: lan, enabled: true}
+  - {ssid: GL-MT6000-3f6-Guest, network: guest, enabled: false}
+  - {ssid: GL-MT6000-3f6-IoT, network: iot, enabled: false}
+
+gaps:
+  vpn_cannot_reach_lan:
+    severity: high
+    symptom: >-
+      Dialling in over WireGuard reaches Proxmox and the Talos cluster, but not
+      the NAS — so no Samba, no Jellyfin, and *.home does not resolve to
+      anything reachable.
+    cause: >-
+      forwardings has lan -> wgserver but no wgserver -> lan. The peers are
+      configured correctly; the asymmetry is entirely on the router.
+    fix_in_ui: >-
+      Add lan to the wgserver zone's allowed destinations. Nothing is to be
+      changed over ssh. See decisions/0007.
+
+  samba_exposed_on_wan:
+    severity: high
+    symptom: >-
+      firewall.sambasharewan accepts 137/138/139/445 from the wan zone and
+      samba4 binds `loopback wan lan`, so the USB disk mounted at
+      /tmp/mountd/disk1_part1 is reachable over SMB on the public address
+      50.38.32.155.
+    verified: >-
+      4 matching rules present in iptables chain zone_wan_input on 2026-09-06.
+    fix_in_ui: >-
+      Turn off the router's own SMB-over-WAN option, or unplug the USB disk if
+      it is not being used. Not to be changed over ssh.
+
+  firmware_age:
+    severity: medium
+    symptom: >-
+      The OpenWrt base is 21.02 on kernel 5.4 — old, and only as current as
+      GL.iNet's own builds.
