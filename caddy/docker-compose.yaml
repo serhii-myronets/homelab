@@ -10,8 +10,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      # Requires "Enable relative path volumes" on the Portainer stack, otherwise
-      # this path resolves inside the Portainer container and the daemon cannot see it.
+      # Needs "Enable relative path volumes" on the Portainer stack, or the
+      # path resolves inside Portainer's container where the daemon cannot see it.
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - /srv/ssd/docker/data/caddy/data:/data
       - /srv/ssd/docker/data/caddy/config:/config

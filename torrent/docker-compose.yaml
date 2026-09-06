@@ -46,27 +46,25 @@ services:
       - vpn
       - qbittorrent
     environment:
-      # Flood maps FLOOD_OPTION_<flag> to its CLI flags via yargs (e.g. --auth,
-      # --qburl), so the env var name must match the flag exactly, with no
-      # extra underscores. auth=none is what actually skips account creation
-      # (FLOOD_DISABLE_AUTH is not a real flag and was silently ignored) and
-      # is also required for the qburl/qbuser/qbpass client config below to
-      # be picked up automatically instead of prompting to add a client.
+      # FLOOD_OPTION_<flag> maps to Flood's CLI flags through yargs, so each
+      # name has to match its flag exactly — QBURL, not QBIT_URL. Anything
+      # else is ignored without a word.
+      #
+      # auth=none skips account creation, and is also what makes Flood pick up
+      # the client settings below instead of asking for them in the UI.
       - FLOOD_OPTION_AUTH=none
-      # Without this, Flood's db (UI settings, RSS feeds, notification rules)
-      # lives in its default rundir inside the container and is lost on every
-      # recreate. Requires chown 1001:1001 on the host dir (Flood runs as
-      # uid/gid 1001 "download", not configurable via PUID/PGID).
+      # Its database — UI settings, RSS feeds, notification rules — otherwise
+      # lives inside the container and dies with it. The host directory must
+      # be owned by 1001, which bootstrap.sh handles.
       - FLOOD_OPTION_RUNDIR=/data
       - FLOOD_OPTION_QBURL=http://localhost:8080
-      # Auth is bypassed via the AuthSubnetWhitelist=127.0.0.1/32 rule in
-      # qBittorrent.conf, so any placeholder values work here.
+      # Ignored by qBittorrent, which trusts 127.0.0.1 per its AuthSubnetWhitelist,
+      # but Flood refuses to start without them set.
       - FLOOD_OPTION_QBUSER=admin
       - FLOOD_OPTION_QBPASS=adminadmin
     volumes:
       - /srv/ssd/docker/data/torrent/flood:/data
     restart: unless-stopped
-
 
 networks:
   backend:

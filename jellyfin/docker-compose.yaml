@@ -3,6 +3,8 @@ services:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
     user: 1000:1000
+    # 992 is the render group, which owns /dev/dri/renderD128 — needed for
+    # hardware transcoding.
     group_add:
       - 992
     ports:

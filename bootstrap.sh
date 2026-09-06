@@ -35,8 +35,6 @@ else
 fi
 
 say "Data directories"
-# mkdir -p only fills in what is missing; existing directories and their
-# contents are left alone.
 # One directory per stack, mirroring the stack directories in this repo.
 for d in caddy/data caddy/config jellyfin/config jellyfin/cache \
          torrent/gluetun torrent/qbittorrent torrent/flood portainer/data; do
@@ -50,7 +48,6 @@ done
 
 # Flood runs as uid/gid 1001 ("download") and honours neither PUID nor PGID,
 # so its rundir has to be owned by 1001 or it cannot write its database.
-# This is the one step that touches existing files, so only do it if needed.
 if [[ "$(stat -c '%u:%g' "$DATA/torrent/flood")" == "1001:1001" ]]; then
   ok "torrent/flood already owned by 1001:1001"
 else
@@ -59,7 +56,7 @@ else
 fi
 
 say "Secrets"
-# Never in git — recreate by hand, see README. Bootstrap only verifies them.
+# Never in git; this only checks they are there.
 missing=0
 while read -r path desc; do
   if [[ -s "$SECRETS/$path" ]]; then

@@ -87,10 +87,13 @@ leaves a copy on the survivor:
 
 | Repository | Disk | Holds |
 |---|---|---|
-| `/var/backups/restic` | `sdb` | `docker/data` (minus Jellyfin's cache), `docker/secrets`, `samba/scan`, `samba/doc` |
+| `/var/backups/restic` | `sdb` | `docker/data`, `docker/secrets`, `samba/scan`, `samba/doc` |
 | `/srv/ssd/backups/restic` | `sda` | OpenMediaVault's `config.xml` — samba shares, disk mounts, SMART, users, network |
 
-About 2 GB, a few MB a day after that. Losing the machine loses both; that
+About 220 MB, a few MB a day after that. Jellyfin's cache and metadata are
+excluded — 13 GB of artwork and transcodes that a library scan downloads
+again, as against the 84 MB of `library.db` that holds watch history, users
+and playlists and cannot. Losing the machine loses both repositories; that
 needs an off-box target.
 
 Between them, the git repo and these snapshots cover a rebuild end to end.
