@@ -83,14 +83,19 @@ a daily timer. Prints a generated repository password once — save it off the
 machine, the backups are unreadable without it.
 
 Covers what cannot be re-downloaded (~2 GB): the data directories minus
-Jellyfin's cache, the secrets, `samba/scan`, `samba/doc`, and OpenMediaVault's
-`config.xml` — the one file that holds its entire configuration and that OMV
-offers no way to version.
+Jellyfin's cache, the secrets, `samba/scan`, `samba/doc`, `/etc/ssh`, and
+OpenMediaVault's `config.xml` — the one file that holds its entire
+configuration and that OMV offers no way to version.
 
-Repository and password both sit on the system SSD so they survive the data
-disk dying, which is the likelier failure: `sda` runs torrents around the clock
-while `sdb` barely moves. It does **not** survive losing the machine — add a
-second, off-box target for that.
+There is one repository per disk, because neither disk is redundant and each
+covers the other's failure:
+
+| Disk lost | Recovered from |
+|---|---|
+| `sda` (ORICO, data) | `/var/backups/restic` on `sdb` |
+| `sdb` (system SSD) | `/srv/ssd/backups/restic` on `sda` |
+
+Losing the machine loses both — that needs an off-box target.
 
 ```bash
 export RESTIC_REPOSITORY=/var/backups/restic RESTIC_PASSWORD_FILE=/etc/restic-password
