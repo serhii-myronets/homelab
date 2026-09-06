@@ -9,11 +9,6 @@ omv.home {
     reverse_proxy /websocket host.docker.internal:81
 }
 
-jelly.home {
-    tls internal
-    reverse_proxy jellyfin:8096
-}
-
 jellyfin.home {
     tls internal
     reverse_proxy jellyfin:8096
@@ -27,6 +22,17 @@ torrent.home {
 proxmenux.home {
     tls internal
     reverse_proxy 10.1.1.100:8008
+}
+
+pve.home {
+    tls internal
+    # Proxmox serves HTTPS on 8006 with a certificate signed by its own cluster
+    # CA, so upstream verification has to be skipped.
+    reverse_proxy https://10.1.1.100:8006 {
+        transport http {
+            tls_insecure_skip_verify
+        }
+    }
 }
 
 portainer.home {
