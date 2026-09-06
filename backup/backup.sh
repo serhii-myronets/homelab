@@ -18,16 +18,20 @@ run() {
     --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
 }
 
-# What sda holds. Jellyfin's cache is excluded: 11 GB that regenerates itself.
+# Everything on sda worth keeping. The Jellyfin excludes are what keeps this
+# at ~220 MB instead of 13 GB: cache and metadata are artwork and transcodes
+# that a library scan downloads again. Its data/ holds library.db — watch
+# history, users, playlists — and that is the part that cannot come back.
 run /var/backups/restic \
   --exclude /srv/ssd/docker/data/jellyfin/cache \
+  --exclude /srv/ssd/docker/data/jellyfin/config/metadata \
+  --exclude /srv/ssd/docker/data/jellyfin/config/log \
   /srv/ssd/docker/data \
   /srv/ssd/docker/secrets \
   /srv/ssd/samba/scan \
   /srv/ssd/samba/doc
 
-# What sdb holds. OpenMediaVault keeps its entire configuration in this one
-# file — samba shares, disk mounts, SMART, users, network — and offers no way
-# to version it.
+# OpenMediaVault keeps its entire configuration in this one file — shares,
+# disk mounts, SMART, users, network — and offers no way to version it.
 run /srv/ssd/backups/restic \
   /etc/openmediavault/config.xml

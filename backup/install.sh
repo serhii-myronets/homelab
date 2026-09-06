@@ -38,9 +38,6 @@ fi
 
 export RESTIC_PASSWORD_FILE="$PASS_FILE"
 
-# One repository per disk: neither is redundant, so each covers the other's
-# failure. A copy of the password goes next to the repository on the data
-# disk, otherwise losing the system SSD would leave it unreadable.
 for repo in "${REPOS[@]}"; do
   export RESTIC_REPOSITORY="$repo"
   if restic cat config >/dev/null 2>&1; then
@@ -52,6 +49,8 @@ for repo in "${REPOS[@]}"; do
   fi
 done
 
+# Without this copy, losing the system SSD would leave the surviving
+# repository unreadable.
 install -m 600 "$PASS_FILE" /srv/ssd/backups/password
 ok "password copied next to the data-disk repository"
 
