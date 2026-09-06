@@ -109,6 +109,49 @@ restic restore latest --target /tmp/r --include /srv/ssd/samba/scan
 Containers keep running during a backup, so a snapshot can catch a database
 mid-write. Stop the stacks first if you want a guaranteed-consistent one.
 
+## Restore
+
+### The OS was reinstalled, the data disk survived
+
+The disk mount lives in `config.xml`, which lives on that disk, so the first
+step is to mount it by hand:
+
+```bash
+mkdir /mnt/d && mount /dev/sda1 /mnt/d
+apt install restic
+restic -r /mnt/d/backups/restic --password-file /mnt/d/backups/password \
+  restore latest --target /
+reboot
+```
+
+OMV reads the restored `config.xml` on boot and brings back the shares, the
+disk mount, SMART, the users and the network. Nothing else needs restoring —
+`docker/data` and `docker/secrets` are still sitting on the surviving disk.
+Then:
+
+```bash
+git clone https://github.com/serhii-myronets/homelab-docker-stack.git
+cd homelab-docker-stack && sudo ./bootstrap.sh
+sudo ./backup/install.sh
+```
+
+Portainer comes back knowing all four stacks, since its database is part of
+`docker/data`. They still need a **Deploy** each — it does not redeploy stacks
+on startup.
+
+### The data disk died
+
+Fit a replacement, mount it at the same path, then restore the other
+direction:
+
+```bash
+restic -r /var/backups/restic --password-file /etc/restic-password \
+  restore latest --target /
+chown -R 1001:1001 /srv/ssd/docker/data/torrent/flood
+```
+
+`samba/torrents` is not backed up and has to be downloaded again.
+
 ## Gotchas
 
 **Editing the Caddyfile needs a container restart.** Bind-mounting a single file
