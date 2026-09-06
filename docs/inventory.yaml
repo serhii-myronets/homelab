@@ -113,19 +113,54 @@ hosts:
       Allocation exceeds physical RAM, which is fine while real use sits near
       28 GB, but there is less headroom than the total suggests.
 
+  router:
+    model: GL.iNet GL-MT6000 (Flint 2)
+    ip: 192.168.8.1
+    os: OpenWrt 21.02-SNAPSHOT (GL.iNet build), kernel 5.4.238
+    arch: aarch64, mediatek/mt7986
+    wan:
+      device: eth1
+      proto: dhcp
+      address: 50.38.32.155/21     # public, straight on the router
+      port_forwards: none          # nothing reaches the LAN from outside
+    vlans:                          # both are VLANs on the one br-lan bridge
+      - {id: 1, device: br-lan.1, subnet: 192.168.8.0/24, ports: [lan2, lan3, lan4, lan5]}
+      - {id: 10, device: br-lan.10, subnet: 10.1.1.0/24, ports: [lan1], name: homelab}
+    other_networks:
+      - {name: guest, subnet: 192.168.9.0/24}
+      - {name: wgserver, subnet: 10.1.0.0/24, port: 51820, peers: 5}
+    dns:
+      resolver: AdGuard Home on the router, port 3053
+      rewrite: "*.home -> 192.168.8.100"    # this is where the wildcard comes from
+      note: >-
+        Explains why the adguard docker stack was redundant and got removed.
+    dhcp:
+      pools:
+        - {vlan: 1, range: 192.168.8.100-249}
+        - {vlan: 10, range: 10.1.1.100-249}
+      reservations:
+        - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: nas}
+        - {mac: "F8:89:D2:5B:E3:1B", ip: 192.168.8.110}
+        - {mac: "02:A5:88:66:E8:5E", ip: 10.1.1.10}
+    risks:
+      - >-
+        Proxmox is statically configured at 10.1.1.100, which is the first
+        address of the VLAN 10 DHCP pool, and has no reservation. A new guest
+        could be leased the hypervisor's own address. Either reserve its MAC
+        or start the pool at .150.
+      - >-
+        The OpenWrt base is 21.02 on kernel 5.4 — old, and only as current as
+        GL.iNet's own builds.
+
 network:
   subnets:
-    - {cidr: 192.168.8.0/24, use: LAN, hosts: [nas]}
-    - {cidr: 10.1.1.0/24, use: lab, hosts: [proxmox]}
+    - {cidr: 192.168.8.0/24, use: LAN, hosts: [nas], vlan: 1}
+    - {cidr: 10.1.1.0/24, use: lab, hosts: [proxmox], vlan: 10}
   gateways:
     - {ip: 192.168.8.1, subnet: 192.168.8.0/24}
     - {ip: 10.1.1.1, subnet: 10.1.1.0/24}
-  router:
-    ip: 192.168.8.1
-    role: [gateway, dns, inter-subnet routing]
-    identified_as: nginx admin panel
   dns:
-    wildcard: "*.home -> 192.168.8.100"
+    wildcard: "*.home -> 192.168.8.100"    # AdGuard rewrite, see hosts.router
     note: New internal hostnames need no DNS work.
   tls:
     internal: Caddy internal CA; root certificate served at ca.home
