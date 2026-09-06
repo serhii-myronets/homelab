@@ -103,8 +103,10 @@ is exactly the mechanism behind the two stale facts found earlier in the day.
 README is now procedures for a human and links out for everything else.
 
 The operational traps moved to `docs/traps.yaml` as data, and the entry point
-was cut to routing and rules. It is `AGENTS.md` now, which several tools read;
-`CLAUDE.md` is a symlink to it, so there is one file under two names.
+was cut to routing and rules. It is `AGENTS.md` — the convention several tools
+read, and one file rather than a per-vendor one. The repository was renamed
+from `homelab-docker-stack` to `homelab` at the same time: it stopped being
+only Docker stacks some time ago.
 
 ## Open
 
