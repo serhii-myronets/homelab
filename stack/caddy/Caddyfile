@@ -1,3 +1,18 @@
+omv.home {
+    tls internal
+    reverse_proxy host.docker.internal:81 {
+        header_up Host {http.request.host}
+        header_up X-Real-IP {http.request.remote.host}
+        header_up X-Forwarded-For {http.request.remote.host}
+        header_up X-Forwarded-Proto {http.request.scheme}
+    }
+    reverse_proxy /websocket host.docker.internal:81
+}
+
+jelly.home {
+    reverse_proxy jellyfin:8096
+}
+
 jellyfin.home {
     tls internal
     reverse_proxy jellyfin:8096
@@ -13,10 +28,10 @@ torrent.home {
 #    reverse_proxy adguard:80
 #}
 
-#portainer.home {
-#    tls internal
-#    reverse_proxy portainer:9000
-#}
+portainer.home {
+    tls internal
+    reverse_proxy portainer:9000
+}
 
 #infisical.home {
 #    tls internal
