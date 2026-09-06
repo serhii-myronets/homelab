@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up irreplaceable data to the local restic repository
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=__BACKUP_SH__
+Nice=10
+IOSchedulingClass=idle
