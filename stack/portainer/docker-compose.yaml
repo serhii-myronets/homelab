@@ -1,3 +1,14 @@
+# NOT deployed from this file. Portainer is managed by OpenMediaVault's Docker
+# Compose plugin, which generates and owns:
+#   /srv/ssd/docker/compose/portainer/portainer.yml
+#   /srv/ssd/docker/compose/portainer/compose.override.yml
+# This file documents the live container's actual config (docker inspect) and
+# is the source of truth for changes. To apply a change, edit here, then mirror
+# it into the OMV files and run, on the host:
+#   docker compose -f /srv/ssd/docker/compose/portainer/portainer.yml up -d
+#
+# Kept deliberately out of Portainer's own GitOps stacks: a failed self-redeploy
+# would take down the UI that manages every other stack.
 services:
   portainer:
     image: portainer/portainer-ee:latest
