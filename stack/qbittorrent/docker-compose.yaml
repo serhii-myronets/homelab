@@ -47,10 +47,17 @@ services:
       - qbittorrent
     environment:
       - FLOOD_DISABLE_AUTH=true
-      - FLOOD_ENABLE_REVERSE_PROXY_AUTH=true
+      # Flood maps FLOOD_OPTION_<flag> to its CLI flags via yargs (e.g. --qburl),
+      # so the env var name must match the flag exactly, with no extra underscores.
+      - FLOOD_OPTION_QBURL=http://localhost:8080
+      # Auth is bypassed via the AuthSubnetWhitelist=127.0.0.1/32 rule in
+      # qBittorrent.conf, so any placeholder values work here.
+      - FLOOD_OPTION_QBUSER=admin
+      - FLOOD_OPTION_QBPASS=adminadmin
     volumes:
       - /srv/ssd/docker/data/flood/data:/data
     restart: unless-stopped
+
 
 networks:
   backend:
