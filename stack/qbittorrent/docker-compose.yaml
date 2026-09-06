@@ -46,9 +46,13 @@ services:
       - vpn
       - qbittorrent
     environment:
-      - FLOOD_DISABLE_AUTH=true
-      # Flood maps FLOOD_OPTION_<flag> to its CLI flags via yargs (e.g. --qburl),
-      # so the env var name must match the flag exactly, with no extra underscores.
+      # Flood maps FLOOD_OPTION_<flag> to its CLI flags via yargs (e.g. --auth,
+      # --qburl), so the env var name must match the flag exactly, with no
+      # extra underscores. auth=none is what actually skips account creation
+      # (FLOOD_DISABLE_AUTH is not a real flag and was silently ignored) and
+      # is also required for the qburl/qbuser/qbpass client config below to
+      # be picked up automatically instead of prompting to add a client.
+      - FLOOD_OPTION_AUTH=none
       - FLOOD_OPTION_QBURL=http://localhost:8080
       # Auth is bypassed via the AuthSubnetWhitelist=127.0.0.1/32 rule in
       # qBittorrent.conf, so any placeholder values work here.
