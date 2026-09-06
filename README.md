@@ -83,9 +83,24 @@ a daily timer. Prints a generated repository password once — save it off the
 machine, the backups are unreadable without it.
 
 Covers what cannot be re-downloaded (~2 GB): the data directories minus
-Jellyfin's cache, the secrets, `samba/scan`, `samba/doc`, `/etc/ssh`, and
+Jellyfin's cache, the secrets, `samba/scan`, `samba/doc`, `/etc/ssh`,
+`/etc/apt` (Docker comes from the OMV-Extras repository, not Debian's), and
 OpenMediaVault's `config.xml` — the one file that holds its entire
 configuration and that OMV offers no way to version.
+
+Between them, the git repo and these snapshots cover a rebuild end to end:
+
+| | Where it lives |
+|---|---|
+| Samba shares, disk mounts, SMART, users, network, notifications | `config.xml` |
+| Docker stacks, bootstrap, backup policy | this repo |
+| Portainer's database, i.e. the four stack definitions | `data/portainer` |
+| Service data: Jellyfin, qBittorrent, Flood, Caddy's CA | `data/` |
+| Secrets | `secrets/` |
+| SSH host keys, apt sources | `/etc/ssh`, `/etc/apt` |
+
+What is **not** captured is the package list itself — a rebuild starts by
+installing OMV, OMV-Extras and Docker before any of the above applies.
 
 There is one repository per disk, because neither disk is redundant and each
 covers the other's failure:

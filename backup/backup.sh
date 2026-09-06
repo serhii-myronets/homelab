@@ -29,6 +29,9 @@ PATHS=(
   # Not covered by the git repo either: host keys, so clients do not trip over
   # a changed fingerprint after a rebuild.
   /etc/ssh
+  # Docker comes from the OMV-Extras repository rather than Debian's, so the
+  # apt sources are part of what a rebuild needs.
+  /etc/apt
 )
 
 export RESTIC_PASSWORD_FILE="$PASS_FILE"
