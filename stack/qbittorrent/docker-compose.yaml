@@ -5,7 +5,7 @@ services:
     cap_add:
       - NET_ADMIN
     devices:
-    - /dev/net/tun:/dev/net/tun
+      - /dev/net/tun:/dev/net/tun
     volumes:
       - /srv/ssd/docker/data/qbittorrent/gluetun:/gluetun
       - /srv/ssd/docker/secrets/nordvpn:/gluetun/creds:ro
@@ -15,7 +15,7 @@ services:
       - OPENVPN_USER_FILE=/gluetun/creds/user
       - OPENVPN_PASSWORD_FILE=/gluetun/creds/pass
       - SERVER_COUNTRIES=Netherlands
-      - FIREWALL_INPUT_PORTS=8080
+      - FIREWALL_INPUT_PORTS=8080,3000
       - HEALTHCHECK=off
     restart: unless-stopped
     networks:
@@ -35,6 +35,19 @@ services:
     volumes:
       - /srv/ssd/docker/data/qbittorrent/config:/config
       - /srv/ssd/samba/torrents:/downloads
+    restart: unless-stopped
+
+  flood:
+    image: jesec/flood:latest
+    container_name: flood
+    network_mode: "service:vpn"
+    depends_on:
+      - vpn
+      - qbittorrent
+    environment:
+      - FLOOD_DISABLE_AUTH=true
+    volumes:
+      - /srv/ssd/docker/data/flood/data:/data
     restart: unless-stopped
 
 networks:

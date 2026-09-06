@@ -16,7 +16,7 @@ jellyfin.home {
 
 torrent.home {
     tls internal
-    reverse_proxy vpn:8080
+    reverse_proxy vpn:3000
 }
 
 proxmenux.home {
