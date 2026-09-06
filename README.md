@@ -82,35 +82,22 @@ Installs restic, initialises a repository at `/var/backups/restic`, and enables
 a daily timer. Prints a generated repository password once — save it off the
 machine, the backups are unreadable without it.
 
-Covers what cannot be re-downloaded (~2 GB): the data directories minus
-Jellyfin's cache, the secrets, `samba/scan`, `samba/doc`, `/etc/ssh`,
-`/etc/apt` (Docker comes from the OMV-Extras repository, not Debian's), and
-OpenMediaVault's `config.xml` — the one file that holds its entire
-configuration and that OMV offers no way to version.
+Each disk holds the backup of what lives on the other one, so losing either
+leaves a copy on the survivor:
 
-Between them, the git repo and these snapshots cover a rebuild end to end:
+| Repository | Disk | Holds |
+|---|---|---|
+| `/var/backups/restic` | `sdb` | `docker/data` (minus Jellyfin's cache), `docker/secrets`, `samba/scan`, `samba/doc` |
+| `/srv/ssd/backups/restic` | `sda` | OpenMediaVault's `config.xml` — samba shares, disk mounts, SMART, users, network |
 
-| | Where it lives |
-|---|---|
-| Samba shares, disk mounts, SMART, users, network, notifications | `config.xml` |
-| Docker stacks, bootstrap, backup policy | this repo |
-| Portainer's database, i.e. the four stack definitions | `data/portainer` |
-| Service data: Jellyfin, qBittorrent, Flood, Caddy's CA | `data/` |
-| Secrets | `secrets/` |
-| SSH host keys, apt sources | `/etc/ssh`, `/etc/apt` |
+About 2 GB, a few MB a day after that. Losing the machine loses both; that
+needs an off-box target.
 
-What is **not** captured is the package list itself — a rebuild starts by
-installing OMV, OMV-Extras and Docker before any of the above applies.
-
-There is one repository per disk, because neither disk is redundant and each
-covers the other's failure:
-
-| Disk lost | Recovered from |
-|---|---|
-| `sda` (ORICO, data) | `/var/backups/restic` on `sdb` |
-| `sdb` (system SSD) | `/srv/ssd/backups/restic` on `sda` |
-
-Losing the machine loses both — that needs an off-box target.
+Between them, the git repo and these snapshots cover a rebuild end to end.
+Portainer's database — and with it the four stack definitions — rides along
+inside `docker/data`, so the stacks come back without being recreated by hand.
+Not covered: SSH access (run `ssh-copy-id` again) and the installed packages,
+though `bootstrap.sh` installs Docker if it is missing.
 
 ```bash
 export RESTIC_REPOSITORY=/var/backups/restic RESTIC_PASSWORD_FILE=/etc/restic-password

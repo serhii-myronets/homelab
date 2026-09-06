@@ -17,6 +17,14 @@ bad() { printf '  ✗ %s\n' "$*"; }
 
 [[ $EUID -eq 0 ]] || { echo "run as root"; exit 1; }
 
+say "Docker"
+if command -v docker >/dev/null; then
+  ok "already installed"
+else
+  curl -fsSL https://get.docker.com | sh
+  ok "installed"
+fi
+
 say "Shared network"
 # Every stack joins this as an external network, so nothing else creates it.
 if docker network inspect backend >/dev/null 2>&1; then
