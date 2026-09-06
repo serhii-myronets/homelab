@@ -72,6 +72,36 @@ Public hostnames on `serhii.link` go through Cloudflare Tunnel instead. It runs
 with `--token-file`, so its ingress rules live in the Cloudflare Zero Trust
 dashboard, not in this repo.
 
+## Backup
+
+```bash
+sudo ./backup/install.sh
+```
+
+Installs restic, initialises a repository at `/var/backups/restic`, and enables
+a daily timer. Prints a generated repository password once — save it off the
+machine, the backups are unreadable without it.
+
+Covers what cannot be re-downloaded (~2 GB): the data directories minus
+Jellyfin's cache, the secrets, `samba/scan`, `samba/doc`, and OpenMediaVault's
+`config.xml` — the one file that holds its entire configuration and that OMV
+offers no way to version.
+
+Repository and password both sit on the system SSD so they survive the data
+disk dying, which is the likelier failure: `sda` runs torrents around the clock
+while `sdb` barely moves. It does **not** survive losing the machine — add a
+second, off-box target for that.
+
+```bash
+export RESTIC_REPOSITORY=/var/backups/restic RESTIC_PASSWORD_FILE=/etc/restic-password
+restic snapshots                          # list
+restic restore latest --target /tmp/r     # restore everything
+restic restore latest --target /tmp/r --include /srv/ssd/samba/scan
+```
+
+Containers keep running during a backup, so a snapshot can catch a database
+mid-write. Stop the stacks first if you want a guaranteed-consistent one.
+
 ## Gotchas
 
 **Editing the Caddyfile needs a container restart.** Bind-mounting a single file
