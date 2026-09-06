@@ -10,6 +10,7 @@ omv.home {
 }
 
 jelly.home {
+    tls internal
     reverse_proxy jellyfin:8096
 }
 
@@ -21,6 +22,11 @@ jellyfin.home {
 torrent.home {
     tls internal
     reverse_proxy vpn:8080
+}
+
+proxmenux.home {
+    tls internal
+    reverse_proxy 10.1.1.100:8008
 }
 
 portainer.home {
