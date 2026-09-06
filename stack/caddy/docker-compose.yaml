@@ -10,9 +10,9 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      # Absolute host path: Portainer resolves relative paths inside its own
-      # container, where the Docker daemon cannot see them (creates a phantom dir).
-      - /srv/ssd/docker/data/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Requires "Enable relative path volumes" on the Portainer stack, otherwise
+      # this path resolves inside the Portainer container and the daemon cannot see it.
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - /srv/ssd/docker/data/caddy/data:/data
       - /srv/ssd/docker/data/caddy/config:/config
     restart: unless-stopped
