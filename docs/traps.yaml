@@ -1,0 +1,75 @@
+# Things that have already cost time here. Each was diagnosed from a real
+# failure, not read in a manual. Check this file before debugging anything
+# that "should work".
+
+meta:
+  updated: 2026-09-06
+  tags: [traps, gotchas, debugging, portainer, caddy, docker]
+
+traps:
+  - id: bind-mounted-file-pins-its-inode
+    applies_to: [caddy, torrent]
+    symptom: >-
+      A file changed in git, the stack was pulled and redeployed, and the
+      container still serves the old content.
+    cause: >-
+      Mounting a single file pins its inode. Git replaces files rather than
+      editing them in place, so the host gets a new inode and the container
+      keeps reading the old one. Compose does not recreate the container
+      either, because the service definition never changed.
+    fix: docker restart caddy
+    evidence: host inode 76032888/1049 B vs container inode 76036078/1103 B
+
+  - id: home-tld-needs-tls-internal
+    applies_to: [caddy]
+    symptom: >-
+      Caddy retries certificate issuance for weeks and the real serhii.link
+      certificates are at risk of a rate limit.
+    cause: >-
+      Without `tls internal` Caddy asks Let's Encrypt for a certificate and is
+      rejected, because .home is not a real TLD. It then retries for 30 days.
+    fix: Every .home site block carries `tls internal`.
+
+  - id: portainer-additional-paths-takes-compose-files
+    applies_to: [portainer]
+    symptom: "failed to deploy: top-level object must be a mapping"
+    cause: >-
+      "Additional paths" takes additional *compose* files and merges them with
+      -f. A non-YAML file there — a Caddyfile, say — fails the parse.
+    fix: Leave the field empty.
+    reproduce: docker compose -f docker-compose.yaml -f Caddyfile config
+
+  - id: relative-path-volumes-is-creation-time-only
+    applies_to: [portainer, caddy, torrent]
+    symptom: "mount fails with ENOTDIR"
+    cause: >-
+      Without "Enable relative path volumes" Portainer resolves ./file inside
+      its own container, where the Docker daemon cannot see it. The daemon
+      creates an empty directory at that path instead, and the mount then hits
+      a directory where a file was expected.
+    fix: >-
+      Tick it when the stack is *created* — the option is never offered when
+      editing one, so a stack that needs it and lacks it has to be recreated.
+      Required by any stack bind-mounting a file out of this repo.
+    stacks_needing_it: [caddy, torrent]
+
+  - id: flood-ignores-puid-pgid
+    applies_to: [torrent]
+    symptom: Flood cannot write its database.
+    cause: Flood runs as uid 1001 and ignores PUID/PGID.
+    fix: Its data directory must be owned by 1001:1001. bootstrap.sh handles it.
+
+  - id: flood-options-are-yargs-flags
+    applies_to: [torrent]
+    symptom: >-
+      Flood asks to create an account, or exits 1 with Zod
+      "expected string, received undefined".
+    cause: >-
+      FLOOD_OPTION_<name> maps onto Flood's CLI flags through yargs, so each
+      name has to match a real flag exactly. Anything unrecognised is ignored
+      in silence — FLOOD_DISABLE_AUTH is not a flag, and the URL variable is
+      QBURL, not QBIT_URL.
+    fix: >-
+      AUTH=none, RUNDIR, QBURL, QBUSER, QBPASS. The last two look redundant
+      because qBittorrent trusts 127.0.0.1 through its AuthSubnetWhitelist, but
+      Flood will not start without them.

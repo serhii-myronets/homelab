@@ -5,16 +5,25 @@ meta:
   updated: 2026-09-06
   tags: [stacks, docker, portainer, caddy, routes, secrets]
 
+portainer_stack_settings:      # Stacks -> Add stack -> Repository
+  reference: refs/heads/main
+  additional_paths: empty          # it takes compose files — see traps.yaml
+  relative_path_volumes: >-
+    Required by any stack bind-mounting a file out of this repo, and offered
+    only at creation time. See traps.yaml.
+
 stacks:
   - name: caddy
     host: nas
     deployed_by: portainer-gitops
+    compose_path: caddy/docker-compose.yaml
     relative_path_volumes: true
     filesystem_path: /srv/ssd/docker/gitops/caddy
     role: reverse proxy, internal TLS
   - name: torrent
     host: nas
     deployed_by: portainer-gitops
+    compose_path: torrent/docker-compose.yaml
     relative_path_volumes: true
     filesystem_path: /srv/ssd/docker/gitops/torrent
     services: [vpn, qbittorrent, flood]
@@ -22,16 +31,27 @@ stacks:
   - name: cloudflared
     host: nas
     deployed_by: portainer-gitops
+    compose_path: cloudflared/docker-compose.yaml
+    relative_path_volumes: false
   - name: jellyfin
     host: nas
     deployed_by: portainer-gitops
+    compose_path: jellyfin/docker-compose.yaml
+    relative_path_volumes: false
   - name: portainer
     host: nas
     deployed_by: bootstrap.sh       # see decisions/0001
+    compose_path: portainer/docker-compose.yaml
     edition: EE
+    note: >-
+      Not a Portainer stack. Deploy with ./bootstrap.sh or
+      docker compose -f portainer/docker-compose.yaml up -d
 
 routes:
-  internal:                         # all via Caddy, TLS from its own CA
+  internal:                         # all via Caddy, TLS from its own CA.
+                                    # *.home resolves to the NAS by wildcard,
+                                    # so a new name needs no DNS work; trust
+                                    # the root certificate from ca.home.
     - {host: omv.home, target: "host.docker.internal:81"}
     - {host: jellyfin.home, target: "jellyfin:8096"}
     - {host: torrent.home, target: "vpn:3000"}
