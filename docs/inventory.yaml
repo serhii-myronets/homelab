@@ -142,7 +142,27 @@ hosts:
         - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: nas}
         - {mac: "F8:89:D2:5B:E3:1B", ip: 192.168.8.110}
         - {mac: "02:A5:88:66:E8:5E", ip: 10.1.1.10}
+    zones:                          # what may talk to what
+      lan: {policy: accept, forwards_to: [wan, homelabzone]}
+      homelabzone: {policy: accept, forwards_to: [wan, lan, wgserver], masquerade: true}
+      guest: {policy: reject, forwards_to: [wan]}
+      iot: {policy: reject, forwards_to: [wan]}
+      wgserver: {forwards_to: [homelabzone]}
+      wan: {input: drop, masquerade: true}
+    masquerade_note: >-
+      The rule is `-o br-lan.10 -j MASQUERADE`, so traffic entering VLAN 10 is
+      NAT'd: Proxmox sees everything from the LAN as coming from 10.1.1.1
+      rather than its real source. Traffic the other way is not translated.
+    wifi:
+      - {ssid: gl.inet, band: 2.4G, network: lan, enabled: true}
+      - {ssid: gl.inet-5G, band: 5G, network: lan, enabled: true}
+      - {ssid: GL-MT6000-3f6-Guest, network: guest, enabled: false}
+      - {ssid: GL-MT6000-3f6-IoT, network: iot, enabled: false}
     risks:
+      - >-
+        WireGuard peers can reach the homelab VLAN but not the LAN — there is
+        no wgserver -> lan forwarding rule, so dialling in from outside reaches
+        Proxmox and not the NAS.
       - >-
         Proxmox is statically configured at 10.1.1.100, which is the first
         address of the VLAN 10 DHCP pool, and has no reservation. A new guest
