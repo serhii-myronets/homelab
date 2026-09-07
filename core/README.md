@@ -43,9 +43,14 @@ Installs restic, initialises both repositories, and enables a daily timer.
 Prints a generated repository password once — save it off the machine, the
 backups are unreadable without it.
 
-Each disk holds the backup of what lives on the other, so losing either leaves
-a copy on the survivor. What each one holds, and what is deliberately not
-covered, is in [`docs/backups.yaml`](../docs/backups.yaml).
+Each disk holds the backup of what lives on the other, and a third copy goes to
+the Proxmox box over sftp, so losing this machine does not lose every copy.
+What each one holds, and what is deliberately not covered, is in
+[`docs/backups.yaml`](../docs/backups.yaml).
+
+The first run also generates an ssh key for the remote repository. If Proxmox
+has not authorised it yet the script says so and prints the line that does —
+the local backups do not wait for it.
 
 ```bash
 export RESTIC_REPOSITORY=/var/backups/restic RESTIC_PASSWORD_FILE=/etc/restic-password
@@ -88,6 +93,17 @@ sudo ./core/backup/install.sh
 Portainer comes back knowing all four stacks, since its database is part of
 `docker/data`. They still need a **Deploy** each — it does not redeploy stacks
 on startup.
+
+### The whole machine is gone
+
+The Proxmox copy holds everything the two local repositories hold between them.
+It needs restic and the repository password, nothing else — the repository is
+plain files, so the ssh key matters only to the nightly job:
+
+```bash
+restic -r sftp:root@10.1.1.100:/var/lib/vz/backups/restic snapshots
+restic -r sftp:root@10.1.1.100:/var/lib/vz/backups/restic restore latest --target /
+```
 
 ### The data disk died
 
