@@ -1,1 +1,4 @@
-[]
+- External:
+    - Grafana:
+        - abbr: GF
+          href: https://grafana.serhii.link

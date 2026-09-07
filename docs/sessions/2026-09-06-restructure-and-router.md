@@ -229,3 +229,14 @@ neighbor entry identifies the running guest receiving the requests, while
 Cilium's L2 table and BPF map contain the expected VIP and L7 proxy entry.
 The NodePort success was therefore consistent with a working Gateway.
 No guest, cluster, router or running Caddy configuration was changed.
+
+## Local Grafana working
+
+After the owner's VM address change, verified the resolution recorded in
+traps. The first probes timed out while neighbor entries became FAILED;
+subsequent capture showed the Cilium worker answering ARP, and HTTP succeeded.
+The new Caddyfile was already on disk, but its container retained the previous
+file. Restarted Caddy and verified HTTPS 200 with the local CA, without
+skipping certificate verification. Changed Homepage's Grafana link to the
+local hostname and retained the public link in bookmarks. Homepage needs its
+normal GitOps redeploy to pick up these dashboard changes.

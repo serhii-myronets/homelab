@@ -134,5 +134,9 @@ traps:
       deliberately renumber VM 111 through its owning configuration. Verify
       address availability first; then reconcile the Gateway VIP and Caddy
       upstream. Do not stop or destroy the VM as a diagnostic shortcut.
-    status: open
+    resolution: >-
+      The owner moved VM 111 to 10.1.1.90 (verified in qm config). Initial
+      probes timed out, then a packet capture confirmed ARP replies from the
+      Cilium worker and HTTP probes returned 200. No ARP flush was performed.
+    status: fixed
     diagnosed: 2026-09-06
