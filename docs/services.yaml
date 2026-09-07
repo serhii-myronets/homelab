@@ -124,6 +124,7 @@ kubernetes:
     caddy_route: grafana.home
     upstream: http://10.1.1.80:80
     status: blocked-before-deployment
+    blocker: docs/traps.yaml#cilium-vip-conflicts-with-proxmox-guest
     verification: >-
       HTTPRoute generation 2 accepts grafana.home. The LoadBalancer refuses
       connections from core, the Caddy container, and Proxmox. A request from

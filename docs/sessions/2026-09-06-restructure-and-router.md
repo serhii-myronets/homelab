@@ -220,3 +220,12 @@ the connectivity result recorded in `docs/services.yaml`; Homepage keeps the
 working public link. NodePort returned HTTP 200 with the new hostname,
 isolating the failing path from the hostname match and Grafana backend.
 No Kubernetes or running Caddy configuration was changed during this check.
+
+## Gateway VIP diagnosis
+
+Read-only investigation identified the address collision recorded in
+`docs/traps.yaml` as `cilium-vip-conflicts-with-proxmox-guest`. The Proxmox
+neighbor entry identifies the running guest receiving the requests, while
+Cilium's L2 table and BPF map contain the expected VIP and L7 proxy entry.
+The NodePort success was therefore consistent with a working Gateway.
+No guest, cluster, router or running Caddy configuration was changed.
