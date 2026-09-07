@@ -40,7 +40,7 @@
 - Kubernetes:
     - Argo CD:
         icon: argocd.png
-        href: https://argocd.serhii.link
+        href: https://argocd.home
         description: Cluster GitOps
     - Grafana:
         icon: grafana.png
@@ -48,13 +48,13 @@
         description: Metrics, logs and traces
     - MinIO:
         icon: minio.png
-        href: https://minio.serhii.link
+        href: https://minio.home
         description: Object storage console
     - VictoriaMetrics:
         icon: victoriametrics.png
-        href: https://vm-server.serhii.link
+        href: https://vm-server.home
         description: Metrics storage and queries
     - vmagent:
         icon: victoriametrics.png
-        href: https://vm-agent.serhii.link
+        href: https://vm-agent.home
         description: Metrics collection targets

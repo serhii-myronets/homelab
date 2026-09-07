@@ -110,11 +110,15 @@ kubernetes:
     listener: HTTP:80
   routes:
     - {host: argocd.serhii.link, namespace: argocd, target: "argocd-server:80"}
+    - {host: argocd.home, namespace: argocd, target: "argocd-server:80"}
     - {host: minio.serhii.link, namespace: minio, target: "minio-console:9001"}
+    - {host: minio.home, namespace: minio, target: "minio-console:9001"}
     - {host: grafana.serhii.link, namespace: observability, target: "grafana:80"}
     - {host: grafana.home, namespace: observability, target: "grafana:80"}
     - {host: vm-agent.serhii.link, namespace: observability, target: "vmagent-main-agent:8429"}
+    - {host: vm-agent.home, namespace: observability, target: "vmagent-main-agent:8429"}
     - {host: vm-server.serhii.link, namespace: observability, target: "victoria-metrics-server:8428"}
+    - {host: vm-server.home, namespace: observability, target: "victoria-metrics-server:8428"}
   verification: >-
     Gateway Programmed=True; all five HTTPRoutes Accepted=True and ResolvedRefs=True.
     All five public HTTPS URLs returned 302 to Cloudflare Access login.
@@ -129,3 +133,9 @@ kubernetes:
       Caddy to pick up its updated bind-mounted file, https://grafana.home
       returns HTTP 200 from core with certificate validation against the local
       Caddy CA. Homepage's configured primary link now uses the local hostname.
+
+  additional_local_routes:
+    hosts: [argocd.home, minio.home, vm-agent.home, vm-server.home]
+    status: pending-caddy-deployment
+    verification: Each hostname returns HTTP 200 from core through the Gateway VIP.
+    authentication: Local routes bypass Cloudflare Access and rely on backend authentication.
