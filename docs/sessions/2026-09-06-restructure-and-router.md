@@ -78,13 +78,15 @@ address, one to add a `wgserver → lan` forwarding — before the instruction c
 to leave the firmware's own rules alone. All three were reverted the same day
 and the reasoning is now [`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md).
 
-What the review found stands regardless, and both items are live:
+What the review found stood regardless, and both were real:
 
-- **Samba answers on the public address.** A USB disk at
+- **Samba answered on the public address.** A USB disk at
   `/tmp/mountd/disk1_part1`, shared over SMB, reachable on `50.38.32.155`.
-- **VPN clients cannot reach the LAN.** `lan → wgserver` exists,
-  `wgserver → lan` does not. The peers are already configured correctly, so
-  this is one asymmetric forwarding away from working.
+- **VPN clients could not reach the LAN.** `lan → wgserver` existed,
+  `wgserver → lan` did not. The peers were already configured correctly, so it
+  was one asymmetric forwarding away from working.
+
+Both were closed later the same day — see the end of this record.
 
 ## Wrong turns worth not repeating
 
