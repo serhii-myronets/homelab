@@ -53,7 +53,7 @@ answers:                     # question -> file, so a lookup costs one read
   what did we do last time: docs/sessions/
   what breaks if a disk dies: docs/backups.yaml
   which hostname serves what: docs/services.yaml
-  why can't the VPN reach core: docs/hosts/router.yaml, decisions/0007
+  what can reach what: docs/network.yaml, then hosts/router.yaml
   why is this deploy failing: docs/traps.yaml
   what options does this Portainer stack need: docs/services.yaml, docs/traps.yaml
 

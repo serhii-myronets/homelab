@@ -15,4 +15,4 @@ Read the newest one before starting work.
 
 | Date | Session | Left open |
 |---|---|---|
-| 2026-09-06 | [Restructure, backups, router review](2026-09-06-restructure-and-router.md) | VPN → LAN forwarding, Samba on WAN |
+| 2026-09-06 | [Restructure, backups, router review](2026-09-06-restructure-and-router.md) | off-box backup, SMART alerting |

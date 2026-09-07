@@ -69,11 +69,14 @@ forwardings:                       # uci index -> what may reach what
   - {i: 10, src: wgserver,    dest: homelabzone}
   - {i: 11, src: homelabzone, dest: wgserver}
   - {i: 12, src: iot,         dest: wan}
-  - {i: 13, src: wgserver,    dest: wan,       name: wgserver2wan}
-  - {i: 14, src: lan,         dest: wgserver,  name: lan2wgserver}
+  - {i: 13, src: wgserver,    dest: lan,       name: wgserver2lan}
+  - {i: 14, src: wgserver,    dest: wan,       name: wgserver2wan}
+  - {i: 15, src: lan,         dest: wgserver,  name: lan2wgserver}
 forwardings_note: >-
   GL.iNet names the rules it creates <src>2<dest>. Anonymous entries came from
-  LuCI or from the wizard. There is no wgserver -> lan: see gaps.vpn_cannot_reach_lan.
+  LuCI or from the wizard. wgserver2lan was added by hand through LuCI on
+  2026-09-06 — GL.iNet's own UI has no toggle for it, so there is nothing for
+  it to drift from. See decisions/0007.
 
 masquerade_note: >-
   The rule is `-o br-lan.10 -j MASQUERADE`, so traffic entering VLAN 10 is
@@ -81,6 +84,11 @@ masquerade_note: >-
   than its real source. Traffic the other way is not translated.
 
 wireguard_server:
+  reaches: [lan, homelabzone, wan, wgclient1]   # everything, since 2026-09-06
+  masquerade_note: >-
+    The wgserver zone masquerades, so a host on the LAN sees a VPN client as
+    192.168.8.1 rather than as 10.1.0.x. Guest-auth shares do not care; anything
+    matching on source address would.
   address_v4: 10.1.0.1/24
   port: 51820
   peers: 5                         # macbook, pixel and three others
@@ -98,33 +106,30 @@ wifi:
   - {ssid: GL-MT6000-3f6-Guest, network: guest, enabled: false}
   - {ssid: GL-MT6000-3f6-IoT, network: iot, enabled: false}
 
-gaps:
-  vpn_cannot_reach_lan:
-    severity: high
-    symptom: >-
-      Dialling in over WireGuard reaches Proxmox and the Talos cluster, but not
-      the NAS — so no Samba, no Jellyfin, and *.home does not resolve to
-      anything reachable.
-    cause: >-
-      forwardings has lan -> wgserver but no wgserver -> lan. The peers are
-      configured correctly; the asymmetry is entirely on the router.
-    fix_in_ui: >-
-      Add lan to the wgserver zone's allowed destinations. Nothing is to be
-      changed over ssh. See decisions/0007.
+wan_input_allowed:                 # everything else is dropped
+  - {port: 68/udp, what: DHCP renew}
+  - {proto: igmp, what: multicast}
+  - {port: 51820/udp, what: WireGuard server}
 
+closed:                            # fixed 2026-09-06, kept for the record
   samba_exposed_on_wan:
-    severity: high
-    symptom: >-
-      firewall.sambasharewan accepts 137/138/139/445 from the wan zone and
-      samba4 binds `loopback wan lan`, so the USB disk mounted at
-      /tmp/mountd/disk1_part1 is reachable over SMB on the public address
+    was: >-
+      firewall.sambasharewan accepted 137/138/139/445 from the wan zone and
+      samba4 bound `loopback wan lan`, so the USB disk at
+      /tmp/mountd/disk1_part1 answered over SMB on the public address
       50.38.32.155.
-    verified: >-
-      4 matching rules present in iptables chain zone_wan_input on 2026-09-06.
-    fix_in_ui: >-
-      Turn off the router's own SMB-over-WAN option, or unplug the USB disk if
-      it is not being used. Not to be changed over ssh.
+    now: >-
+      The rule's target is DROP and samba4 binds `loopback lan`. Verified: the
+      eight matching rules in zone_wan_input are all DROP.
+  vpn_cannot_reach_lan:
+    was: >-
+      lan -> wgserver existed with no wgserver -> lan, so dialling in reached
+      Proxmox and the Talos cluster but not the NAS.
+    now: >-
+      wgserver2lan added through LuCI. Verified: one ACCEPT in
+      zone_wgserver_forward.
 
+gaps:
   firmware_age:
     severity: medium
     symptom: >-
