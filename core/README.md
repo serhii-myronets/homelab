@@ -39,7 +39,7 @@ them before creating a stack — one of the options cannot be turned on later.
 sudo ./core/backup/install.sh
 ```
 
-Installs restic, initialises both repositories, and enables a daily timer.
+Installs restic, initialises all three repositories, and enables a daily timer.
 Prints a generated repository password once — save it off the machine, the
 backups are unreadable without it.
 
