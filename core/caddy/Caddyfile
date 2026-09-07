@@ -62,3 +62,8 @@ homepage.home {
     tls internal
     reverse_proxy homepage:3000
 }
+
+grafana.home {
+    tls internal
+    reverse_proxy 10.1.1.80:80
+}
