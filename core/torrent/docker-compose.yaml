@@ -16,7 +16,6 @@ services:
       - OPENVPN_PASSWORD_FILE=/gluetun/creds/pass
       - SERVER_COUNTRIES=Netherlands
       - FIREWALL_INPUT_PORTS=8080,3000
-      - HEALTHCHECK=off
     restart: unless-stopped
     networks:
       - backend
@@ -25,8 +24,14 @@ services:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
     network_mode: "service:vpn"
+    # restart: true is what stops a redeploy from stranding this container.
+    # Recreating vpn gives it a new network namespace; without this, Compose
+    # leaves qbittorrent attached to the old one, still listening where
+    # nothing can reach it. See docs/traps.yaml.
     depends_on:
-      - vpn
+      vpn:
+        condition: service_healthy
+        restart: true
     environment:
       - PUID=1000
       - PGID=1000
@@ -43,8 +48,12 @@ services:
     container_name: flood
     network_mode: "service:vpn"
     depends_on:
-      - vpn
-      - qbittorrent
+      vpn:
+        condition: service_healthy
+        restart: true
+      qbittorrent:
+        condition: service_started
+        restart: true
     environment:
       # FLOOD_OPTION_<flag> maps to Flood's CLI flags through yargs, so each
       # name has to match its flag exactly — QBURL, not QBIT_URL. Anything
