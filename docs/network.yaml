@@ -27,7 +27,7 @@ reachability:                      # who can reach whom, as configured today
   lan_to_lab: yes                  # forwarding lan -> homelabzone
   lab_to_lan: yes                  # forwarding homelabzone -> lan
   vpn_to_lab: yes                  # forwarding wgserver -> homelabzone
-  vpn_to_lan: no                   # missing — see hosts/router.yaml gaps
+  vpn_to_lan: yes                  # wgserver2lan, added 2026-09-06
   guest_to_anything: no            # wan only
   wan_to_lan: no                   # no port forwards; public access is the
                                    # Cloudflare tunnel, which dials outward

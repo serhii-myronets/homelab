@@ -162,10 +162,14 @@ remains is cosmetic:
   on the next redeploy of the torrent stack, and for portainer on the next
   `core/bootstrap.sh`.
 
+Both router problems were closed the same day, by the owner: Samba over WAN in
+GL.iNet's interface, and `wgserver2lan` in LuCI — which turned out to be the
+right home for it, since GL.iNet exposes no toggle for that forwarding and so
+has no state it could drift from. That distinction is now part of
+[`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md).
+
 The rest are open on purpose:
 
-- `wgserver → lan` forwarding, from the GL.iNet UI — [`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md)
-- Samba over WAN, from the GL.iNet UI — [`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md)
 - Nothing is backed up off the box — [`0006`](../decisions/0006-nothing-is-off-box.md)
 - Consolidating onto Proxmox — [`0005`](../decisions/0005-consolidate-to-proxmox.md)
 - SMART has no alert recipient

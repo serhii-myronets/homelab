@@ -29,23 +29,27 @@ same day, unused:
 Verified after reverting: 4 SMB rules back in `zone_wan_input`, 15 forwardings,
 no anonymous entry.
 
-## What this leaves open
+## How the two problems were then fixed
 
-Two real problems, both recorded in `docs/hosts/router.yaml`, both to be fixed
-from the GL.iNet UI:
+Both were fixed the same day, by the owner, through a UI — which is the point.
 
-**VPN clients cannot reach the LAN.** There is a `lan → wgserver` forwarding
-and no `wgserver → lan`, so dialling in reaches Proxmox and the Talos cluster
-but not the NAS: no Samba, no Jellyfin, and `*.home` resolves to an address
-nothing can route to. The peers themselves are already right — `allowed_ips`
-covers `192.168.8.0/24` and `10.1.1.0/24`, `dns` is `192.168.8.1`. Only the
-router's forwarding table is asymmetric.
+**Samba on the WAN address** was closed in GL.iNet's own interface. The rule
+`firewall.sambasharewan` now targets DROP instead of ACCEPT and `samba4` binds
+`loopback lan`. Verified: the eight matching rules in `zone_wan_input` are all
+DROP, and the only ports still accepted from the WAN are DHCP renew, IGMP and
+WireGuard's 51820.
 
-**Samba is served on the WAN address.** `firewall.sambasharewan` accepts
-137/138/139/445 from the wan zone, `samba4` binds `loopback wan lan`, and a USB
-disk is mounted at `/tmp/mountd/disk1_part1`. That share answers on
-`50.38.32.155`. This is the more urgent of the two, and it is deliberately left
-in place rather than fixed out of band.
+**VPN clients could not reach the LAN** because a `lan → wgserver` forwarding
+existed with no `wgserver → lan`. This one has no GL.iNet toggle at all, which
+changes the calculation: there is no vendor state for it to drift *from*, so
+LuCI — OpenWrt's own configuration UI, shipped in this firmware — is the right
+place, and a rule created there is not out-of-band. It was added as
+`wgserver2lan`, following the `<src>2<dest>` names the firmware itself uses, so
+it reads as one of the set rather than as something foreign.
+
+The distinction worth carrying forward: **a setting the vendor UI exposes must
+be changed there; one it does not expose belongs to LuCI.** Neither belongs to
+`uci set` over ssh, because that leaves no trace in either interface.
 
 ## Consequence
 
