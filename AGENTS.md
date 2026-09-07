@@ -73,6 +73,10 @@ request. The history is the owner's. Write the message about the change, not
 about who made it — the 31 trailers stripped on 2026-09-06 said nothing a
 reader needed.
 
+**Commit and push completed changes.** After validation, commit the task's
+changes and push the current branch without asking again. Stage by path so
+unrelated work is not included.
+
 **Record what you learn.** A new failure mode goes in `docs/traps.yaml`; a
 choice with a rejected alternative goes in `docs/decisions/`; the narrative of
 a working session goes in `docs/sessions/`, including what was tried and
