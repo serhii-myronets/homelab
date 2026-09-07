@@ -153,16 +153,14 @@ attribution. Stage by path when the working tree is not yours alone.
 
 ## Open
 
-Left mid-flight by the restructure, and the only items here that are not
-someone's deliberate choice:
+Left mid-flight by the restructure. jellyfin was redeployed and is fine; what
+remains is cosmetic:
 
-- **jellyfin has not been redeployed.** It still runs from commit `fa211f47`
-  at a compose path without the `core/` prefix. It works, but the next time
-  the container is recreated it will not find its compose file. One **Deploy**
-  in Portainer fixes it.
 - `vpn` and `flood` carry a `working_dir` label pointing at the pre-rename
-  directory. Cosmetic — compose only recreated `qbittorrent`, whose bind path
-  changed — and it clears on the next redeploy of the torrent stack.
+  directory, and so does `portainer`. Compose only recreated `qbittorrent`,
+  whose bind path changed. Nothing reads these labels at runtime; they clear
+  on the next redeploy of the torrent stack, and for portainer on the next
+  `core/bootstrap.sh`.
 
 The rest are open on purpose:
 
