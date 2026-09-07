@@ -210,3 +210,13 @@ Public HTTPS requests reached Cloudflare Access login. Direct requests to the
 Gateway address from this workstation returned no HTTP response, so backend
 health was not established by those checks. Public site monitors were omitted
 because an authentication redirect does not establish application health.
+
+## Local Grafana route
+
+The owner added grafana.home to the GitOps HTTPRoute and applied it.
+Verified generation 2 Accepted=True and ResolvedRefs=True. Added the Caddy
+route to the LoadBalancer without rewriting Host. Deployment is blocked by
+the connectivity result recorded in `docs/services.yaml`; Homepage keeps the
+working public link. NodePort returned HTTP 200 with the new hostname,
+isolating the failing path from the hostname match and Grafana backend.
+No Kubernetes or running Caddy configuration was changed during this check.
