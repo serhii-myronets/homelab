@@ -83,10 +83,6 @@ spare_capacity:                    # what a consolidation could use
 
 risks:
   - >-
-    Statically configured at 10.1.1.100, the first address of the VLAN 10 DHCP
-    pool, with no reservation. A new guest could be leased the hypervisor's own
-    address. Either reserve its MAC or start the pool at .150.
-  - >-
     65 of 115 power cycles were unsafe shutdowns. More than half the time this
     machine loses power without flushing, which threatens etcd and guest
     filesystems long before disk wear becomes relevant. Worth a UPS, or finding
