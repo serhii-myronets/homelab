@@ -78,6 +78,16 @@ firewall: none                      # only Docker's own NAT rules
 config_of_record: /etc/openmediavault/config.xml   # shares, mounts, SMART,
                                                    # users, network — all of it
 
+paths:                              # where things actually live on this host
+  clone: /srv/ssd/docker/homelab    # the working checkout of this repository;
+                                    # the backup unit's ExecStart points into
+                                    # it, so moving it breaks the timer until
+                                    # core/backup/install.sh is re-run
+  gitops: /srv/ssd/docker/gitops    # Portainer unpacks each git-deployed stack
+                                    # under here, one directory per stack
+  data: /srv/ssd/docker/data        # container state, one directory per stack
+  secrets: /srv/ssd/docker/secrets
+
 cruft:
   - >-
     /etc/cron.d/omv-compose-* remain from the removed OMV compose plugin
