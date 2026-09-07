@@ -125,6 +125,21 @@ wherever the checkout now lives, and a backup run afterwards exited 0 with
 fresh snapshots in both repositories. That failure mode is now a rule in
 `AGENTS.md`.
 
+## A third stale fact
+
+`services.yaml` recorded `torrent.home` and `flood.home` as both reaching Flood
+on `vpn:3000`. Live, `torrent.home` reached qBittorrent on `vpn:8080` and only
+`flood.home` was Flood. The claim came across from the old `inventory.yaml`
+unverified and had been carried through two restructures — the same failure as
+the two found earlier in the day, and the reason the convention says to check
+against the host rather than against another file in this repository.
+
+The routes now read `torrent.home` -> Flood and `qbittorrent.home` -> the raw
+interface, and `services.yaml` was checked against the running Caddy rather
+than assumed. The commit that made the change, `d7a23ec`, explains it with the
+wrong rationale — it repeats the stale fact. The history is not being rewritten
+a second time to fix a sentence; this note is the correction.
+
 ## Attribution
 
 Thirty-one commits carried a `Co-Authored-By` trailer naming the assistant.
