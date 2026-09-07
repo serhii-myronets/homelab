@@ -249,3 +249,9 @@ URLs primary in Homepage; retained all public URLs in bookmarks. The local
 path relies on backend authentication, since it does not pass Cloudflare
 Access. No Kubernetes resources were modified. Caddy configuration validation
 and YAML parsing passed before commit; live rollout remains to be verified.
+
+## Saved service shortlist
+
+At the owner's request, saved the previously discussed application ideas in
+[service-ideas.md](../service-ideas.md) and linked the shortlist from the docs
+index. This records options for later, without selecting another deployment.
