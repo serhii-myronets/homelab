@@ -115,3 +115,24 @@ traps:
     cause: The parent config bind mount is read-only, so Docker cannot create the nested logs mountpoint.
     fix: Keep config/logs/.gitkeep in git so the directory exists before mounting tmpfs there.
     diagnosed: 2026-09-06, during a temporary Homepage launch on core
+
+  - id: cilium-vip-conflicts-with-proxmox-guest
+    applies_to: [kubernetes, proxmox, caddy]
+    symptom: Gateway VIP port 80 refuses connections while its NodePort serves Grafana successfully.
+    cause: >-
+      The external Cilium pool spans 10.1.1.80-10.1.1.85 and assigned 10.1.1.80
+      to main-gateway. Running Proxmox VM 111 (control-plane) also has
+      ipconfig0=10.1.1.80/24. Proxmox's neighbor entry for that IP points to
+      the VM MAC bc:24:11:81:14:e0, not the announcing Cilium worker MAC
+      bc:24:11:ad:7f:f7. Requests therefore reach the other guest.
+    evidence: >-
+      Verified with qm config/status 111, ip neigh, the Cilium IP pool,
+      L2 announcement table and BPF service map. The VIP has an L7 proxy
+      entry; NodePort with Host grafana.home returns HTTP 200.
+    fix: >-
+      Allocate a non-overlapping range for Cilium in its GitOps source, or
+      deliberately renumber VM 111 through its owning configuration. Verify
+      address availability first; then reconcile the Gateway VIP and Caddy
+      upstream. Do not stop or destroy the VM as a diagnostic shortcut.
+    status: open
+    diagnosed: 2026-09-06
