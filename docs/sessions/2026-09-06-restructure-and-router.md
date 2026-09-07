@@ -155,14 +155,11 @@ attribution. Stage by path when the working tree is not yours alone.
 
 ## Open
 
-Left mid-flight by the restructure. jellyfin was redeployed and is fine; what
-remains is cosmetic:
-
-- `vpn` and `flood` carry a `working_dir` label pointing at the pre-rename
-  directory, and so does `portainer`. Compose only recreated `qbittorrent`,
-  whose bind path changed. Nothing reads these labels at runtime; they clear
-  on the next redeploy of the torrent stack, and for portainer on the next
-  `core/bootstrap.sh`.
+The stale Compose labels left by the restructure are closed. A read-only
+check of `docker ps -a` on core on 2026-09-06 confirmed that all seven
+containers have `working_dir` and `config_files` labels pointing under
+`core/`, including `vpn`, `flood`, and `portainer`. The earlier open item here
+had not been updated after the redeploys; the closing note below was correct.
 
 Both router problems were closed the same day, by the owner: Samba over WAN in
 GL.iNet's interface, and `wgserver2lan` in LuCI — which turned out to be the
