@@ -37,3 +37,24 @@
         icon: mdi-certificate
         href: https://ca.home/root.crt
         description: Download the local root certificate
+- Kubernetes:
+    - Argo CD:
+        icon: argocd.png
+        href: https://argocd.serhii.link
+        description: Cluster GitOps
+    - Grafana:
+        icon: grafana.png
+        href: https://grafana.serhii.link
+        description: Metrics, logs and traces
+    - MinIO:
+        icon: minio.png
+        href: https://minio.serhii.link
+        description: Object storage console
+    - VictoriaMetrics:
+        icon: victoriametrics.png
+        href: https://vm-server.serhii.link
+        description: Metrics storage and queries
+    - vmagent:
+        icon: victoriametrics.png
+        href: https://vm-agent.serhii.link
+        description: Metrics collection targets

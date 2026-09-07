@@ -198,3 +198,15 @@ through the configuration APIs rather than by searching that HTML.
 Deployment remains pending: Portainer's stacks API returned 401, and no
 browser session was available. The temporary container was removed after
 validation; the running Caddy configuration was not changed.
+
+## Kubernetes links for Homepage
+
+Read the active kubectl context, Services, Pods, HTTPRoutes, Gateway and the
+cloudflared ConfigMap. The verified tunnel and route inventory is now in
+`docs/services.yaml`. Added the five published applications to Homepage's
+Kubernetes group; no cluster resources were changed.
+
+Public HTTPS requests reached Cloudflare Access login. Direct requests to the
+Gateway address from this workstation returned no HTTP response, so backend
+health was not established by those checks. Public site monitors were omitted
+because an authentication redirect does not establish application health.

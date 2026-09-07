@@ -91,3 +91,30 @@ secrets:
   note: >-
     The whole nordvpn/ directory is bind-mounted into gluetun, so anything left
     in it is visible to that container whether it is referenced or not.
+
+kubernetes:
+  context: admin@homelab
+  verified: 2026-09-06
+  managed_by: argocd
+  tunnel:
+    namespace: cloudflared
+    configmap: cloudflared
+    name: wildcard-tunnel
+    hostname: "*.serhii.link"
+    target: http://cilium-gateway-main-gateway.gateway-system.svc.cluster.local:80
+  gateway:
+    namespace: gateway-system
+    name: main-gateway
+    class: cilium
+    address: 10.1.1.80
+    listener: HTTP:80
+  routes:
+    - {host: argocd.serhii.link, namespace: argocd, target: "argocd-server:80"}
+    - {host: minio.serhii.link, namespace: minio, target: "minio-console:9001"}
+    - {host: grafana.serhii.link, namespace: observability, target: "grafana:80"}
+    - {host: vm-agent.serhii.link, namespace: observability, target: "vmagent-main-agent:8429"}
+    - {host: vm-server.serhii.link, namespace: observability, target: "victoria-metrics-server:8428"}
+  verification: >-
+    Gateway Programmed=True; all five HTTPRoutes Accepted=True and ResolvedRefs=True.
+    All five public HTTPS URLs returned 302 to Cloudflare Access login.
+    This confirms the authentication boundary, not backend application health.
