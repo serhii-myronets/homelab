@@ -240,3 +240,12 @@ file. Restarted Caddy and verified HTTPS 200 with the local CA, without
 skipping certificate verification. Changed Homepage's Grafana link to the
 local hostname and retained the public link in bookmarks. Homepage needs its
 normal GitOps redeploy to pick up these dashboard changes.
+
+## Remaining Kubernetes local hostnames
+
+Verified the owner's additional HTTPRoute hostnames and HTTP 200 responses
+through the Gateway from core. Added their Caddy blocks and made the local
+URLs primary in Homepage; retained all public URLs in bookmarks. The local
+path relies on backend authentication, since it does not pass Cloudflare
+Access. No Kubernetes resources were modified. Caddy configuration validation
+and YAML parsing passed before commit; live rollout remains to be verified.

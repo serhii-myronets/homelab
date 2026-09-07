@@ -67,3 +67,23 @@ grafana.home {
     tls internal
     reverse_proxy 10.1.1.80:80
 }
+
+argocd.home {
+    tls internal
+    reverse_proxy 10.1.1.80:80
+}
+
+minio.home {
+    tls internal
+    reverse_proxy 10.1.1.80:80
+}
+
+vm-agent.home {
+    tls internal
+    reverse_proxy 10.1.1.80:80
+}
+
+vm-server.home {
+    tls internal
+    reverse_proxy 10.1.1.80:80
+}

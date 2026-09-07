@@ -2,3 +2,15 @@
     - Grafana:
         - abbr: GF
           href: https://grafana.serhii.link
+    - Argo CD:
+        - abbr: AC
+          href: https://argocd.serhii.link
+    - MinIO:
+        - abbr: MI
+          href: https://minio.serhii.link
+    - vmagent:
+        - abbr: VA
+          href: https://vm-agent.serhii.link
+    - VictoriaMetrics:
+        - abbr: VM
+          href: https://vm-server.serhii.link
