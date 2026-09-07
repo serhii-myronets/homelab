@@ -2,11 +2,14 @@
 #
 # One-time setup for the backup job. Idempotent: safe to re-run.
 #
-#   sudo ./backup/install.sh
+#   sudo ./core/backup/install.sh
 #
 set -euo pipefail
 
-REPOS=(/var/backups/restic /srv/ssd/backups/restic)
+LOCAL_REPOS=(/var/backups/restic /srv/ssd/backups/restic)
+REMOTE_REPO=sftp:proxmox-backup:/var/lib/vz/backups/restic
+REMOTE_HOST=10.1.1.100
+KEY=/root/.ssh/id_ed25519_backup
 PASS_FILE=/etc/restic-password
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -38,7 +41,7 @@ fi
 
 export RESTIC_PASSWORD_FILE="$PASS_FILE"
 
-for repo in "${REPOS[@]}"; do
+for repo in "${LOCAL_REPOS[@]}"; do
   export RESTIC_REPOSITORY="$repo"
   if restic cat config >/dev/null 2>&1; then
     ok "repository exists at $repo"
@@ -48,6 +51,54 @@ for repo in "${REPOS[@]}"; do
     ok "repository initialised at $repo"
   fi
 done
+
+# The third repository lives on the Proxmox box, so losing this machine does
+# not lose every copy. Its own key, restricted to sftp on the far side.
+if [[ -f "$KEY" ]]; then
+  ok "backup key exists"
+else
+  ssh-keygen -t ed25519 -N '' -C "restic-backup@$(hostname)" -f "$KEY" -q
+  ok "backup key generated"
+fi
+
+# A host alias rather than a global entry, so this key is used for the backup
+# and nothing else.
+if grep -q '^Host proxmox-backup$' /root/.ssh/config 2>/dev/null; then
+  ok "ssh alias configured"
+else
+  cat >> /root/.ssh/config <<CFG
+
+Host proxmox-backup
+    HostName $REMOTE_HOST
+    User root
+    IdentityFile $KEY
+    IdentitiesOnly yes
+    BatchMode yes
+    StrictHostKeyChecking accept-new
+CFG
+  chmod 600 /root/.ssh/config
+  ok "ssh alias configured"
+fi
+
+if printf 'quit\n' | sftp -q -b - proxmox-backup >/dev/null 2>&1; then
+  export RESTIC_REPOSITORY="$REMOTE_REPO"
+  if restic cat config >/dev/null 2>&1; then
+    ok "repository exists at $REMOTE_REPO"
+  else
+    restic init >/dev/null
+    ok "repository initialised at $REMOTE_REPO"
+  fi
+else
+  echo
+  echo "  ! $REMOTE_HOST is not reachable over sftp yet. Authorise this key"
+  echo "    there — it is restricted to file transfer, no shell:"
+  echo
+  echo "      echo 'restrict,command=\"internal-sftp\" $(cat "$KEY.pub")' \\"
+  echo "        | ssh root@$REMOTE_HOST 'cat >> /root/.ssh/authorized_keys'"
+  echo
+  echo "    Then re-run this script. Local backups work without it."
+  echo
+fi
 
 # Without this copy, losing the system SSD would leave the surviving
 # repository unreadable.
@@ -65,4 +116,4 @@ ok "daily timer enabled"
 echo
 echo "  Run it now:      systemctl start restic-backup.service"
 echo "  Watch it:        journalctl -u restic-backup -f"
-echo "  List snapshots:  RESTIC_REPOSITORY=${REPOS[0]} RESTIC_PASSWORD_FILE=$PASS_FILE restic snapshots"
+echo "  List snapshots:  RESTIC_REPOSITORY=${LOCAL_REPOS[0]} RESTIC_PASSWORD_FILE=$PASS_FILE restic snapshots"

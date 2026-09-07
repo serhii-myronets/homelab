@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 #
 # Each disk holds the backup of what lives on the other one, so losing either
-# leaves a copy on the survivor. Losing the machine loses both.
+# leaves a copy on the survivor:
 #
 #   sda (ORICO, 1.9T)  data, secrets, shares  ->  repository on sdb
 #   sdb (system SSD)   OMV's configuration    ->  repository on sda
+#
+# Losing the machine would lose both, so everything also goes to the Proxmox
+# box over sftp. That is not off-site — both machines are in the same room, on
+# the same breaker — but it survives this one dying, which the pair above does
+# not.
 #
 set -euo pipefail
 
@@ -34,4 +39,17 @@ run /var/backups/restic \
 # OpenMediaVault keeps its entire configuration in this one file — shares,
 # disk mounts, SMART, users, network — and offers no way to version it.
 run /srv/ssd/backups/restic \
+  /etc/openmediavault/config.xml
+
+# Off this machine. Everything the two local repositories hold between them,
+# in one place, so a dead NAS is recoverable from the other box. Reached
+# through the proxmox-backup ssh alias that core/backup/install.sh writes.
+run sftp:proxmox-backup:/var/lib/vz/backups/restic \
+  --exclude /srv/ssd/docker/data/jellyfin/cache \
+  --exclude /srv/ssd/docker/data/jellyfin/config/metadata \
+  --exclude /srv/ssd/docker/data/jellyfin/config/log \
+  /srv/ssd/docker/data \
+  /srv/ssd/docker/secrets \
+  /srv/ssd/samba/scan \
+  /srv/ssd/samba/doc \
   /etc/openmediavault/config.xml
