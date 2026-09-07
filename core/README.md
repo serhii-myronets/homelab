@@ -121,3 +121,18 @@ chown -R 1001:1001 /srv/ssd/docker/data/torrent/flood
 Between them, the git repo and these snapshots cover a rebuild end to end. Not
 covered: SSH access — run `ssh-copy-id` again — and the installed packages,
 though `core/bootstrap.sh` installs Docker if it is missing.
+
+## Homepage
+
+Create the stack in Portainer using the repository settings in
+[`docs/services.yaml`](../docs/services.yaml). Mount the config directory with
+**Enable relative path volumes** enabled at creation; leave **Additional paths**
+empty.
+
+After its first deployment, redeploy the Caddy stack from git and restart
+`caddy` so its single-file bind mount picks up the updated Caddyfile. Open
+`https://homepage.home`.
+
+Edit the dashboard under `core/homepage/config/`, push, and redeploy the
+Homepage stack. Use the refresh button at the bottom right of Homepage after
+changing settings to regenerate the page.

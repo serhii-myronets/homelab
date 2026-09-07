@@ -1,0 +1,8 @@
+- greeting:
+    text: Homelab
+- datetime:
+    text_size: xl
+    format:
+      dateStyle: long
+      timeStyle: short
+      hour12: false

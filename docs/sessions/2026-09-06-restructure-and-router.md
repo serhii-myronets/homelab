@@ -178,3 +178,23 @@ Closed during the session: both router problems, the VLAN 10 DHCP pool moved
 off `.100`, the orphaned `omv-compose` cron files, every stale compose label,
 the 502 that followed each torrent redeploy, and the third backup copy on
 proxmox.
+
+## Homepage prepared
+
+Added a Homepage stack and configuration under `core/homepage/`, with a
+Caddy route and deployment instructions in `core/README.md`. The existing
+Caddy routes and backend network membership were read from core before
+building the dashboard links.
+
+Validated the Compose configuration locally and the Caddyfile in a throwaway
+container on core. A temporary Homepage v1.13.2 container served HTTP 200;
+its services API returned all eight configured links, and its widgets and
+bookmarks APIs returned the expected configuration without application errors.
+The first launch failed because the read-only config directory lacked the
+nested logs mountpoint; adding a tracked directory fixed it, recorded in traps.
+The initial HTML response is an application shell, so content was checked
+through the configuration APIs rather than by searching that HTML.
+
+Deployment remains pending: Portainer's stacks API returned 401, and no
+browser session was available. The temporary container was removed after
+validation; the running Caddy configuration was not changed.

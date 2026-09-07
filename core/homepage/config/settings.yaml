@@ -1,0 +1,14 @@
+title: Homelab
+description: Home services and infrastructure
+theme: dark
+color: slate
+headerStyle: clean
+statusStyle: dot
+target: _self
+layout:
+  Media:
+    style: row
+    columns: 3
+  Infrastructure:
+    style: row
+    columns: 3
