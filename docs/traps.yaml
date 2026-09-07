@@ -61,6 +61,7 @@ traps:
 
   - id: recreating-vpn-orphans-its-dependents
     applies_to: [torrent]
+    status: fixed                    # kept because the shape recurs
     symptom: >-
       After redeploying the torrent stack, torrent.home and qbittorrent.home
       return 502 while every container shows as Up and both applications log
@@ -69,12 +70,28 @@ traps:
       qbittorrent and flood run with network_mode "service:vpn", so they live
       in vpn's network namespace. Recreating vpn gives it a new namespace; the
       two dependents stay attached to the old one, which is now unreachable.
-      Compose does not restart them, so they keep serving into a dead namespace.
+      They keep serving into a dead namespace.
     tell: >-
       `docker ps` shows vpn with a *shorter* uptime than the containers that
       depend on it, and `docker exec vpn netstat -tln` lists neither 3000 nor
       8080.
-    fix: docker restart qbittorrent flood
+    fix_permanent: >-
+      depends_on in the mapping form with `restart: true`, which is in
+      core/torrent/docker-compose.yaml. Compose then restarts both dependents
+      whenever it updates vpn, and `condition: service_healthy` makes them wait
+      for the tunnel instead of racing it. Verified 2026-09-06 by recreating
+      vpn alone within a whole-project up.
+    fix_by_hand: >-
+      Only needed if the definition is ever lost. `docker restart` works when
+      vpn was *restarted*, but not when it was *recreated* — the dependents
+      then reference a container id that no longer exists and refuse with
+      "joining network namespace of container: No such container". Recreate
+      them instead:
+      `docker compose -p torrent up -d --force-recreate qbittorrent flood`
+    caveat: >-
+      `restart: true` applies when Compose updates the dependency during an up
+      over the project. Targeting one service — `up -d --force-recreate vpn` —
+      leaves the dependents out of scope and strands them exactly as before.
     diagnosed: 2026-09-06, after a Portainer redeploy of the torrent stack
 
   - id: flood-options-are-yargs-flags
