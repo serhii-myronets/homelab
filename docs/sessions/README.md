@@ -15,4 +15,4 @@ Read the newest one before starting work.
 
 | Date | Session | Left open |
 |---|---|---|
-| 2026-09-06 | [Restructure, backups, router review](2026-09-06-restructure-and-router.md) | off-box backup, SMART alerting |
+| 2026-09-06 | [Restructure, backups, router review](2026-09-06-restructure-and-router.md) | off-box backup ([0006](../decisions/0006-nothing-is-off-box.md)), alerting ([0008](../decisions/0008-nothing-tells-anyone-when-something-breaks.md)) |

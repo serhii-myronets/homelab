@@ -41,7 +41,10 @@ dns:
 dhcp:
   pools:
     - {vlan: 1, range: 192.168.8.100-249}
-    - {vlan: 10, range: 10.1.1.100-249}
+    - {vlan: 10, range: 10.1.1.150-249}   # moved off .100 on 2026-09-06 so the
+                                          # pool cannot lease Proxmox's own
+                                          # static address; .100-.149 is now
+                                          # free for statics
   reservations:
     - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: core}
     - {mac: "F8:89:D2:5B:E3:1B", ip: 192.168.8.110}
