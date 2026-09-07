@@ -172,12 +172,12 @@ has no state it could drift from. That distinction is now part of
 
 The rest are open on purpose:
 
-- Nothing is backed up off the box — [`0006`](../decisions/0006-nothing-is-off-box.md)
 - Nothing reports a failure — [`0008`](../decisions/0008-nothing-tells-anyone-when-something-breaks.md), deferred deliberately
-- Consolidating onto Proxmox — [`0005`](../decisions/0005-consolidate-to-proxmox.md)
+- Consolidating onto Proxmox — [`0005`](../decisions/0005-consolidate-to-proxmox.md), paused
+- No copy outside the building — [`0006`](../decisions/0006-a-third-copy-on-proxmox.md) closed the machine-loss case only
 - 65 of 115 power cycles on Proxmox were unsafe shutdowns
 
 Closed during the session: both router problems, the VLAN 10 DHCP pool moved
-off `.100`, the orphaned `omv-compose` cron files, and the stale compose labels
-on portainer. `vpn` and `flood` still carry theirs until the torrent stack is
-redeployed.
+off `.100`, the orphaned `omv-compose` cron files, every stale compose label,
+the 502 that followed each torrent redeploy, and the third backup copy on
+proxmox.
