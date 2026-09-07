@@ -85,6 +85,7 @@ ok "up — https://portainer.home (or http://$(hostname -I | awk '{print $1}'):9
 say "Next"
 cat <<'EOF'
   Add the remaining stacks in Portainer (Stacks -> Add stack -> Repository),
-  reference refs/heads/main. See the table in README.md for each stack's
-  compose path and relative-path-volume settings.
+  reference refs/heads/main. Each stack's compose path and options are in
+  docs/services.yaml; docs/traps.yaml says which one cannot be turned on
+  after the stack is created.
 EOF
