@@ -108,3 +108,10 @@ traps:
       AUTH=none, RUNDIR, QBURL, QBUSER, QBPASS. The last two look redundant
       because qBittorrent trusts 127.0.0.1 through its AuthSubnetWhitelist, but
       Flood will not start without them.
+
+  - id: homepage-readonly-config-needs-log-mountpoint
+    applies_to: [homepage]
+    symptom: Container creation fails mounting tmpfs at /app/config/logs with read-only file system.
+    cause: The parent config bind mount is read-only, so Docker cannot create the nested logs mountpoint.
+    fix: Keep config/logs/.gitkeep in git so the directory exists before mounting tmpfs there.
+    diagnosed: 2026-09-06, during a temporary Homepage launch on core

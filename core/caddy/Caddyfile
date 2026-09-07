@@ -57,3 +57,8 @@ ca.home {
 
     file_server browse
 }
+
+homepage.home {
+    tls internal
+    reverse_proxy homepage:3000
+}

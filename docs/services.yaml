@@ -13,6 +13,16 @@ portainer_stack_settings:      # Stacks -> Add stack -> Repository
     only at creation time. See traps.yaml.
 
 stacks:
+  - name: homepage
+    host: core
+    status: pending-deployment
+    deployed_by: portainer-gitops
+    compose_path: core/homepage/docker-compose.yaml
+    relative_path_volumes: true
+    filesystem_path: /srv/ssd/docker/gitops/homepage
+    role: home dashboard
+    planned_route: {host: homepage.home, target: "homepage:3000"}
+    note: Config is in git; logs are ephemeral. No API credentials or Docker socket.
   - name: caddy
     host: core
     deployed_by: portainer-gitops
