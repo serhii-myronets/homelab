@@ -88,7 +88,7 @@ paths:                              # where things actually live on this host
   data: /srv/ssd/docker/data        # container state, one directory per stack
   secrets: /srv/ssd/docker/secrets
 
-cruft:
-  - >-
-    /etc/cron.d/omv-compose-* remain from the removed OMV compose plugin
-    and no longer do anything.
+cruft: none                         # the six /etc/cron.d/omv-compose-* files
+                                    # left by the removed OMV compose plugin
+                                    # were deleted 2026-09-06; they held only
+                                    # SHELL and PATH, no scheduled job
