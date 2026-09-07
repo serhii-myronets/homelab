@@ -153,6 +153,19 @@ attribution. Stage by path when the working tree is not yours alone.
 
 ## Open
 
+Left mid-flight by the restructure, and the only items here that are not
+someone's deliberate choice:
+
+- **jellyfin has not been redeployed.** It still runs from commit `fa211f47`
+  at a compose path without the `core/` prefix. It works, but the next time
+  the container is recreated it will not find its compose file. One **Deploy**
+  in Portainer fixes it.
+- `vpn` and `flood` carry a `working_dir` label pointing at the pre-rename
+  directory. Cosmetic — compose only recreated `qbittorrent`, whose bind path
+  changed — and it clears on the next redeploy of the torrent stack.
+
+The rest are open on purpose:
+
 - `wgserver → lan` forwarding, from the GL.iNet UI — [`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md)
 - Samba over WAN, from the GL.iNet UI — [`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md)
 - Nothing is backed up off the box — [`0006`](../decisions/0006-nothing-is-off-box.md)

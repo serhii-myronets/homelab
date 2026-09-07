@@ -23,11 +23,11 @@ repositories:
     on_disk: sdb
     holds: [docker/data, docker/secrets, samba/scan, samba/doc]
     excludes: [jellyfin/cache, jellyfin/config/metadata, jellyfin/config/log]
-    size: 133M
+    size: ~134M                     # grows a few MB a day
   - path: /srv/ssd/backups/restic
     on_disk: sda
     holds: [/etc/openmediavault/config.xml]
-    size: 1.1M
+    size: ~1.1M
 
 rationale: >-
   Each disk holds the backup of what lives on the other, so losing either
