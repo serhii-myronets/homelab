@@ -108,6 +108,34 @@ read, and one file rather than a per-vendor one. The repository was renamed
 from `homelab-docker-stack` to `homelab` at the same time: it stopped being
 only Docker stacks some time ago.
 
+Then the split went one level further, because two concerns had grown into one
+root directory. `core/` is executable and lands on one machine; `docs/` is
+descriptive and covers three. `docs/hosts/nas.yaml` became `core.yaml` — the
+box serves files, but that is not what makes it matter; it is the one nothing
+else may depend on. `proxmox` and `router` kept their names, which already say
+what they are. `homelab` was considered for the third and rejected: the router
+already has a `network.homelab` — VLAN 10, where Proxmox lives — so the only
+host named `homelab` would have been the only one outside it.
+
+Moving `core/` had consequences the repository could not see. Four Portainer
+stacks store a compose path, and the systemd backup unit stores an absolute
+path to `backup/backup.sh`; both went stale the moment the directories moved.
+The unit was repaired by re-running `install.sh`, which regenerates it from
+wherever the checkout now lives, and a backup run afterwards exited 0 with
+fresh snapshots in both repositories. That failure mode is now a rule in
+`AGENTS.md`.
+
+## Attribution
+
+Thirty-one commits carried a `Co-Authored-By` trailer naming the assistant.
+They are gone, and the rule against them is in `AGENTS.md`. Content was
+untouched: the rewritten HEAD tree hashes identically to the original,
+`7db861a2`.
+
+One mistake worth not repeating: `git add -A` swept an unrelated Caddyfile
+edit, made by hand while the rewrite was running, into the commit about
+attribution. Stage by path when the working tree is not yours alone.
+
 ## Open
 
 - `wgserver → lan` forwarding, from the GL.iNet UI — [`0007`](../decisions/0007-router-config-is-not-ours-to-edit.md)
