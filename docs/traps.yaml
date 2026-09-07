@@ -59,6 +59,24 @@ traps:
     cause: Flood runs as uid 1001 and ignores PUID/PGID.
     fix: Its data directory must be owned by 1001:1001. core/bootstrap.sh handles it.
 
+  - id: recreating-vpn-orphans-its-dependents
+    applies_to: [torrent]
+    symptom: >-
+      After redeploying the torrent stack, torrent.home and qbittorrent.home
+      return 502 while every container shows as Up and both applications log
+      that they are listening.
+    cause: >-
+      qbittorrent and flood run with network_mode "service:vpn", so they live
+      in vpn's network namespace. Recreating vpn gives it a new namespace; the
+      two dependents stay attached to the old one, which is now unreachable.
+      Compose does not restart them, so they keep serving into a dead namespace.
+    tell: >-
+      `docker ps` shows vpn with a *shorter* uptime than the containers that
+      depend on it, and `docker exec vpn netstat -tln` lists neither 3000 nor
+      8080.
+    fix: docker restart qbittorrent flood
+    diagnosed: 2026-09-06, after a Portainer redeploy of the torrent stack
+
   - id: flood-options-are-yargs-flags
     applies_to: [torrent]
     symptom: >-
