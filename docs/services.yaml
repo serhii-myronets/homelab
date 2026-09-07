@@ -70,7 +70,14 @@ secrets:
   location: /srv/ssd/docker/secrets
   in_git: false
   files:
-    - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY}
-    - {path: cloudflared/auth.env, holds: Cloudflare tunnel token}
-    - {path: nordvpn/user, holds: OpenVPN username}
-    - {path: nordvpn/pass, holds: OpenVPN password}
+    - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY, used_by: portainer}
+    - {path: cloudflared/auth.env, holds: Cloudflare tunnel token, used_by: cloudflared}
+    - {path: nordvpn/user, holds: OpenVPN username, used_by: vpn}
+    - {path: nordvpn/pass, holds: OpenVPN password, used_by: vpn}
+  unused:                           # present on disk, referenced by nothing
+    - {path: nordvpn/token, note: for gluetun's wireguard mode; VPN_TYPE is openvpn}
+    - {path: cloudflared/credentials.json, note: superseded by --token-file}
+    - {path: cloudflared/tunnel_token.txt, note: superseded by auth.env}
+  note: >-
+    The whole nordvpn/ directory is bind-mounted into gluetun, so anything left
+    in it is visible to that container whether it is referenced or not.
