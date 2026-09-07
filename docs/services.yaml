@@ -123,10 +123,9 @@ kubernetes:
   local_grafana:
     caddy_route: grafana.home
     upstream: http://10.1.1.80:80
-    status: blocked-before-deployment
-    blocker: docs/traps.yaml#cilium-vip-conflicts-with-proxmox-guest
+    status: verified
     verification: >-
-      HTTPRoute generation 2 accepts grafana.home. The LoadBalancer refuses
-      connections from core, the Caddy container, and Proxmox. A request from
-      core to 10.1.1.71:32637 with Host grafana.home returns HTTP 200.
-      Homepage retains the public URL until the LoadBalancer path works.
+      The Gateway VIP returns HTTP 200 from core and Proxmox. After restarting
+      Caddy to pick up its updated bind-mounted file, https://grafana.home
+      returns HTTP 200 from core with certificate validation against the local
+      Caddy CA. Homepage's configured primary link now uses the local hostname.

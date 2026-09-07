@@ -44,7 +44,7 @@
         description: Cluster GitOps
     - Grafana:
         icon: grafana.png
-        href: https://grafana.serhii.link
+        href: https://grafana.home
         description: Metrics, logs and traces
     - MinIO:
         icon: minio.png
