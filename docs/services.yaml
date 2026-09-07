@@ -54,8 +54,8 @@ routes:
                                     # the root certificate from ca.home.
     - {host: omv.home, target: "host.docker.internal:81"}
     - {host: jellyfin.home, target: "jellyfin:8096"}
-    - {host: torrent.home, target: "vpn:3000"}
-    - {host: flood.home, target: "vpn:3000"}
+    - {host: torrent.home, target: "vpn:3000", ui: flood}
+    - {host: qbittorrent.home, target: "vpn:8080", ui: qBittorrent's own}
     - {host: proxmenux.home, target: "10.1.1.100:8008"}
     - {host: proxmox.home, target: "https://10.1.1.100:8006", tls_skip_verify: true}
     - {host: portainer.home, target: "portainer:9000"}

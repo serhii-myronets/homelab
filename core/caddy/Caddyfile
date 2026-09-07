@@ -14,12 +14,12 @@ jellyfin.home {
     reverse_proxy jellyfin:8096
 }
 
-torrent.home {
+qbittorrent.home {
     tls internal
     reverse_proxy vpn:8080
 }
 
-flood.home {
+torrent.home {
     tls internal
     reverse_proxy vpn:3000
 }
@@ -31,8 +31,6 @@ proxmenux.home {
 
 proxmox.home {
     tls internal
-    # Proxmox serves HTTPS on 8006 with a certificate signed by its own cluster
-    # CA, so upstream verification has to be skipped.
     reverse_proxy https://10.1.1.100:8006 {
         transport http {
             tls_insecure_skip_verify
