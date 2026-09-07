@@ -66,3 +66,5 @@ rules:                       # the full set is in AGENTS.md
     does not restate these tables.
   - New failure mode -> traps.yaml. Choice with a rejected alternative ->
     decisions/. Narrative of a session -> sessions/.
+  - Commits name one author, the owner. No agent attribution anywhere in the
+    history.

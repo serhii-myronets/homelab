@@ -67,6 +67,12 @@ Portainer stacks store a compose path, and the systemd backup unit stores an
 absolute path to `core/backup/backup.sh`. Rename a directory here and both go
 stale — say so, and say which.
 
+**Commits carry one author.** No `Co-Authored-By` trailer, no "Generated
+with" line, no agent named anywhere in a commit message, a tag or a pull
+request. The history is the owner's. Write the message about the change, not
+about who made it — the 31 trailers stripped on 2026-09-06 said nothing a
+reader needed.
+
 **Record what you learn.** A new failure mode goes in `docs/traps.yaml`; a
 choice with a rejected alternative goes in `docs/decisions/`; the narrative of
 a working session goes in `docs/sessions/`, including what was tried and
