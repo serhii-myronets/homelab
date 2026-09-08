@@ -7,11 +7,22 @@ statusStyle: dot
 target: _self
 layout:
   Media:
+    tab: Локальні
     style: row
     columns: 3
   Infrastructure:
+    tab: Локальні
     style: row
     columns: 3
   Kubernetes:
+    tab: Локальні
+    style: row
+    columns: 3
+  Core — Public:
+    tab: Публічні
+    style: row
+    columns: 3
+  Kubernetes — Public:
+    tab: Публічні
     style: row
     columns: 3

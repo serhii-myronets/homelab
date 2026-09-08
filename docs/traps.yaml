@@ -28,7 +28,7 @@ traps:
     cause: >-
       Without `tls internal` Caddy asks Let's Encrypt for a certificate and is
       rejected, because .home is not a real TLD. It then retries for 30 days.
-    fix: Every .home site block carries `tls internal`.
+    fix: Every .home site uses the internal TLS issuer, either `tls internal` or `issuer internal`.
 
   - id: portainer-additional-paths-takes-compose-files
     applies_to: [portainer]
@@ -140,3 +140,19 @@ traps:
       Cilium worker and HTTP probes returned 200. No ARP flush was performed.
     status: fixed
     diagnosed: 2026-09-06
+
+  - id: home-wildcard-certificate-does-not-validate
+    applies_to: [caddy]
+    symptom: >-
+      A *.home site with tls internal passes caddy validate, but curl rejects
+      its certificate with no alternative certificate subject name matches.
+    cause: >-
+      The second-level wildcard certificate is rejected by the tested client.
+      Caddy also suppresses individual core certificates covered by the wildcard.
+    fix: >-
+      Use tls internal with on_demand for the wildcard route, issuing individual
+      hostname certificates. Exact core sites use tls force_automate with
+      issuer internal. The installed image rejects force_automate as a nested
+      subdirective, so use it as the tls argument. Verified with a fresh CA
+      and certificate validation for both wildcard-routed and exact sites.
+    diagnosed: 2026-09-07

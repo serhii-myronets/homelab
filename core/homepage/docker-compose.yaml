@@ -3,7 +3,7 @@ services:
     image: ghcr.io/gethomepage/homepage:v1.13.2
     container_name: homepage
     environment:
-      HOMEPAGE_ALLOWED_HOSTS: homepage.home
+      HOMEPAGE_ALLOWED_HOSTS: homepage.home,serhii.link
       TZ: America/Los_Angeles
     volumes:
       - ./config:/app/config:ro

@@ -136,3 +136,13 @@ After its first deployment, redeploy the Caddy stack from git and restart
 Edit the dashboard under `core/homepage/config/`, push, and redeploy the
 Homepage stack. Use the refresh button at the bottom right of Homepage after
 changing settings to regenerate the page.
+
+The dashboard has local and public tabs. To publish it through the core
+Cloudflare Tunnel, add the hostname and origin recorded in
+[`docs/services.yaml`](../docs/services.yaml), after redeploying Homepage so
+its allowed-host setting is updated. Apply Cloudflare Access if the dashboard
+should require login: the tabs do not hide local links from public visitors.
+
+For new Kubernetes applications, add their `.home` hostname to the HTTPRoute
+in the cluster's GitOps source and add their cards to Homepage. Caddy's
+wildcard forwards them to the Gateway; exact core routes take precedence.
