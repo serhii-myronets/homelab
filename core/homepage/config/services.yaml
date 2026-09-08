@@ -22,6 +22,7 @@
         metric: fs:/srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85
         chart: false
         refreshInterval: 5000
+      id: host-core
   - Proxmox:
       icon: proxmox.png
       href: https://proxmox.home
@@ -44,6 +45,7 @@
         metric: fs:/
         chart: false
         refreshInterval: 5000
+      id: host-proxmox
 - Media:
   - Jellyfin:
       icon: jellyfin.png
