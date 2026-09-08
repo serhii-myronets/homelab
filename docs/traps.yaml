@@ -175,4 +175,17 @@ traps:
     also: >-
       The same metrics as header widgets in widgets.yaml are legible but
       crowd the header, which is what the service cards were reaching for.
+    then_narrower: >-
+      Graphs did not end it. A cpu metric prints the processor model beside
+      its percentage, and at columns: 4 the card is too narrow to hold both,
+      so "J4125 CPU @ 2.00GHz" and "10% Used" overlapped into one bold smear
+      on core and on Proxmox alike. Nothing in the widget hides the model
+      name — the options are only metric, chart, pointsLimit, refreshInterval
+      and diskUnits — so the card has to be wide enough. columns: 2 gives it
+      about 600 px and both ends separate cleanly.
+    measured: >-
+      Confirmed on a temporary Homepage on core, port 3001, against a copy of
+      the config: at full width the model name and the percentage separate,
+      at a quarter width they still collide. The container and its config
+      directory were removed afterwards.
     diagnosed: 2026-09-07, adding host metrics to Homepage
