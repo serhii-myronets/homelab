@@ -3,7 +3,7 @@
 # that "should work".
 
 meta:
-  updated: 2026-09-06
+  updated: 2026-09-07
   tags: [traps, gotchas, debugging, portainer, caddy, docker]
 
 traps:
@@ -156,3 +156,23 @@ traps:
       subdirective, so use it as the tls argument. Verified with a fresh CA
       and certificate validation for both wildcard-routed and exact sites.
     diagnosed: 2026-09-07
+
+  - id: glances-metrics-without-charts-overlap
+    applies_to: [homepage]
+    symptom: >-
+      Several Glances metrics attached to one service card render on top of
+      each other, unreadable, while each one alone is fine.
+    cause: >-
+      A Homepage glances widget shows one metric, and its graphless block is
+      absolutely positioned. Stacking four of them in a single card puts four
+      absolute blocks in the same place.
+    fix: >-
+      One metric per service entry, each with chart: true, grouped into their
+      own Core and Proxmox groups. A graph is positioned normally and needs no
+      styling. The CSS written to unpick the overlap — 35 lines pinning
+      .service-container and labelling blocks by nth-last-child — was deleted
+      once the graphs replaced it, and custom.css is empty again.
+    also: >-
+      The same metrics as header widgets in widgets.yaml are legible but
+      crowd the header, which is what the service cards were reaching for.
+    diagnosed: 2026-09-07, adding host metrics to Homepage
