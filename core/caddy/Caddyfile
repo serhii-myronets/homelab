@@ -1,5 +1,7 @@
 omv.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy host.docker.internal:81 {
         header_up Host {http.request.host}
         header_up X-Real-IP {http.request.remote.host}
@@ -10,27 +12,37 @@ omv.home {
 }
 
 jellyfin.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy jellyfin:8096
 }
 
 qbittorrent.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy vpn:8080
 }
 
 torrent.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy vpn:3000
 }
 
 proxmenux.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy 10.1.1.100:8008
 }
 
 proxmox.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy https://10.1.1.100:8006 {
         transport http {
             tls_insecure_skip_verify
@@ -39,12 +51,16 @@ proxmox.home {
 }
 
 portainer.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy portainer:9000
 }
 
 ca.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     root * /data/caddy/pki/authorities/local
     @file path /root.crt
     handle @file {
@@ -59,31 +75,15 @@ ca.home {
 }
 
 homepage.home {
-    tls internal
+    tls force_automate {
+        issuer internal
+    }
     reverse_proxy homepage:3000
 }
 
-grafana.home {
-    tls internal
-    reverse_proxy 10.1.1.80:80
-}
-
-argocd.home {
-    tls internal
-    reverse_proxy 10.1.1.80:80
-}
-
-minio.home {
-    tls internal
-    reverse_proxy 10.1.1.80:80
-}
-
-vm-agent.home {
-    tls internal
-    reverse_proxy 10.1.1.80:80
-}
-
-vm-server.home {
-    tls internal
+*.home {
+    tls internal {
+        on_demand
+    }
     reverse_proxy 10.1.1.80:80
 }

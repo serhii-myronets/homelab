@@ -58,3 +58,45 @@
         icon: victoriametrics.png
         href: https://vm-agent.home
         description: Metrics collection targets
+- Core — Public:
+    - Jellyfin:
+        icon: jellyfin.png
+        href: https://jellyfin.serhii.link
+        description: Movies and shows
+    - OpenMediaVault:
+        icon: openmediavault.png
+        href: https://omv.serhii.link
+        description: Files and storage
+    - qBittorrent:
+        icon: qbittorrent.png
+        href: https://torrent.serhii.link
+        description: Torrent management
+    - Portainer:
+        icon: portainer.png
+        href: https://portainer.serhii.link
+        description: Docker stacks
+    - Proxmox:
+        icon: proxmox.png
+        href: https://proxmox.serhii.link
+        description: Virtual machines and lab
+- Kubernetes — Public:
+    - Argo CD:
+        icon: argocd.png
+        href: https://argocd.serhii.link
+        description: Cluster GitOps
+    - Grafana:
+        icon: grafana.png
+        href: https://grafana.serhii.link
+        description: Metrics, logs and traces
+    - MinIO:
+        icon: minio.png
+        href: https://minio.serhii.link
+        description: Object storage console
+    - VictoriaMetrics:
+        icon: victoriametrics.png
+        href: https://vm-server.serhii.link
+        description: Metrics storage and queries
+    - vmagent:
+        icon: victoriametrics.png
+        href: https://vm-agent.serhii.link
+        description: Metrics collection targets

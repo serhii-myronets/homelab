@@ -75,6 +75,7 @@ routes:
     - {host: omv.serhii.link, target: "host.docker.internal:81"}
     - {host: torrent.serhii.link, target: "vpn:8080"}
     - {host: portainer.serhii.link, target: "portainer:9000"}
+    - {host: proxmox.serhii.link, target: "https://10.1.1.100:8006"}
 
 secrets:
   location: /srv/ssd/docker/secrets
@@ -139,3 +140,25 @@ kubernetes:
     status: pending-caddy-deployment
     verification: Each hostname returns HTTP 200 from core through the Gateway VIP.
     authentication: Local routes bypass Cloudflare Access and rely on backend authentication.
+
+homepage_publication:
+  status: prepared-not-published
+  hostname: serhii.link
+  tunnel_origin: http://homepage:3000
+  allowed_hosts: [homepage.home, serhii.link]
+  tabs: [Локальні, Публічні]
+  verification: >-
+    A temporary Homepage container accepted both Host headers and returned
+    13 local and 10 public service cards. Core public routes were read from
+    the running cloudflared connector's configuration update log.
+  note: Tabs select links, not access permissions; both sets are available to any dashboard visitor.
+
+kubernetes_wildcard:
+  hostname: "*.home"
+  upstream: http://10.1.1.80:80
+  status: validated-before-deployment
+  tls: On-demand individual certificates from the internal CA; exact core sites force their own certificates.
+  verification: >-
+    A temporary Caddy on core served grafana.home and argocd.home with HTTP
+    200 and validated TLS. Exact jellyfin.home returned 302 and portainer.home
+    returned 200 with validated TLS, confirming their routes take precedence.
