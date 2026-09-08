@@ -7,12 +7,9 @@ headerStyle: clean
 statusStyle: dot
 target: _self
 layout:
-  Core:
+  Servers:
     style: row
-    columns: 4
-  Proxmox:
-    style: row
-    columns: 4
+    columns: 2
   Media:
     tab: Local
     style: row
