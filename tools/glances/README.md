@@ -29,4 +29,6 @@ curl http://HOST_LAN_IP:61208/api/4/cpu
 
 Adding a metric to the dashboard means one more service entry in
 `core/homepage/config/services.yaml`, with `chart: true` — several metrics on
-one card overlap, which is in [`docs/traps.yaml`](../../docs/traps.yaml).
+one card overlap, which is in [`docs/traps.yaml`](../../docs/traps.yaml). Six
+per host sit three to a row; the card has to stay wide enough for the `cpu`
+metric to print the processor model beside its percentage.

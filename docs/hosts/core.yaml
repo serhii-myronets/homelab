@@ -1,11 +1,11 @@
 # core — the OpenMediaVault box. Everything that has to stay up runs here,
 # which is what the name means: not a role as a file server, but the one
 # machine nothing else is allowed to depend on.
-# Verified 2026-09-06 against the live machine.
+# Verified 2026-09-06 against the live machine; ssh forwarding 2026-09-07.
 
 meta:
   host: core
-  updated: 2026-09-06
+  updated: 2026-09-07
   tags: [core, nas, omv, debian, docker, storage]
 
 identity:
@@ -14,6 +14,11 @@ identity:
   vlan: 1
   role: production
   ssh: root@192.168.8.100          # key at ~/.ssh/id_ed25519
+  ssh_tcp_forwarding: >-
+    Refused. sshd_config carries AllowTcpForwarding no, so ssh -L to this host
+    opens a local listener that then goes nowhere — connections time out with
+    no error from ssh itself. Reach a container's published port directly on
+    192.168.8.100 instead of tunnelling. Verified 2026-09-07.
   note: >-
     Deliberately boring. Nothing experimental runs here, which is why it
     keeps working.

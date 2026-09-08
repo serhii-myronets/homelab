@@ -188,7 +188,9 @@ host_metrics:                     # what the Homepage graphs read from
     the LAN only. Each process binds its own host address, and there is no
     Caddy site and no tunnel hostname for port 61208.
   processes: not collected — the unit passes --disable-process
-  metrics: CPU, memory, one filesystem and the "Package id 0" temperature, per host
+  metrics:                        # six per host, three to a row on the dashboard
+    core: [cpu, memory, "network:enp1s0", "fs:<data disk>", "fs:/", "sensor:Package id 0"]
+    proxmox: [cpu, memory, "network:vmbr0", "disk:nvme0n1", "fs:/", "sensor:Package id 0"]
   filesystem:
     core: /srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85   # the data disk
     proxmox: /                     # the root LV, not the LVM-thin guest storage
@@ -203,3 +205,5 @@ host_metrics:                     # what the Homepage graphs read from
     Both units active and enabled, each listening on its own LAN address and
     nothing else. cpu, mem, fs and sensors returned 200 on both hosts, and the
     live API confirms both mount points above and the "Package id 0" label.
+    All twelve cards were seen rendering real values on a temporary Homepage
+    before the layout was committed.

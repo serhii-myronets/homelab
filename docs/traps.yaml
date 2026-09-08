@@ -188,4 +188,29 @@ traps:
       the config: at full width the model name and the percentage separate,
       at a quarter width they still collide. The container and its config
       directory were removed afterwards.
+    settled_at: >-
+      Six metrics per host, three to a row. At that width the processor model
+      and its percentage still separate, so columns: 3 holds and no CSS is
+      involved — custom.css stays empty.
     diagnosed: 2026-09-07, adding host metrics to Homepage
+
+  - id: homepage-preview-without-tabs-lays-groups-out-as-a-grid
+    applies_to: [homepage]
+    symptom: >-
+      A temporary Homepage serving a copy of the production config ignores
+      style: row and columns entirely. Groups come out as narrow masonry
+      columns and cards stack vertically, so a layout change cannot be judged.
+    cause: >-
+      The tab bar never hydrates in the preview — the DOM has no role="tab"
+      and every group keeps the grid classes basis-1/2 lg:basis-1/3
+      xl:basis-1/4, where production has the full-width basis-full and a
+      grid-cols-N on services-list. Neither HOMEPAGE_ALLOWED_HOSTS spellings
+      with and without the port, nor treating the origin as secure in the
+      browser, brought the tabs back. The cause was not found.
+    fix: >-
+      Do not judge width from such a preview. Either cut the preview config
+      down to the one group under test, which then spans the page, or add
+      preview-only CSS reproducing what tabs do — flex-basis 100% on
+      .services-group and grid-template-columns on .services-list — and keep
+      it out of the commit.
+    diagnosed: 2026-09-07, sizing the host metric cards
