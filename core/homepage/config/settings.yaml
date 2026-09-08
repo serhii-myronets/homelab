@@ -7,9 +7,6 @@ headerStyle: clean
 statusStyle: dot
 target: _self
 layout:
-  Servers:
-    style: row
-    columns: 2
   Media:
     tab: Local
     style: row
