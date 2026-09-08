@@ -1,0 +1,35 @@
+/* Glances graphless blocks are absolute by default and overlap when combined. */
+:is(#host-core, #host-proxmox) .service-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.9rem;
+  border-top: 1px solid rgb(148 163 184 / 12%);
+}
+:is(#host-core, #host-proxmox) .service-container > .absolute.z-20 {
+  position: static;
+  min-width: 0;
+}
+:is(#host-core, #host-proxmox) .service-container > .top-3,
+:is(#host-core, #host-proxmox) .service-container > :not(.z-20),
+:is(#host-core, #host-proxmox) .service-container > :empty {
+  display: none;
+}
+:is(#host-core, #host-proxmox) .service-container::before {
+  margin-right: auto;
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+:is(#host-core, #host-proxmox) .service-container:nth-last-child(3)::before {
+  content: "CPU";
+}
+:is(#host-core, #host-proxmox) .service-container:nth-last-child(2)::before {
+  content: "RAM";
+}
+:is(#host-core, #host-proxmox) .service-container:last-child::before {
+  content: "Disk";
+}
