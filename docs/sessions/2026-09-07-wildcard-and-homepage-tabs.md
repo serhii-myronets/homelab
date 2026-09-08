@@ -79,3 +79,28 @@ up and the names resolved — core's system trust store simply does not carry
 the local CA. With `--cacert` from `ca.home/root.crt`, five hostnames returned
 200 or 302. Earlier verifications must have passed the certificate too, so
 "200 from core" in these notes means "with the local CA supplied".
+
+## A fifth attempt, this time measured
+
+The owner disliked the graph cards on sight. A screenshot showed why, and
+only part of it was taste: the `cpu` metric prints the processor model next
+to its percentage, and four columns left the card too narrow to hold both, so
+the model name and "10% Used" overlapped on both hosts. The temperature cards
+spend two lines on their warning thresholds and one corner on the reading.
+The graphs themselves are near-empty on load, since they only accumulate
+while the page is open.
+
+The widget has no option to hide the model name — `metric`, `chart`,
+`pointsLimit`, `refreshInterval` and `diskUnits` are the whole list — so the
+fix is width. Offered four shapes; the owner chose to keep all four metrics
+and widen the cards. `columns: 2` it is.
+
+Verified rather than assumed. A temporary Homepage on core, port 3001, served
+a copy of the config from `/tmp/hp-preview`, and screenshots showed the model
+name and the percentage separating cleanly at about 600 px while still
+colliding at a quarter of the width. Two earlier previews were misleading
+before that: without tabs Homepage lays groups out as a grid, so the metric
+groups came out narrow and vertical instead of full-width rows, and neither
+reproduced production. Cutting the config down to only the Core and Proxmox
+groups gave a card the width production will give it. The preview container
+and its directory were removed.
