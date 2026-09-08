@@ -7,6 +7,12 @@ headerStyle: clean
 statusStyle: dot
 target: _self
 layout:
+  Core:
+    style: row
+    columns: 4
+  Proxmox:
+    style: row
+    columns: 4
   Media:
     tab: Local
     style: row
