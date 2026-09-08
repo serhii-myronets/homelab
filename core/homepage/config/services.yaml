@@ -106,3 +106,77 @@
       icon: victoriametrics.png
       href: https://vm-agent.serhii.link
       description: Metrics collection targets
+- Core:
+  - CPU:
+      widget:
+        type: glances
+        url: http://192.168.8.100:61208
+        version: 4
+        metric: cpu
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - Memory:
+      widget:
+        type: glances
+        url: http://192.168.8.100:61208
+        version: 4
+        metric: memory
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - Data disk:
+      widget:
+        type: glances
+        url: http://192.168.8.100:61208
+        version: 4
+        metric: fs:/srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - CPU temperature:
+      widget:
+        type: glances
+        url: http://192.168.8.100:61208
+        version: 4
+        metric: sensor:Package id 0
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+- Proxmox:
+  - CPU:
+      widget:
+        type: glances
+        url: http://10.1.1.100:61208
+        version: 4
+        metric: cpu
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - Memory:
+      widget:
+        type: glances
+        url: http://10.1.1.100:61208
+        version: 4
+        metric: memory
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - System disk:
+      widget:
+        type: glances
+        url: http://10.1.1.100:61208
+        version: 4
+        metric: fs:/
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - CPU temperature:
+      widget:
+        type: glances
+        url: http://10.1.1.100:61208
+        version: 4
+        metric: sensor:Package id 0
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30

@@ -33,3 +33,9 @@ layout:
     columns: 3
   Local utilities:
     tab: Local
+  Core:
+    style: row
+    columns: 4
+  Proxmox:
+    style: row
+    columns: 4
