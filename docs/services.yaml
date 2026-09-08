@@ -137,7 +137,7 @@ kubernetes:
 
   additional_local_routes:
     hosts: [argocd.home, minio.home, vm-agent.home, vm-server.home]
-    status: pending-caddy-deployment
+    status: verified
     verification: Each hostname returns HTTP 200 from core through the Gateway VIP.
     authentication: Local routes bypass Cloudflare Access and rely on backend authentication.
 
@@ -146,7 +146,7 @@ homepage_publication:
   hostname: serhii.link
   tunnel_origin: http://homepage:3000
   allowed_hosts: [homepage.home, serhii.link]
-  tabs: [Локальні, Публічні]
+  tabs: [Local, Public]
   verification: >-
     A temporary Homepage container accepted both Host headers and returned
     13 local and 10 public service cards. Core public routes were read from
@@ -156,7 +156,7 @@ homepage_publication:
 kubernetes_wildcard:
   hostname: "*.home"
   upstream: http://10.1.1.80:80
-  status: validated-before-deployment
+  status: verified
   tls: On-demand individual certificates from the internal CA; exact core sites force their own certificates.
   verification: >-
     A temporary Caddy on core served grafana.home and argocd.home with HTTP
