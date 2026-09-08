@@ -1,102 +1,108 @@
+---
 - Media:
-    - Jellyfin:
-        icon: jellyfin.png
-        href: https://jellyfin.home
-        description: Movies and shows
-        siteMonitor: http://jellyfin:8096/health
-    - Flood:
-        icon: flood.png
-        href: https://torrent.home
-        description: Downloads
-        siteMonitor: http://vpn:3000
-    - qBittorrent:
-        icon: qbittorrent.png
-        href: https://qbittorrent.home
-        description: Torrent management
-        siteMonitor: http://vpn:8080
+  - Jellyfin:
+      icon: jellyfin.png
+      href: https://jellyfin.home
+      description: Movies and shows
+      siteMonitor: http://jellyfin:8096/health
+  - Flood:
+      icon: flood.png
+      href: https://torrent.home
+      description: Downloads
+      siteMonitor: http://vpn:3000
+  - qBittorrent:
+      icon: qbittorrent.png
+      href: https://qbittorrent.home
+      description: Torrent management
+      siteMonitor: http://vpn:8080
 - Infrastructure:
-    - OpenMediaVault:
-        icon: openmediavault.png
-        href: https://omv.home
-        description: Files and storage
-    - Portainer:
-        icon: portainer.png
-        href: https://portainer.home
-        description: Docker stacks
-        siteMonitor: http://portainer:9000
-    - Proxmox:
-        icon: proxmox.png
-        href: https://proxmox.home
-        description: Virtual machines and lab
-    - ProxMenux:
-        icon: proxmox.png
-        href: https://proxmenux.home
-        description: Host monitoring
-        siteMonitor: http://10.1.1.100:8008
-    - Local CA:
-        icon: mdi-certificate
-        href: https://ca.home/root.crt
-        description: Download the local root certificate
+  - OpenMediaVault:
+      icon: openmediavault.png
+      href: https://omv.home
+      description: Files and storage
+  - Portainer:
+      icon: portainer.png
+      href: https://portainer.home
+      description: Docker stacks
+      siteMonitor: http://portainer:9000
+  - Proxmox:
+      icon: proxmox.png
+      href: https://proxmox.home
+      description: Virtual machines and lab
+  - ProxMenux:
+      icon: proxmox.png
+      href: https://proxmenux.home
+      description: Host monitoring
+      siteMonitor: http://10.1.1.100:8008
 - Kubernetes:
-    - Argo CD:
-        icon: argocd.png
-        href: https://argocd.home
-        description: Cluster GitOps
-    - Grafana:
-        icon: grafana.png
-        href: https://grafana.home
-        description: Metrics, logs and traces
-    - MinIO:
-        icon: minio.png
-        href: https://minio.home
-        description: Object storage console
-    - VictoriaMetrics:
-        icon: victoriametrics.png
-        href: https://vm-server.home
-        description: Metrics storage and queries
-    - vmagent:
-        icon: victoriametrics.png
-        href: https://vm-agent.home
-        description: Metrics collection targets
-- Core — Public:
-    - Jellyfin:
-        icon: jellyfin.png
-        href: https://jellyfin.serhii.link
-        description: Movies and shows
-    - OpenMediaVault:
-        icon: openmediavault.png
-        href: https://omv.serhii.link
-        description: Files and storage
-    - qBittorrent:
-        icon: qbittorrent.png
-        href: https://torrent.serhii.link
-        description: Torrent management
-    - Portainer:
-        icon: portainer.png
-        href: https://portainer.serhii.link
-        description: Docker stacks
-    - Proxmox:
-        icon: proxmox.png
-        href: https://proxmox.serhii.link
-        description: Virtual machines and lab
+  - Argo CD:
+      icon: argo-cd.svg
+      href: https://argocd.home
+      description: Cluster GitOps
+  - Grafana:
+      icon: grafana.png
+      href: https://grafana.home
+      description: Metrics, logs and traces
+  - MinIO:
+      icon: minio.png
+      href: https://minio.home
+      description: Object storage console
+  - VictoriaMetrics:
+      icon: victoriametrics.png
+      href: https://vm-server.home
+      description: Metrics storage and queries
+  - vmagent:
+      icon: victoriametrics.png
+      href: https://vm-agent.home
+      description: Metrics collection targets
+- Media — Public:
+  - Jellyfin:
+      icon: jellyfin.png
+      href: https://jellyfin.serhii.link
+      description: Movies and shows
+  - Flood:
+      icon: flood.png
+      href: https://torrent.serhii.link
+      description: Downloads
+  - qBittorrent:
+      icon: qbittorrent.png
+      href: https://qbittorrent.serhii.link
+      description: Torrent management
+- Infrastructure — Public:
+  - OpenMediaVault:
+      icon: openmediavault.png
+      href: https://omv.serhii.link
+      description: Files and storage
+  - Portainer:
+      icon: portainer.png
+      href: https://portainer.serhii.link
+      description: Docker stacks
+  - Proxmox:
+      icon: proxmox.png
+      href: https://proxmox.serhii.link
+      description: Virtual machines and lab
+  - ProxMenux:
+      icon: proxmox.png
+      href: https://proxmenux.serhii.link
+      description: Host monitoring
 - Kubernetes — Public:
-    - Argo CD:
-        icon: argocd.png
-        href: https://argocd.serhii.link
-        description: Cluster GitOps
-    - Grafana:
-        icon: grafana.png
-        href: https://grafana.serhii.link
-        description: Metrics, logs and traces
-    - MinIO:
-        icon: minio.png
-        href: https://minio.serhii.link
-        description: Object storage console
-    - VictoriaMetrics:
-        icon: victoriametrics.png
-        href: https://vm-server.serhii.link
-        description: Metrics storage and queries
-    - vmagent:
-        icon: victoriametrics.png
-        href: https://vm-agent.serhii.link
-        description: Metrics collection targets
+  - Argo CD:
+      icon: argo-cd.svg
+      href: https://argocd.serhii.link
+      description: Cluster GitOps
+  - Grafana:
+      icon: grafana.png
+      href: https://grafana.serhii.link
+      description: Metrics, logs and traces
+  - MinIO:
+      icon: minio.png
+      href: https://minio.serhii.link
+      description: Object storage console
+  - VictoriaMetrics:
+      icon: victoriametrics.png
+      href: https://vm-server.serhii.link
+      description: Metrics storage and queries
+  - vmagent:
+      icon: victoriametrics.png
+      href: https://vm-agent.serhii.link
+      description: Metrics collection targets

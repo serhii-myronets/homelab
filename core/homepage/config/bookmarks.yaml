@@ -1,1 +1,6 @@
-[]
+---
+- Local utilities:
+  - Local CA:
+    - abbr: CA
+      href: https://ca.home/root.crt
+      description: Download the local root certificate

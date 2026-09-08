@@ -1,3 +1,4 @@
+---
 title: Homelab
 description: Home services and infrastructure
 theme: dark
@@ -18,7 +19,11 @@ layout:
     tab: Local
     style: row
     columns: 3
-  Core — Public:
+  Media — Public:
+    tab: Public
+    style: row
+    columns: 3
+  Infrastructure — Public:
     tab: Public
     style: row
     columns: 3
@@ -26,3 +31,5 @@ layout:
     tab: Public
     style: row
     columns: 3
+  Local utilities:
+    tab: Local
