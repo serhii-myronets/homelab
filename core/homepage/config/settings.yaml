@@ -35,7 +35,7 @@ layout:
     tab: Local
   Core:
     style: row
-    columns: 2
+    columns: 3
   Proxmox:
     style: row
-    columns: 2
+    columns: 3

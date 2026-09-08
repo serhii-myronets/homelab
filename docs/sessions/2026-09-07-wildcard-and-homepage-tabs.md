@@ -104,3 +104,40 @@ groups came out narrow and vertical instead of full-width rows, and neither
 reproduced production. Cutting the config down to only the Core and Proxmox
 groups gave a card the width production will give it. The preview container
 and its directory were removed.
+
+## Six metrics a host, three to a row
+
+The owner asked for six metrics per host, three to a row, and a card about a
+third shorter. The first two happened; the third did not, and deliberately.
+
+Six needed two more readings per host that actually exist. The live API
+supplied them: `network:enp1s0` on core and `network:vmbr0` on Proxmox, core's
+root filesystem beside its data disk, and `disk:nvme0n1` for Proxmox, which
+has only one filesystem worth showing. All twelve cards were seen carrying
+real values — throughput, read and write rates, free space — before anything
+was committed.
+
+Height would have cost a customisation. The chart row is a Tailwind
+`h-[68px]` on `.service-container.chart`, and there is no setting for it, so
+shortening it means CSS overriding the framework — the same kind of override
+deleted earlier the same day. The owner said height was not worth that, so
+`custom.css` stays empty.
+
+Three columns turned out to be enough anyway. At roughly 390 px the processor
+model and its percentage still separate on both hosts, so the overlap that
+started all of this does not come back.
+
+Two previews had to be discarded first. Homepage's tab bar does not hydrate
+in a temporary container — no `role="tab"` in the DOM — and without tabs it
+lays groups out as a masonry grid, ignoring `style: row` and `columns`
+completely. Production gives a group `basis-full` and a `grid-cols-N`; the
+preview gave it `xl:basis-1/4` and stacked the cards. Spellings of
+HOMEPAGE_ALLOWED_HOSTS with and without the port made no difference, nor did
+telling the browser to treat the origin as secure; the cause was not found.
+The way through was preview-only CSS reproducing what tabs do, kept out of
+the commit. It is in [traps](../traps.yaml).
+
+An ssh tunnel to reach the preview as a secure origin failed too: core's
+sshd carries `AllowTcpForwarding no`, so `ssh -L` opens a local listener that
+goes nowhere and times out without an error. That is now in
+[hosts/core](../hosts/core.yaml).

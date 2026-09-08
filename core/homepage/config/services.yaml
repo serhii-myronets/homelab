@@ -125,12 +125,30 @@
         chart: true
         refreshInterval: 5000
         pointsLimit: 30
+  - Network:
+      widget:
+        type: glances
+        url: http://192.168.8.100:61208
+        version: 4
+        metric: network:enp1s0
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
   - Data disk:
       widget:
         type: glances
         url: http://192.168.8.100:61208
         version: 4
         metric: fs:/srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - System disk:
+      widget:
+        type: glances
+        url: http://192.168.8.100:61208
+        version: 4
+        metric: fs:/
         chart: true
         refreshInterval: 5000
         pointsLimit: 30
@@ -159,6 +177,24 @@
         url: http://10.1.1.100:61208
         version: 4
         metric: memory
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - Network:
+      widget:
+        type: glances
+        url: http://10.1.1.100:61208
+        version: 4
+        metric: network:vmbr0
+        chart: true
+        refreshInterval: 5000
+        pointsLimit: 30
+  - Disk I/O:
+      widget:
+        type: glances
+        url: http://10.1.1.100:61208
+        version: 4
+        metric: disk:nvme0n1
         chart: true
         refreshInterval: 5000
         pointsLimit: 30
