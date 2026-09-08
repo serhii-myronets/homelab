@@ -22,10 +22,12 @@ journalctl -u glances-homepage -n 50
 curl http://HOST_LAN_IP:61208/api/4/cpu
 ```
 
-Homepage information widgets in core/homepage/config/widgets.yaml query both
-hosts server-side and appear in the header on both tabs. Each shows only
-CPU and RAM in the compact view. Detailed metrics remain available from
-Glances; the dashboard has no server cards, disk or temperature widgets.
+Homepage service widgets in core/homepage/config/services.yaml query both
+hosts server-side. Full Core and Proxmox graph groups sit at the end of the
+page on both Local and Public tabs. Each contains CPU, RAM, filesystem usage
+and CPU package temperature. Core shows its data filesystem; Proxmox shows
+its root filesystem, not LVM-thin VM storage. The header has no metrics.
+Graphs accumulate samples while the page is open, rather than storing history.
 Metrics are visible to viewers of Homepage, including through its public URL.
 
 Verified the Glances endpoints and Homepage proxy responses after installation.
