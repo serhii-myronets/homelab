@@ -10,7 +10,7 @@ file that answers it, so a lookup costs one read rather than a search.
 |---|---|
 | [`hosts/`](hosts/) | one file per machine |
 | [`network.yaml`](network.yaml) | subnets, DNS, TLS, what can reach what |
-| [`services.yaml`](services.yaml) | the stacks in `../core/`, their routes and options |
+| [`services.yaml`](services.yaml) | the stacks in `../core/`, their routes and options, and what `../tools/` installs |
 | [`service-ideas.md`](service-ideas.md) | services saved for later consideration |
 | [`backups.yaml`](backups.yaml) | repositories, coverage, gaps |
 | [`traps.yaml`](traps.yaml) | failures already paid for once — read before debugging |

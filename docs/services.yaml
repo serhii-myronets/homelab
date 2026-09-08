@@ -1,8 +1,8 @@
 # What runs, where it is deployed from, and every hostname that reaches it.
-# Verified 2026-09-06.
+# Verified 2026-09-07.
 
 meta:
-  updated: 2026-09-06
+  updated: 2026-09-07
   tags: [stacks, docker, portainer, caddy, routes, secrets]
 
 portainer_stack_settings:      # Stacks -> Add stack -> Repository
@@ -15,13 +15,11 @@ portainer_stack_settings:      # Stacks -> Add stack -> Repository
 stacks:
   - name: homepage
     host: core
-    status: pending-deployment
     deployed_by: portainer-gitops
     compose_path: core/homepage/docker-compose.yaml
     relative_path_volumes: true
     filesystem_path: /srv/ssd/docker/gitops/homepage
     role: home dashboard
-    planned_route: {host: homepage.home, target: "homepage:3000"}
     note: Config is in git; logs are ephemeral. No API credentials or Docker socket.
   - name: caddy
     host: core
@@ -69,13 +67,22 @@ routes:
     - {host: proxmenux.home, target: "10.1.1.100:8008"}
     - {host: proxmox.home, target: "https://10.1.1.100:8006", tls_skip_verify: true}
     - {host: portainer.home, target: "portainer:9000"}
+    - {host: homepage.home, target: "homepage:3000"}
     - {host: ca.home, target: Caddy's internal root certificate}
-  external:                         # via Cloudflare Tunnel
+  external:                         # via Cloudflare Tunnel, each behind
+                                    # Cloudflare Access. Read from the running
+                                    # connector's configuration update log on
+                                    # 2026-09-07; the dashboard is the source.
     - {host: jellyfin.serhii.link, target: "jellyfin:8096"}
     - {host: omv.serhii.link, target: "host.docker.internal:81"}
-    - {host: torrent.serhii.link, target: "vpn:8080"}
+    - {host: torrent.serhii.link, target: "vpn:3000", ui: flood}
+    - {host: qbittorrent.serhii.link, target: "vpn:8080", ui: qBittorrent's own}
     - {host: portainer.serhii.link, target: "portainer:9000"}
     - {host: proxmox.serhii.link, target: "https://10.1.1.100:8006"}
+    - {host: proxmenux.serhii.link, target: "10.1.1.100:8008"}
+    - {host: homepage.serhii.link, target: "homepage:3000"}
+                                    # anything else the tunnel is asked for
+                                    # gets 404 from its catch-all rule.
 
 secrets:
   location: /srv/ssd/docker/secrets
@@ -142,15 +149,21 @@ kubernetes:
     authentication: Local routes bypass Cloudflare Access and rely on backend authentication.
 
 homepage_publication:
-  status: prepared-not-published
-  hostname: serhii.link
+  status: published
+  hostname: homepage.serhii.link
   tunnel_origin: http://homepage:3000
-  allowed_hosts: [homepage.home, serhii.link]
+  allowed_hosts: [homepage.home, serhii.link, homepage.serhii.link]
   tabs: [Local, Public]
+  verified: 2026-09-07
   verification: >-
-    A temporary Homepage container accepted both Host headers and returned
-    13 local and 10 public service cards. Core public routes were read from
-    the running cloudflared connector's configuration update log.
+    homepage.serhii.link redirects to the Cloudflare Access login, so the
+    tunnel route exists and the dashboard is behind authentication.
+    homepage.home returns HTTP 200 from core with the certificate validated
+    against the local CA.
+  apex: >-
+    serhii.link itself has no DNS record and is not a route. It stays in
+    HOMEPAGE_ALLOWED_HOSTS as an unused leftover; publishing the apex would
+    need both a tunnel hostname and a DNS record.
   note: Tabs select links, not access permissions; both sets are available to any dashboard visitor.
 
 kubernetes_wildcard:
@@ -162,3 +175,31 @@ kubernetes_wildcard:
     A temporary Caddy on core served grafana.home and argocd.home with HTTP
     200 and validated TLS. Exact jellyfin.home returned 302 and portainer.home
     returned 200 with validated TLS, confirming their routes take precedence.
+
+host_metrics:                     # what the Homepage graphs read from
+  tool: Glances 4.5.6, API version 4
+  installed_by: tools/glances/install.sh     # not a stack, and not under core/
+  unit: glances-homepage.service
+  runs_as: nobody, from a virtualenv at /opt/glances-homepage
+  endpoints:
+    - {host: core, url: "http://192.168.8.100:61208"}
+    - {host: proxmox, url: "http://10.1.1.100:61208"}
+  reachable_from: >-
+    the LAN only. Each process binds its own host address, and there is no
+    Caddy site and no tunnel hostname for port 61208.
+  processes: not collected — the unit passes --disable-process
+  metrics: CPU, memory, one filesystem and the "Package id 0" temperature, per host
+  filesystem:
+    core: /srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85   # the data disk
+    proxmox: /                     # the root LV, not the LVM-thin guest storage
+  read_by: >-
+    Homepage's service widgets, which query both endpoints from the server
+    and render a Core and a Proxmox graph group at the end of every tab. The
+    numbers are therefore visible to anyone who opens the dashboard, public
+    hostname included. Graphs accumulate samples while the page is open;
+    nothing stores history.
+  verified: 2026-09-07
+  verification: >-
+    Both units active and enabled, each listening on its own LAN address and
+    nothing else. cpu, mem, fs and sensors returned 200 on both hosts, and the
+    live API confirms both mount points above and the "Package id 0" label.

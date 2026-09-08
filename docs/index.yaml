@@ -8,10 +8,11 @@
 #   core     the one nothing else may depend on  192.168.8.100  OpenMediaVault
 #   proxmox  built and destroyed on purpose      10.1.1.100     Proxmox VE
 #   router   the boundary with the internet      192.168.8.1    GL.iNet
-# Only core is deployed from this repository, out of core/.
+# Only core is deployed from this repository, out of core/. tools/ is the one
+# exception to that: installers run by hand on a host, reconciled by nobody.
 
 meta:
-  updated: 2026-09-06
+  updated: 2026-09-07
   tags: [index, entrypoint, homelab]
 
 files:
@@ -52,6 +53,8 @@ answers:                     # question -> file, so a lookup costs one read
   what hardware do I have: docs/hosts/
   what is the IP of X: docs/hosts/ or docs/network.yaml
   what does this repository deploy: core/ — and only onto core
+  what is installed by hand: tools/ — see decisions/0011
+  where do the dashboard graphs come from: docs/services.yaml, host_metrics
   why is it built this way: docs/decisions/
   what could I install next: docs/service-ideas.md
   what did we do last time: docs/sessions/

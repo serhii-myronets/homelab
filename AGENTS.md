@@ -5,14 +5,15 @@ Three machines:
 | | | Deployed from here |
 |---|---|---|
 | **core** | the one nothing else may depend on — services, files, backups | yes, out of `core/` |
-| **proxmox** | built and destroyed on purpose — Talos, Terraform | no |
+| **proxmox** | built and destroyed on purpose — Talos, Terraform | no — only a `tools/` installer, by hand |
 | **router** | the boundary with the internet — routing, DNS, firewall, VPN | no, and never over ssh |
 
 The repository has two halves and the split is the point. `core/` is
 *executable*: compose files, the bootstrap and the backup job, deployed onto
 one machine. `docs/` is *descriptive*: what all three machines are, why, and
 what has already gone wrong. Changing one should rarely mean changing the
-other.
+other. `tools/` is the exception both halves needed: installers that run on a
+host Portainer does not deploy to, run by hand and reconciled by nobody.
 
 **Read [`docs/index.yaml`](docs/index.yaml) first.** It maps a question to the
 one file that answers it, so a lookup costs one read rather than a search.
@@ -24,10 +25,12 @@ Before debugging anything that should work, check
 | `core/<stack>/docker-compose.yaml` | one directory per stack |
 | `core/bootstrap.sh` | bare host → Portainer running; idempotent |
 | `core/backup/` | restic script, installer, systemd units |
+| `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
 
 Each half carries its own README: the root one describes the repository,
-`core/README.md` is the operational manual, `docs/README.md` indexes the facts.
+`core/README.md` is the operational manual, `docs/README.md` indexes the facts,
+and a `tools/<name>/README.md` covers only how to run that one installer.
 A procedure belongs in one of those, never in two.
 
 ## Access

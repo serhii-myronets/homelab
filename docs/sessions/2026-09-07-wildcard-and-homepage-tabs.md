@@ -1,7 +1,7 @@
 ---
 date: 2026-09-07
-title: Kubernetes wildcard and local/public Homepage tabs
-tags: [caddy, homepage, kubernetes, tls, cloudflare]
+title: Kubernetes wildcard, Homepage tabs and host metrics
+tags: [caddy, homepage, kubernetes, tls, cloudflare, glances, monitoring]
 hosts: [core, proxmox]
 ---
 
@@ -39,3 +39,43 @@ also returned 200 and Jellyfin 302 with certificate validation after restart.
 The reported browser warning was not reproduced. Requested the device,
 browser and exact error to distinguish browser trust from another issue;
 no trust settings or TLS protections were disabled.
+
+## Host metrics, and four attempts at showing them
+
+Installed Glances natively on core and on Proxmox, as `nobody`, out of a
+virtualenv under systemd, with process collection off and the API bound to
+each host's own LAN address. A container was rejected — it measures the
+container, and Proxmox is not a Docker host. The reasoning is
+[decision 0011](../decisions/0011-host-metrics-run-natively.md), the facts are
+in [services](../services.yaml) under `host_metrics`, and the installer is
+`tools/glances/install.sh`, the first executable thing here that Portainer
+does not deploy.
+
+Displaying it took four tries. Header widgets in `widgets.yaml` worked but
+crowded the header. Moving to service cards with `chart: false` put four
+absolutely positioned blocks in the same place, and they overlapped; 35 lines
+of CSS pinned them apart and labelled them by `nth-last-child`, which worked
+and was not worth keeping. Reverting to compact header widgets lost the disk
+and temperature. What stands is one metric per service entry with
+`chart: true`, in Core and Proxmox groups at the end of the page, and
+`custom.css` is empty again. The overlap is recorded in
+[traps](../traps.yaml).
+
+## What the live hosts said that the documentation did not
+
+Checked every claim before writing it down, and several were stale. Homepage
+was still recorded as `pending-deployment` with a planned route; it is
+deployed, and `homepage.home` returns 200 against the local CA. The tunnel
+carries eight hostnames, not five — `qbittorrent`, `proxmenux` and `homepage`
+were missing, and `torrent.serhii.link` points at Flood on `vpn:3000`, not at
+qBittorrent on `vpn:8080` as recorded. The apex `serhii.link` has no DNS
+record at all, so the publication hostname is `homepage.serhii.link`; the apex
+survives in `HOMEPAGE_ALLOWED_HOSTS` as a leftover that reaches nothing. The
+decisions index had stopped at 0008 while 0009 and 0010 existed.
+
+One scare was not a fault: every `*.home` URL failed from core with exit 60,
+including `grafana.home`, which was verified working the same day. Caddy was
+up and the names resolved — core's system trust store simply does not carry
+the local CA. With `--cacert` from `ca.home/root.crt`, five hostnames returned
+200 or 302. Earlier verifications must have passed the certificate too, so
+"200 from core" in these notes means "with the local CA supplied".
