@@ -23,11 +23,11 @@ curl http://HOST_LAN_IP:61208/api/4/cpu
 ```
 
 Homepage service widgets in core/homepage/config/services.yaml query both hosts
-server-side. Shared Core and Proxmox groups appear on both tabs, each with
-four graph cards: CPU, RAM, filesystem usage and CPU package temperature.
+server-side. A shared Servers group appears on both tabs with two compact cards,
+Core and Proxmox. Each shows CPU, RAM and filesystem usage without graphs;
+its title links to the host management panel.
 Core shows its data filesystem; Proxmox shows its root filesystem, not
-LVM-thin VM storage allocation. Graphs accumulate samples while the page is
-open; they are not historical monitoring storage. Metrics are visible to
+LVM-thin VM storage allocation. Metrics are visible to
 viewers of Homepage, including through its public URL.
 
 Verified the Glances endpoints and Homepage proxy responses after installation.
