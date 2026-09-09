@@ -3,12 +3,12 @@
 #
 # Do not edit its uci config. Changes made outside GL.iNet's own UI drift from
 # what that UI believes, and the firmware may overwrite or hide them — see
-# decisions/0007. Facts below verified 2026-09-06 over ssh, read-only.
+# decisions/0007. Facts below verified 2026-09-08 over ssh, read-only.
 
 meta:
   host: router
-  updated: 2026-09-06
-  tags: [router, openwrt, glinet, firewall, vlan, dns, wireguard]
+  updated: 2026-09-08
+  tags: [router, openwrt, glinet, firewall, vlan, dns, wireguard, tailscale]
 
 identity:
   model: GL.iNet GL-MT6000 (Flint 2)
@@ -56,9 +56,10 @@ zones:
   guest: {policy: reject}
   iot: {policy: reject}
   wgserver: {input: accept, output: accept, masquerade: true, mtu_fix: true}
+  tailscale0: {input: accept, output: accept, forward: reject, masquerade: true, mtu_fix: true}
   wan: {input: drop, masquerade: true}
 
-forwardings:                       # uci index -> what may reach what
+forwardings:                       # uci identity -> what may reach what
   - {i: 0,  src: lan,         dest: wan}
   - {i: 1,  src: guest,       dest: wan}
   - {i: 2,  src: homelabzone, dest: wan}
@@ -75,11 +76,31 @@ forwardings:                       # uci index -> what may reach what
   - {i: 13, src: wgserver,    dest: lan,       name: wgserver2lan}
   - {i: 14, src: wgserver,    dest: wan,       name: wgserver2wan}
   - {i: 15, src: lan,         dest: wgserver,  name: lan2wgserver}
+  - {src: tailscale0, dest: lan, name: tailscale_lan}
+  - {src: lan, dest: tailscale0, name: lan_tailscale}
+  - {i: 18, src: tailscale0, dest: homelabzone}
 forwardings_note: >-
   GL.iNet names the rules it creates <src>2<dest>. Anonymous entries came from
   LuCI or from the wizard. wgserver2lan was added by hand through LuCI on
   2026-09-06 — GL.iNet's own UI has no toggle for it, so there is nothing for
   it to drift from. See decisions/0007.
+
+custom_configuration:
+  - >-
+    VLAN 10, interface homelab and firewall zone homelabzone are maintained
+    through LuCI because the installed GL.iNet UI does not expose arbitrary
+    wired VLAN segmentation on Flint 2.
+  - >-
+    tailscale0 -> homelabzone was added through LuCI so Tailscale clients can
+    enter the Proxmox VLAN.
+  - >-
+    Tailscale route acceptance is disabled with `tailscale set
+    --accept-routes=false`; otherwise Flint installs Proxmox's advertised
+    10.1.1.0/24 route in table 52 and loops traffic away from br-lan.10.
+
+installed_features:
+  tailscale: firmware-integrated     # enabled in GL.iNet UI; not installed as a custom package
+  adguard_home: firmware-integrated
 
 masquerade_note: >-
   The rule is `-o br-lan.10 -j MASQUERADE`, so traffic entering VLAN 10 is
@@ -102,6 +123,16 @@ wireguard_server:
     allowed_ips: [192.168.8.0/24, 10.1.1.0/24]
     persistent_keepalive: 25
     mtu: 1420
+
+tailscale:
+  address_v4: 100.117.65.76
+  advertises: [192.168.8.0/24]
+  accepts_subnet_routes: false
+  exit_node: false
+  masquerade: true
+  reaches: [lan, homelabzone]
+  homelab_route_source: proxmox     # 10.1.1.0/24; see docs/hosts/proxmox.yaml
+  split_dns: {domain: home, server: 192.168.8.1}
 
 wifi:
   - {ssid: gl.inet, band: 2.4G, network: lan, enabled: true}

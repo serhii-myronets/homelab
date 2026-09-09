@@ -1,9 +1,9 @@
 # The parts of the network that span hosts. Per-host detail lives in
-# docs/hosts/. Verified 2026-09-06.
+# docs/hosts/. Verified 2026-09-08.
 
 meta:
-  updated: 2026-09-06
-  tags: [network, subnets, dns, tls, vpn]
+  updated: 2026-09-08
+  tags: [network, subnets, dns, tls, vpn, tailscale]
 
 subnets:
   - {cidr: 192.168.8.0/24, use: LAN, vlan: 1, hosts: [core], gateway: 192.168.8.1}
@@ -15,6 +15,16 @@ dns:
   server: AdGuard Home on the router at 192.168.8.1
   wildcard: "*.home -> 192.168.8.100"
   note: New internal hostnames need no DNS work — the wildcard covers them.
+
+tailscale:
+  lan_route: {cidr: 192.168.8.0/24, advertised_by: router}
+  lab_route: {cidr: 10.1.1.0/24, advertised_by: proxmox}
+  split_dns: {domain: home, server: 192.168.8.1}
+  exit_node: none
+  routing_note: >-
+    Flint must not accept subnet routes: accepting Proxmox's 10.1.1.0/24
+    advertisement overrides the directly attached VLAN in Tailscale table 52
+    and cuts Proxmox off from the coordination server.
 
 tls:
   internal: Caddy internal CA; root certificate served at ca.home
@@ -28,6 +38,8 @@ reachability:                      # who can reach whom, as configured today
   lab_to_lan: yes                  # forwarding homelabzone -> lan
   vpn_to_lab: yes                  # forwarding wgserver -> homelabzone
   vpn_to_lan: yes                  # wgserver2lan, added 2026-09-06
+  tailscale_to_lan: yes            # router advertises 192.168.8.0/24
+  tailscale_to_lab: yes            # Proxmox advertises 10.1.1.0/24
   guest_to_anything: no            # wan only
   wan_to_lan: no                   # no port forwards; public access is the
                                    # Cloudflare tunnel, which dials outward
