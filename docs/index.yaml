@@ -12,7 +12,7 @@
 # exception to that: installers run by hand on a host, reconciled by nobody.
 
 meta:
-  updated: 2026-09-07
+  updated: 2026-09-08
   tags: [index, entrypoint, homelab]
 
 files:
@@ -23,11 +23,11 @@ files:
     holds: hypervisor at 10.1.1.100 — hardware, guests, spare capacity
     tags: [proxmox, hypervisor, lab]
   - path: docs/hosts/router.yaml
-    holds: GL.iNet GL-MT6000 — VLANs, zones, DNS, DHCP, WireGuard, risks
-    tags: [router, openwrt, glinet, firewall, vpn]
+    holds: GL.iNet GL-MT6000 — VLANs, zones, DNS, DHCP, WireGuard, Tailscale, risks
+    tags: [router, openwrt, glinet, firewall, vpn, tailscale]
   - path: docs/network.yaml
-    holds: subnets, gateways, DNS, TLS — the parts that span hosts
-    tags: [network, dns, tls]
+    holds: subnets, gateways, DNS, TLS and VPN routes — the parts that span hosts
+    tags: [network, dns, tls, vpn, tailscale]
   - path: docs/services.yaml
     holds: the Docker stacks and every hostname Caddy or Cloudflare serves
     tags: [stacks, docker, caddy, routes]
