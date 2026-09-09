@@ -59,7 +59,7 @@ zones:
   tailscale0: {input: accept, output: accept, forward: reject, masquerade: true, mtu_fix: true}
   wan: {input: drop, masquerade: true}
 
-forwardings:                       # uci identity -> what may reach what
+forwardings:                       # what may reach what; i is the UCI index when stable
   - {i: 0,  src: lan,         dest: wan}
   - {i: 1,  src: guest,       dest: wan}
   - {i: 2,  src: homelabzone, dest: wan}
@@ -118,7 +118,7 @@ wireguard_server:
   peers: 5                         # macbook, pixel and three others
   client_to_client: false
   masquerade: true
-  peer_config:                     # already correct, needs no change
+  peer_config:
     dns: 192.168.8.1
     allowed_ips: [192.168.8.0/24, 10.1.1.0/24]
     persistent_keepalive: 25
@@ -164,6 +164,16 @@ closed:                            # fixed 2026-09-06, kept for the record
       zone_wgserver_forward.
 
 gaps:
+  wireguard_subnet_overlap:
+    severity: medium
+    symptom: >-
+      A roaming client on a network covering 10.1.0.0/24 sends WireGuard
+      gateway or lab traffic to its local interface instead of the tunnel.
+    observed: >-
+      A Mac at 10.1.0.62/22 routed 10.1.0.1 and 10.1.1.0/24 through en0.
+    fix: >-
+      Renumber wgserver and every peer to a less common subnet, for example
+      10.66.66.0/24. Changing only a client address is insufficient.
   firmware_age:
     severity: medium
     symptom: >-

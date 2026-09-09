@@ -3,8 +3,8 @@
 # that "should work".
 
 meta:
-  updated: 2026-09-07
-  tags: [traps, gotchas, debugging, portainer, caddy, docker]
+  updated: 2026-09-08
+  tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard]
 
 traps:
   - id: bind-mounted-file-pins-its-inode
@@ -231,4 +231,21 @@ traps:
       the Proxmox route. Verify table 52 has peer /32 routes but no
       10.1.1.0/24 route. Flint advertises 192.168.8.0/24; Proxmox advertises
       10.1.1.0/24.
+    diagnosed: 2026-09-08
+
+  - id: wireguard-client-network-overlaps-vpn-and-lab
+    applies_to: [wireguard, router, macos]
+    symptom: >-
+      WireGuard activates, but the client cannot reach LAN or lab resources;
+      routes for the VPN gateway or lab use the physical interface.
+    cause: >-
+      The client's current network was 10.1.0.0/22, overlapping both the
+      WireGuard client network 10.1.0.0/24 and homelab 10.1.1.0/24.
+      More-specific connected routes won over tunnel routes.
+    tell: >-
+      `route -n get 10.1.0.1` or `route -n get 10.1.1.100` reports en0 rather
+      than the WireGuard utun interface.
+    fix: >-
+      Renumber the WireGuard server and every peer to a less common subnet,
+      for example 10.66.66.0/24.
     diagnosed: 2026-09-08
