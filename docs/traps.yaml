@@ -214,3 +214,21 @@ traps:
       .services-group and grid-template-columns on .services-list — and keep
       it out of the commit.
     diagnosed: 2026-09-07, sizing the host metric cards
+
+  - id: tailscale-subnet-router-loops-through-flint
+    applies_to: [tailscale, router, proxmox]
+    symptom: >-
+      Proxmox becomes offline in Tailscale immediately after its advertised
+      10.1.1.0/24 route is approved, and loses DNS and outbound connectivity.
+    cause: >-
+      Flint 2 accepts Tailscale subnet routes by default. It installed
+      10.1.1.0/24 in Tailscale table 52 even though that subnet is directly
+      attached as br-lan.10. Replies for Proxmox 10.1.1.100 then went into
+      tailscale0 instead of the VLAN, cutting off the subnet router that
+      advertised the route.
+    fix: >-
+      Set `tailscale set --accept-routes=false` on Flint 2 before approving
+      the Proxmox route. Verify table 52 has peer /32 routes but no
+      10.1.1.0/24 route. Flint advertises 192.168.8.0/24; Proxmox advertises
+      10.1.1.0/24.
+    diagnosed: 2026-09-08

@@ -4,8 +4,8 @@
 
 meta:
   host: proxmox
-  updated: 2026-09-06
-  tags: [proxmox, hypervisor, lab, talos, terraform]
+  updated: 2026-09-08
+  tags: [proxmox, hypervisor, lab, talos, terraform, tailscale]
 
 identity:
   hostname: proxmox
@@ -62,6 +62,12 @@ nics:
 
 iommu: disabled                    # no intel_iommu in cmdline; PCI passthrough
                                    # would need that plus a reboot
+
+tailscale:
+  address: 100.76.49.67
+  subnet_route: 10.1.1.0/24
+  accept_dns: false
+  installer: tools/tailscale-proxmox/install.sh
 
 guests:
   - {vmid: 100, name: talos-controlplane-01, ram_gb: 6}
