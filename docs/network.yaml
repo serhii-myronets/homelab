@@ -1,8 +1,8 @@
 # The parts of the network that span hosts. Per-host detail lives in
-# docs/hosts/. Verified 2026-09-08.
+# docs/hosts/. Verified 2026-09-10.
 
 meta:
-  updated: 2026-09-08
+  updated: 2026-09-10
   tags: [network, subnets, dns, tls, vpn, tailscale]
 
 subnets:
@@ -18,13 +18,16 @@ dns:
 
 tailscale:
   lan_route: {cidr: 192.168.8.0/24, advertised_by: router}
-  lab_route: {cidr: 10.1.1.0/24, advertised_by: proxmox}
+  lab_route: {cidr: 10.1.1.0/24, advertised_by: proxmox, approved: no}
   split_dns: {domain: home, server: 192.168.8.1}
   exit_node: none
   routing_note: >-
-    Flint must not accept subnet routes: accepting Proxmox's 10.1.1.0/24
-    advertisement overrides the directly attached VLAN in Tailscale table 52
-    and cuts Proxmox off from the coordination server.
+    Proxmox's 10.1.1.0/24 advertisement is left unapproved on purpose. Once
+    approved, Flint installs it in Tailscale table 52 over the directly
+    attached VLAN, which cuts the lab off from the LAN and Proxmox off from
+    the coordination server. Telling Flint to stop accepting it does not
+    hold: gl_tailscale re-runs `tailscale up --reset --accept-routes` at
+    every start, so approval is the only durable lever. See traps.yaml.
 
 tls:
   internal: Caddy internal CA; root certificate served at ca.home
@@ -39,7 +42,8 @@ reachability:                      # who can reach whom, as configured today
   vpn_to_lab: yes                  # forwarding wgserver -> homelabzone
   vpn_to_lan: yes                  # wgserver2lan, added 2026-09-06
   tailscale_to_lan: yes            # router advertises 192.168.8.0/24
-  tailscale_to_lab: yes            # Proxmox advertises 10.1.1.0/24
+  tailscale_to_lab: no             # advertised, deliberately unapproved;
+                                   # WireGuard is the way in from outside
   guest_to_anything: no            # wan only
   wan_to_lan: no                   # no port forwards; public access is the
                                    # Cloudflare tunnel, which dials outward
