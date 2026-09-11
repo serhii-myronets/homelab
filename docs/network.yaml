@@ -27,7 +27,8 @@ tailscale:
     attached VLAN, which cuts the lab off from the LAN and Proxmox off from
     the coordination server. Telling Flint to stop accepting it does not
     hold: gl_tailscale re-runs `tailscale up --reset --accept-routes` at
-    every start, so approval is the only durable lever. See traps.yaml.
+    every start, so approval is the only durable lever. See traps.yaml,
+    and decisions/0012 for the way out of the ceiling this imposes.
 
 tls:
   internal: Caddy internal CA; root certificate served at ca.home
