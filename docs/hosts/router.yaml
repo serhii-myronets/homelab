@@ -7,7 +7,7 @@
 
 meta:
   host: router
-  updated: 2026-09-08
+  updated: 2026-09-10
   tags: [router, openwrt, glinet, firewall, vlan, dns, wireguard, tailscale]
 
 identity:
@@ -21,7 +21,14 @@ identity:
 wan:
   device: eth1
   proto: dhcp
-  address: 50.38.32.155/21         # public, straight on the router
+  address: 50.45.167.79/21         # public, straight on the router
+  address_is_not_stable: >-
+    DHCP, and it moves. It was 50.38.32.155/21 on 2026-09-08 and a different
+    /21 entirely by 2026-09-10, so anything that pins the number breaks —
+    WireGuard peer endpoints above all.
+  ddns:
+    hostname: bf403f6.glddns.com   # allocated by GL.iNet, never published
+    enabled: no                    # gl_ddns.glddns.enabled='0'; does not resolve
   port_forwards: none              # nothing reaches the LAN from outside
 
 vlans:                             # both are VLANs on the one br-lan bridge
@@ -30,7 +37,7 @@ vlans:                             # both are VLANs on the one br-lan bridge
 
 other_networks:
   - {name: guest, subnet: 192.168.9.0/24}
-  - {name: wgserver, subnet: 10.1.0.0/24, port: 51820, peers: 5}
+  - {name: wgserver, subnet: 10.1.0.0/24, port: 51820, peers: 5, disabled: yes}
 
 dns:
   resolver: AdGuard Home on the router, port 3053
@@ -108,6 +115,10 @@ masquerade_note: >-
   than its real source. Traffic the other way is not translated.
 
 wireguard_server:
+  status: disabled                 # network.wgserver.disabled='1'; wg show is empty
+  status_note: >-
+    The zones, forwardings and peers below are all still configured — only the
+    interface is off, so nothing has to be rebuilt to bring it back.
   reaches: [lan, homelabzone, wan, wgclient1]   # everything, since 2026-09-06
   masquerade_note: >-
     The wgserver zone masquerades, so a host on the LAN sees a VPN client as
