@@ -3,7 +3,7 @@ id: "0012"
 title: The router leaves the tailnet; core and Proxmox advertise the subnets
 date: 2026-09-10
 status: proposed
-tags: [tailscale, router, glinet, vpn, subnet-routing]
+tags: [tailscale, router, glinet, vpn, subnet-routing, zerotier, dns]
 hosts: [router, core, proxmox]
 ---
 
@@ -34,7 +34,7 @@ preferences on boot. AdGuard and the `home -> 192.168.8.1` split-DNS route
 are unaffected — the router keeps serving DNS on the LAN, it simply stops
 being a tailnet node.
 
-Four alternatives were considered. Installing Tailscale on the lab guests
+Five alternatives were considered. Installing Tailscale on the lab guests
 avoids subnet routing altogether, but they are Talos: no shell and no package
 manager, so it means a system extension and an image rebuild per node.
 Having Flint advertise 10.1.1.0/24 as well as the LAN keeps one subnet router
@@ -46,6 +46,26 @@ a DHCP WAN address that has already moved once, and its client subnet
 overlaps both the VPN and the lab (see traps). Using Proxmox as a jump host
 costs nothing and works today, and is the fallback if this is not done — but
 every guest is then two hops away.
+
+The fifth was ZeroTier, which the firmware already carries at 1.14.1 and
+leaves disabled. It does not inherit this trap: `/etc/init.d/zerotier` is the
+stock OpenWrt script, its whole launch is `procd_set_param command $PROG
+$args $path` with `$args` holding at most a port, and it symlinks a
+`local_conf` of one's own — so `allowManaged` and its whitelist are reachable
+and nothing rewrites them at boot. It fails on DNS instead. Reaching `*.home`
+from outside is a requirement, not a nicety, and ZeroTier has no equivalent
+of the split-DNS route below. It would also need `zerotier.gl.local_conf`
+set, which uci does not carry and the GL.iNet UI does not offer, so
+configuring it at all would mean the `uci set` that
+[0007](0007-router-config-is-not-ours-to-edit.md) forbids.
+
+Split DNS survives this untouched, which is the obvious thing to fear and
+worth stating plainly. The `home -> 192.168.8.1` route is pushed by the
+coordination server to every node, not configured on the router: Proxmox,
+which is not the router, receives it identically. Nothing about it depends on
+who advertises a subnet. All it needs is for 192.168.8.1 to stay reachable
+from the tailnet, which is exactly what core advertising 192.168.8.0/24
+provides, so `*.home` keeps resolving from outside as it does today.
 
 The cost is that remote access moves off the machine that is always up and
 onto two that are not. The power cut on 2026-09-10 is the case in point: the
