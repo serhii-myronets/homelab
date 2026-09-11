@@ -17,3 +17,5 @@ Read the newest one before starting work.
 |---|---|---|
 | 2026-09-06 | [Restructure, backups, router review](2026-09-06-restructure-and-router.md) | alerting ([0008](../decisions/0008-nothing-tells-anyone-when-something-breaks.md)) |
 | 2026-09-07 | [Kubernetes wildcard, Homepage tabs and host metrics](2026-09-07-wildcard-and-homepage-tabs.md) | an unreproduced browser certificate warning |
+| 2026-09-08 | [Tailscale routing for LAN and the Proxmox VLAN](2026-09-08-tailscale-subnet-routing.md) | — |
+| 2026-09-10 | [A power cut and its two failures](2026-09-10-power-cut.md) | the certificate warning, unreproduced a second time |
