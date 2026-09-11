@@ -38,8 +38,15 @@ Five alternatives were considered. Installing Tailscale on the lab guests
 avoids subnet routing altogether, but they are Talos: no shell and no package
 manager, so it means a system extension and an image rebuild per node.
 Having Flint advertise 10.1.1.0/24 as well as the LAN keeps one subnet router
-and no conflict, but `--reset` discards any advertisement set outside
-GL.iNet's own UI, so it would survive until the next reboot. Re-enabling
+and no conflict, and is what the hardware is for — but the firmware cannot
+express it. `gl_tailscale` builds its advertised list from a single
+`uci get network.lan.ipaddr`: five WAN interfaces are enumerated, the LAN
+side is one lookup, and there is no option for a second route. The lab is
+`homelab` on `br-lan.10`, an interface made in LuCI because the GL.iNet UI
+does not do arbitrary wired VLANs, so the integration has no concept that
+the network exists. Setting it by hand does not survive either, since
+`--reset` runs on boot and on network events alike, which would drop the
+advertisement mid-session rather than only at reboot. Re-enabling
 WireGuard as the path to the lab was rejected by the owner, who disabled it
 on purpose so two tunnels would not fight over the same routes; it also pins
 a DHCP WAN address that has already moved once, and its client subnet
