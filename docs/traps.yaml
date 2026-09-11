@@ -3,7 +3,7 @@
 # that "should work".
 
 meta:
-  updated: 2026-09-08
+  updated: 2026-09-10
   tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard]
 
 traps:
@@ -231,6 +231,23 @@ traps:
       the Proxmox route. Verify table 52 has peer /32 routes but no
       10.1.1.0/24 route. Flint advertises 192.168.8.0/24; Proxmox advertises
       10.1.1.0/24.
+    fix_does_not_survive_reboot: >-
+      That setting is lost on every router restart. /usr/bin/gl_tailscale:331
+      runs `tailscale up --reset --accept-routes` each time the service
+      starts, so --reset discards the stored preference and --accept-routes
+      puts RouteAll back to true. Editing that script is not an option — see
+      decisions/0007. A durable fix has to remove what Flint can accept:
+      un-approve Proxmox's 10.1.1.0/24 in the Tailscale admin console, or
+      stop Proxmox advertising it and have Flint advertise the VLAN instead,
+      since br-lan.10 is directly attached to Flint anyway.
+    recurred: >-
+      2026-09-10, after a power cut restarted the router. RouteAll was true
+      again, table 52 held 10.1.1.0/24 dev tailscale0, `ip route get
+      10.1.1.100` chose tailscale0, and Tailscale showed Proxmox with
+      tx 378612 rx 0 — sending into the tailnet and hearing nothing back.
+      Proxmox itself was healthy throughout: from the router,
+      `ping -I br-lan.10 10.1.1.100` answered in 0.6 ms with no loss, while
+      an unforced ping to the same address lost every packet.
     diagnosed: 2026-09-08
 
   - id: wireguard-client-network-overlaps-vpn-and-lab
