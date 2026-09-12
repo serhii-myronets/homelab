@@ -21,14 +21,11 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0009](0009-homepage-config-in-git.md) | Keep the Homepage dashboard configuration in git | accepted | homepage, gitops, configuration |
 | [0010](0010-wildcard-routing-and-homepage-tabs.md) | Route Kubernetes through a local wildcard and separate dashboard tabs | accepted | caddy, homepage, kubernetes, tls |
 | [0011](0011-host-metrics-run-natively.md) | Host metrics run natively under systemd, from `tools/` rather than `core/` | superseded | monitoring, glances, homepage, systemd |
-| [0012](0012-the-router-leaves-the-tailnet.md) | The router leaves the tailnet; core and Proxmox advertise the subnets | **proposed** | tailscale, router, glinet, vpn, subnet-routing, zerotier, dns |
+| [0012](0012-the-router-leaves-the-tailnet.md) | The router leaves the tailnet; core and Proxmox advertise the subnets | withdrawn | tailscale, router, glinet, vpn, subnet-routing, zerotier, dns |
 | [0013](0013-pulse-replaces-glances.md) | Pulse replaces Glances as the infrastructure monitor | accepted | monitoring, pulse, docker, proxmox, homepage |
 
 Open items, shortest path first:
-[0012](0012-the-router-leaves-the-tailnet.md) is an installer already written
-for one host, generalised to two, and two clicks in someone else's UI — until
-it is done, the lab is reachable over Tailscale only as far as the Proxmox
-host itself. [0008](0008-nothing-tells-anyone-when-something-breaks.md) is a
+[0008](0008-nothing-tells-anyone-when-something-breaks.md) is a
 script and two hooks, waiting on a Telegram bot;
 [0005](0005-consolidate-to-proxmox.md) is a project, and paused. Closed on
 2026-09-06: both router problems under

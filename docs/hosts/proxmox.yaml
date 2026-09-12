@@ -68,10 +68,9 @@ iommu: disabled                    # no intel_iommu in cmdline; PCI passthrough
                                    # would need that plus a reboot
 
 tailscale:
-  address: 100.76.49.67
-  subnet_route: 10.1.1.0/24
-  accept_dns: false
-  installer: tools/tailscale-proxmox/install.sh
+  installed: false
+  removed: 2026-09-12
+  verification: Package, local state and tailscale0 removed; LAN SSH remains available.
 
 monitoring:
   pulse_agent: enabled

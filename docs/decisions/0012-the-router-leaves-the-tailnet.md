@@ -2,10 +2,14 @@
 id: "0012"
 title: The router leaves the tailnet; core and Proxmox advertise the subnets
 date: 2026-09-10
-status: proposed
+status: withdrawn
 tags: [tailscale, router, glinet, vpn, subnet-routing, zerotier, dns]
 hosts: [router, core, proxmox]
 ---
+
+Withdrawn on 2026-09-12: the owner chose to remove Tailscale from Proxmox
+after the router coexistence problems, rather than implement this topology.
+The following is the original, unimplemented proposal.
 
 A Tailscale subnet router must not accept a route for a subnet it is already
 attached to: the route lands in table 52 and wins over the physical

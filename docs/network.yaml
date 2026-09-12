@@ -18,17 +18,13 @@ dns:
 
 tailscale:
   lan_route: {cidr: 192.168.8.0/24, advertised_by: router}
-  lab_route: {cidr: 10.1.1.0/24, advertised_by: proxmox, approved: no}
+  lab_route: {cidr: 10.1.1.0/24, advertised_by: null}
   split_dns: {domain: home, server: 192.168.8.1}
   exit_node: none
   routing_note: >-
-    Proxmox's 10.1.1.0/24 advertisement is left unapproved on purpose. Once
-    approved, Flint installs it in Tailscale table 52 over the directly
-    attached VLAN, which cuts the lab off from the LAN and Proxmox off from
-    the coordination server. Telling Flint to stop accepting it does not
-    hold: gl_tailscale re-runs `tailscale up --reset --accept-routes` at
-    every start, so approval is the only durable lever. See traps.yaml,
-    and decisions/0012 for the way out of the ceiling this imposes.
+    The Proxmox advertiser was removed; see hosts/proxmox.yaml.
+    The conflicting-route failure remains documented in traps.yaml.
+    The alternative topology proposed in decisions/0012 was withdrawn.
 
 tls:
   internal: Caddy internal CA; root certificate served at ca.home
@@ -47,7 +43,7 @@ reachability:                      # who can reach whom, as configured today
     works: the WireGuard interface is disabled, so nothing arrives on it.
     See hosts/router.yaml.
   tailscale_to_lan: yes            # router advertises 192.168.8.0/24
-  tailscale_to_lab: no             # advertised, deliberately unapproved
+  tailscale_to_lab: no             # no lab subnet advertiser
   guest_to_anything: no            # wan only
   wan_to_lan: no                   # no port forwards; public access is the
                                    # Cloudflare tunnel, which dials outward
