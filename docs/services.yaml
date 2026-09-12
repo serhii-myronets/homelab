@@ -28,6 +28,14 @@ stacks:
     relative_path_volumes: true
     filesystem_path: /srv/ssd/docker/gitops/caddy
     role: reverse proxy, internal TLS
+  - name: pulse
+    host: core
+    deployed_by: portainer-gitops
+    compose_path: core/pulse/docker-compose.yaml
+    relative_path_volumes: false
+    filesystem_path: /srv/ssd/docker/gitops/pulse
+    role: infrastructure monitoring
+    note: Host and Docker telemetry arrives through native Pulse agents; no Docker socket is mounted.
   - name: torrent
     host: core
     deployed_by: portainer-gitops
@@ -68,6 +76,7 @@ routes:
     - {host: proxmox.home, target: "https://10.1.1.100:8006", tls_skip_verify: true}
     - {host: portainer.home, target: "portainer:9000"}
     - {host: homepage.home, target: "homepage:3000"}
+    - {host: pulse.home, target: "pulse:7655"}
     - {host: ca.home, target: Caddy's internal root certificate}
   external:                         # via Cloudflare Tunnel, each behind
                                     # Cloudflare Access. Read from the running
@@ -176,34 +185,12 @@ kubernetes_wildcard:
     200 and validated TLS. Exact jellyfin.home returned 302 and portainer.home
     returned 200 with validated TLS, confirming their routes take precedence.
 
-host_metrics:                     # what the Homepage graphs read from
-  tool: Glances 4.5.6, API version 4
-  installed_by: tools/glances/install.sh     # not a stack, and not under core/
-  unit: glances-homepage.service
-  runs_as: nobody, from a virtualenv at /opt/glances-homepage
-  endpoints:
-    - {host: core, url: "http://192.168.8.100:61208"}
-    - {host: proxmox, url: "http://10.1.1.100:61208"}
-  reachable_from: >-
-    the LAN only. Each process binds its own host address, and there is no
-    Caddy site and no tunnel hostname for port 61208.
-  processes: not collected — the unit passes --disable-process
-  metrics:                        # six per host, three to a row on the dashboard
-    core: [cpu, memory, "network:enp1s0", "fs:<data disk>", "fs:/", "sensor:Package id 0"]
-    proxmox: [cpu, memory, "network:vmbr0", "disk:nvme0n1", "fs:/", "sensor:Package id 0"]
-  filesystem:
-    core: /srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85   # the data disk
-    proxmox: /                     # the root LV, not the LVM-thin guest storage
-  read_by: >-
-    Homepage's service widgets, which query both endpoints from the server
-    and render a Core and a Proxmox graph group at the end of every tab. The
-    numbers are therefore visible to anyone who opens the dashboard, public
-    hostname included. Graphs accumulate samples while the page is open;
-    nothing stores history.
-  verified: 2026-09-07
-  verification: >-
-    Both units active and enabled, each listening on its own LAN address and
-    nothing else. cpu, mem, fs and sensors returned 200 on both hosts, and the
-    live API confirms both mount points above and the "Package id 0" label.
-    All twelve cards were seen rendering real values on a temporary Homepage
-    before the layout was committed.
+infrastructure_monitoring:
+  tool: Pulse 6.4.1 Community
+  server: {host: core, stack: pulse, url: "https://pulse.home"}
+  agents:
+    installer: tools/pulse-agent/install.sh
+    unit: pulse-agent.service
+    hosts: [core, proxmox]
+  exposure: LAN and Tailscale through the internal-only pulse.home route; no Cloudflare tunnel route.
+  homepage: A single Pulse card replaces the twelve live Glances metric cards.

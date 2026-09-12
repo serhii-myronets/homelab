@@ -57,6 +57,13 @@ portainer.home {
     reverse_proxy portainer:9000
 }
 
+pulse.home {
+    tls force_automate {
+        issuer internal
+    }
+    reverse_proxy pulse:7655
+}
+
 ca.home {
     tls force_automate {
         issuer internal

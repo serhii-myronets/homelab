@@ -20,8 +20,9 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0008](0008-nothing-tells-anyone-when-something-breaks.md) | Nothing tells anyone when something breaks | **open** | monitoring, alerting, risk |
 | [0009](0009-homepage-config-in-git.md) | Keep the Homepage dashboard configuration in git | accepted | homepage, gitops, configuration |
 | [0010](0010-wildcard-routing-and-homepage-tabs.md) | Route Kubernetes through a local wildcard and separate dashboard tabs | accepted | caddy, homepage, kubernetes, tls |
-| [0011](0011-host-metrics-run-natively.md) | Host metrics run natively under systemd, from `tools/` rather than `core/` | accepted | monitoring, glances, homepage, systemd |
+| [0011](0011-host-metrics-run-natively.md) | Host metrics run natively under systemd, from `tools/` rather than `core/` | superseded | monitoring, glances, homepage, systemd |
 | [0012](0012-the-router-leaves-the-tailnet.md) | The router leaves the tailnet; core and Proxmox advertise the subnets | **proposed** | tailscale, router, glinet, vpn, subnet-routing, zerotier, dns |
+| [0013](0013-pulse-replaces-glances.md) | Pulse replaces Glances as the infrastructure monitor | accepted | monitoring, pulse, docker, proxmox, homepage |
 
 Open items, shortest path first:
 [0012](0012-the-router-leaves-the-tailnet.md) is an installer already written

@@ -2,9 +2,10 @@
 id: 0011
 title: Host metrics run natively under systemd, from tools/ rather than core/
 date: 2026-09-07
-status: accepted
+status: superseded
 tags: [monitoring, glances, homepage, systemd]
 hosts: [core, proxmox]
+superseded_by: 0013
 ---
 
 Homepage needed CPU, memory, disk and temperature for the two machines that
