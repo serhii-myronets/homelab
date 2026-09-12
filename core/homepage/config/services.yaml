@@ -35,7 +35,7 @@
       href: https://proxmox.home
       description: Virtual machines and lab
   - ProxMenux:
-      icon: proxmenux.png
+      icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/proxmenux.png
       href: https://proxmenux.home
       description: Host monitoring
 - Kubernetes:
@@ -90,7 +90,7 @@
       href: https://proxmox.serhii.link
       description: Virtual machines and lab
   - ProxMenux:
-      icon: proxmenux.png
+      icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/proxmenux.png
       href: https://proxmenux.serhii.link
       description: Host monitoring
 - Kubernetes — Public:

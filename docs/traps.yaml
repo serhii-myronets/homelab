@@ -7,6 +7,13 @@ meta:
   tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard]
 
 traps:
+  - id: proxmenux-icon-is-in-selfhst
+    applies_to: [homepage]
+    symptom: ProxMenux cards show a broken logo.
+    cause: The dashboard-icons PNG URL for proxmenux.png returns HTTP 404.
+    fix: Use the full selfhst/icons PNG URL, as configured in the Homepage service cards.
+    diagnosed: 2026-09-12
+
   - id: bind-mounted-file-pins-its-inode
     applies_to: [caddy, torrent]
     symptom: >-
