@@ -1,8 +1,8 @@
 # What runs, where it is deployed from, and every hostname that reaches it.
-# Verified 2026-09-07.
+# Verified 2026-09-12.
 
 meta:
-  updated: 2026-09-07
+  updated: 2026-09-12
   tags: [stacks, docker, portainer, caddy, routes, secrets]
 
 portainer_stack_settings:      # Stacks -> Add stack -> Repository
@@ -30,12 +30,14 @@ stacks:
     role: reverse proxy, internal TLS
   - name: pulse
     host: core
-    deployed_by: portainer-gitops
+    deployed_by: docker-compose-manual
     compose_path: core/pulse/docker-compose.yaml
     relative_path_volumes: false
-    filesystem_path: /srv/ssd/docker/gitops/pulse
+    filesystem_path: /srv/ssd/docker/homelab/core/pulse
     role: infrastructure monitoring
-    note: Host and Docker telemetry arrives through native Pulse agents; no Docker socket is mounted.
+    note: >-
+      Started from the host checkout with project name pulse. Host and Docker
+      telemetry arrives through native Pulse agents; no Docker socket is mounted.
   - name: torrent
     host: core
     deployed_by: portainer-gitops
@@ -99,6 +101,8 @@ secrets:
   files:
     - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY, used_by: portainer}
     - {path: cloudflared/auth.env, holds: Cloudflare tunnel token, used_by: cloudflared}
+    - {path: pulse/credentials, holds: Pulse admin password and API token, used_by: pulse administration}
+    - {path: pulse/proxmox-api.json, holds: Proxmox PVE API token secret, used_by: pulse}
     - {path: nordvpn/user, holds: OpenVPN username, used_by: vpn}
     - {path: nordvpn/pass, holds: OpenVPN password, used_by: vpn}
   unused:                           # present on disk, referenced by nothing
@@ -192,5 +196,10 @@ infrastructure_monitoring:
     installer: tools/pulse-agent/install.sh
     unit: pulse-agent.service
     hosts: [core, proxmox]
+  proxmox_api:
+    endpoint: "https://10.1.1.100:8006"
+    principal: "pulse@pve!monitor"
+    role: PVEAuditor
+    resources_verified: 8
   exposure: LAN and Tailscale through the internal-only pulse.home route; no Cloudflare tunnel route.
   homepage: A single Pulse card replaces the twelve live Glances metric cards.

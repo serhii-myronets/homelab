@@ -12,10 +12,11 @@ card in Homepage. This replaces the twelve Glances cards and their two
 unauthenticated APIs with one authenticated interface that stores history and
 understands Docker and Proxmox workloads.
 
-The server is a Portainer Git stack because it is an ordinary persistent core
-service. Agents remain under `tools/` because they measure the host and are
-installed by hand. Proxmox can additionally be connected with a read-only API
-token for its VM/LXC inventory.
+The server is an ordinary persistent Docker Compose service on core. It is
+currently started from the host checkout rather than reconciled by Portainer.
+Agents remain under `tools/` because they measure the host and are installed
+by hand. Proxmox is additionally connected using a privilege-separated
+`PVEAuditor` API token for its VM/LXC inventory.
 
 Pulse is deliberately internal-only. Router monitoring, when added, uses
 agentless availability checks; no third-party agent is installed on the

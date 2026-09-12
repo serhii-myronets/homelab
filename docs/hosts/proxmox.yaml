@@ -1,10 +1,10 @@
 # The hypervisor. Clusters get built and destroyed here, so nothing
 # that needs to stay up lives on it.
-# Hardware verified 2026-09-06; OS and Tailscale verified 2026-09-08.
+# Hardware verified 2026-09-06; monitoring verified 2026-09-12.
 
 meta:
   host: proxmox
-  updated: 2026-09-08
+  updated: 2026-09-12
   tags: [proxmox, hypervisor, lab, talos, terraform, tailscale]
 
 identity:
@@ -18,9 +18,13 @@ identity:
     which is the quickest way to hardware and guest facts.
 
 os:
-  distribution: Proxmox VE 9.2.11
+  distribution: Proxmox VE 9.2.18
   cluster: standalone              # not a Proxmox cluster
-  users: [root@pam]                # no API tokens issued
+  users: [root@pam, pulse@pve]
+  monitoring_token:
+    id: "pulse@pve!monitor"
+    role: PVEAuditor
+    privilege_separation: true
 
 hardware:
   cpu: {model: Intel Core i9-12900HK, cores: 14, threads: 20, ghz_max: 5.0}
@@ -68,6 +72,11 @@ tailscale:
   subnet_route: 10.1.1.0/24
   accept_dns: false
   installer: tools/tailscale-proxmox/install.sh
+
+monitoring:
+  pulse_agent: enabled
+  installer: tools/pulse-agent/install.sh
+  proxmox_inventory: read by the Pulse server through the PVEAuditor API token
 
 guests:
   - {vmid: 100, name: talos-controlplane-01, ram_gb: 6}

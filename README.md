@@ -4,7 +4,8 @@ Three machines at home, in two halves and a toolbox.
 
 **[`core/`](core/)** is executable — the Docker stacks, the bootstrap and the
 backup job for the OpenMediaVault box at `192.168.8.100`. Portainer deploys
-every stack in it straight from this repository. Start at
+the regular stacks from this repository; exceptional deployment details are
+recorded in `docs/services.yaml`. Start at
 [`core/README.md`](core/README.md) to build the machine from nothing or to
 restore it.
 
@@ -15,9 +16,9 @@ it is deployed anywhere. Start at [`docs/index.yaml`](docs/index.yaml), which
 maps a question to the one file that answers it.
 
 **[`tools/`](tools/)** is executable too, but nothing deploys it. Each
-directory installs something on a host by hand — Glances on core and on the
-Proxmox box, for the dashboard's graphs — because it lands on a machine
-Portainer does not reach. A rebuilt host needs its installer run again.
+directory installs something on a host by hand — currently the Pulse agents
+on core and Proxmox, plus Tailscale on Proxmox — because it lands outside a
+Portainer-managed container. A rebuilt host needs its installer run again.
 
 Changing one half should rarely mean changing the other.
 

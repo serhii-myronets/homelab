@@ -1,11 +1,11 @@
 # core — the OpenMediaVault box. Everything that has to stay up runs here,
 # which is what the name means: not a role as a file server, but the one
 # machine nothing else is allowed to depend on.
-# Verified 2026-09-06 against the live machine; ssh forwarding 2026-09-07.
+# Verified 2026-09-06 against the live machine; monitoring 2026-09-12.
 
 meta:
   host: core
-  updated: 2026-09-07
+  updated: 2026-09-12
   tags: [core, nas, omv, debian, docker, storage]
 
 identity:
@@ -62,6 +62,7 @@ redundancy: none                    # neither disk is mirrored
 
 monitoring:
   smartd: enabled                   # polls both disks every 1800s
+  pulse_agent: enabled              # host and Docker telemetry; tools/pulse-agent/install.sh
   alerting: none                    # no -m recipient, OMV SMTP unset
   gap: >-
     SMART will notice a failing disk and tell nobody. Needs either an -m
