@@ -34,6 +34,10 @@
       icon: proxmox.png
       href: https://proxmox.home
       description: Virtual machines and lab
+  - ProxMenux:
+      icon: proxmenux.png
+      href: https://proxmenux.home
+      description: Host monitoring
 - Kubernetes:
   - Argo CD:
       icon: argo-cd.svg
@@ -77,12 +81,16 @@
       icon: portainer.png
       href: https://portainer.serhii.link
       description: Docker stacks
+  - Pulse:
+      icon: mdi-pulse
+      href: https://pulse.serhii.link
+      description: Infrastructure monitoring
   - Proxmox:
       icon: proxmox.png
       href: https://proxmox.serhii.link
       description: Virtual machines and lab
   - ProxMenux:
-      icon: proxmox.png
+      icon: proxmenux.png
       href: https://proxmenux.serhii.link
       description: Host monitoring
 - Kubernetes — Public:
