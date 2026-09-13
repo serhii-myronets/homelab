@@ -93,6 +93,10 @@
       icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/proxmenux.png
       href: https://proxmenux.serhii.link
       description: Host monitoring
+  - GoodCloud:
+      icon: mdi-cloud
+      href: https://www.goodcloud.xyz
+      description: Remote router management
 - Kubernetes — Public:
   - Argo CD:
       icon: argo-cd.svg
