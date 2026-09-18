@@ -28,22 +28,12 @@ The Talos and Kubernetes client configurations live in their standard paths:
 Use `talosctl` and `kubectl` normally. The cluster name is `beelink`, so its
 Talos context is `beelink` and its Kubernetes context is `admin@beelink`.
 
-To add the client configurations from Terraform state without replacing other
-contexts, run:
+To replace the standard client configurations with the current cluster values,
+run:
 
 ```bash
-talos_file=$(mktemp)
-terraform output -raw talosconfig > "$talos_file"
-talosctl --talosconfig ~/.talos/config config merge "$talos_file"
-rm "$talos_file"
-talosctl --talosconfig ~/.talos/config config context beelink
-
-kube_file=$(mktemp)
-terraform output -raw kubeconfig > "$kube_file"
-KUBECONFIG=~/.kube/config:"$kube_file" kubectl config view --raw --flatten > "${kube_file}.merged"
-mv "${kube_file}.merged" ~/.kube/config
-rm "$kube_file"
-kubectl config use-context admin@beelink
+terraform output -raw talosconfig > ~/.talos/config
+terraform output -raw kubeconfig > ~/.kube/config
 chmod 600 ~/.talos/config ~/.kube/config
 ```
 
