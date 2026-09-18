@@ -9,9 +9,9 @@ terraform plan
 terraform apply
 ```
 
-`main.tf` pins the Talos, Kubernetes and provider versions. The YAML files hold
-the installation, scheduling and network patches. The provider lock file is
-committed.
+`main.tf` pins the Talos, Kubernetes and provider versions. `patches/` holds
+the installation, scheduling and network configuration. The provider lock
+file is committed.
 
 `terraform.tfstate`, its backups and `secrets.yaml` are plaintext local files
 ignored by Git. Back them up securely outside the repository. The state is the
