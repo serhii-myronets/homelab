@@ -1,0 +1,11 @@
+machine:
+  install:
+    diskSelector:
+      serial: MQ49W66504526
+---
+apiVersion: v1alpha1
+kind: KubeNodeConfig
+taints:
+  node-role.kubernetes.io/control-plane: null
+labels:
+  node.kubernetes.io/exclude-from-external-load-balancers: null

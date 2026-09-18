@@ -1,3 +1,5 @@
 .idea
 */.terraform
 **.lock.hcl
+
+/core-talos/bootstrap/private/
