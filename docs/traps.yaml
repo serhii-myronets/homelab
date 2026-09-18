@@ -7,6 +7,13 @@ meta:
   tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard]
 
 traps:
+  - id: talos-provider-partial-on-destroy
+    applies_to: [terraform, talos]
+    symptom: Provider 0.11.0 plan fails with a null conversion error for on_destroy.graceful.
+    cause: A partial on_destroy object leaves boolean fields null in the provider.
+    fix: Set reset, graceful and reboot explicitly.
+    diagnosed: 2026-09-17
+
   - id: proxmenux-icon-is-in-selfhst
     applies_to: [homepage]
     symptom: ProxMenux cards show a broken logo.

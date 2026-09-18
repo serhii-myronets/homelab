@@ -17,3 +17,13 @@ generation and strict metal validation then succeeded.
 The owner is recabling for a bridge between the two physical LAN ports.
 Bridge configuration and address verification remain pending. No install,
 bootstrap or reboot was performed. See the bootstrap README for procedure.
+
+
+The owner subsequently chose Terraform. Imported the same secrets bundle into
+an ignored local state, replaced the generator with a plan/validation helper,
+and prepared the bridge patch after read-only network verification.
+The RC provider's native install/hostname document handling failed CLI
+validation. Stable provider 0.11.0 with the v1.13 contract produced a config
+accepted by the v1.14.1 CLI. All on_destroy booleans must be explicit in this
+provider to avoid a null-value conversion error. The final plan has only the
+three initial cluster operations, with no secrets changes. No apply ran.
