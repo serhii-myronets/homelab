@@ -3,10 +3,17 @@
 # that "should work".
 
 meta:
-  updated: 2026-09-10
-  tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard]
+  updated: 2026-09-18
+  tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard, helmfile, kubernetes]
 
 traps:
+  - id: helmfile-build-runs-prepare-hooks
+    applies_to: [helmfile, kubernetes]
+    symptom: A command intended to inspect the rendered Helmfile changes the cluster.
+    cause: Helmfile executes `prepare` hooks for `build`, before rendering releases.
+    fix: Use `helm template` for each chart when read-only rendering is needed. Run Helmfile commands only when applying the hook is intentional.
+    diagnosed: 2026-09-18, while validating the Beelink platform
+
   - id: talos-provider-partial-on-destroy
     applies_to: [terraform, talos]
     symptom: Provider 0.11.0 plan fails with a null conversion error for on_destroy.graceful.

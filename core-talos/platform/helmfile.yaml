@@ -1,0 +1,37 @@
+repositories:
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+  - name: cilium
+    url: https://helm.cilium.io
+  - name: external-secrets
+    url: https://charts.external-secrets.io
+
+hooks:
+  - events: [ "prepare" ]
+    showlogs: true
+    command: "kubectl"
+    args: [ "apply", "-k", "./prepare-hook/", "--server-side" ]
+
+releases:
+  - name: cilium
+    namespace: kube-system
+    chart: cilium/cilium
+    version: 1.19.0
+    values:
+      - values/cilium-values.yaml
+
+  - name: external-secrets
+    namespace: external-secrets
+    chart: external-secrets/external-secrets
+    version: 2.10.0
+    needs:
+      - kube-system/cilium
+
+  - name: argocd
+    namespace: argocd
+    chart: argo/argo-cd
+    version: 9.4.2
+    needs:
+      - kube-system/cilium
+    values:
+      - values/argocd-values.yaml

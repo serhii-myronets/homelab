@@ -20,3 +20,14 @@ The owner chose Cilium with kube-proxy replacement for the next clean
 bootstrap. Added the Talos 1.14 CNI patch, which deletes Flannel and disables
 kube-proxy. Helm installation was explicitly deferred; no Cilium workload or
 Talos configuration was applied during this preparation.
+
+The owner later chose a small initial platform for the Beelink: Cilium,
+External Secrets backed by Infisical, and Argo CD. Argo remains anonymously
+accessible with administrator permissions on the LAN. Gateway API CRDs stay
+because Cilium Gateway API is enabled; unused monitoring, Kafka, certificate
+and VictoriaMetrics operators were removed from the initial bootstrap.
+
+While validating the Helmfile, `helmfile build` ran its `prepare` hook. It
+created the `external-secrets` namespace, applied Gateway API CRDs and applied
+the local Infisical credential to the live Beelink cluster. It did not install
+any Helm release. The behaviour is recorded in `docs/traps.yaml`.

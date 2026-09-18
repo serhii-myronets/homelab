@@ -1,0 +1,25 @@
+configs:
+  cm:
+    kustomize.buildOptions: "--enable-helm"
+    users.anonymous.enabled: "true"
+  rbac:
+    policy.default: role:admin
+server:
+  extraArgs:
+    - --insecure
+
+# Disable Dex if you don't need external Auth (OIDC/SAML)
+dex:
+  enabled: false
+
+# Disable Notifications controller to save RAM
+notifications:
+  enabled: false
+
+# ApplicationSet controller - can be disabled if not using generator patterns
+applicationSet:
+  replicas: 0
+
+controller:
+  metrics:
+    enabled: true
