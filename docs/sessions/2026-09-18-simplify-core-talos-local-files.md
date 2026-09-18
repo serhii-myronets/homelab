@@ -31,3 +31,8 @@ While validating the Helmfile, `helmfile build` ran its `prepare` hook. It
 created the `external-secrets` namespace, applied Gateway API CRDs and applied
 the local Infisical credential to the live Beelink cluster. It did not install
 any Helm release. The behaviour is recorded in `docs/traps.yaml`.
+
+Before the first Helm installation, Cilium was pinned to 1.20.2 and Argo CD to
+chart 10.9.2. External Secrets remains at 2.10.0; its admission webhook and
+certificate controller are disabled because CRD conversion is disabled. Its
+single controller is limited to 100m CPU and 128Mi memory.
