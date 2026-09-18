@@ -9,7 +9,7 @@ terraform {
 }
 
 locals {
-  cluster_name       = "me-pro"
+  cluster_name       = "beelink"
   node_ip            = "192.168.8.10"
   talos_version      = "v1.14.1"
   kubernetes_version = "1.37.0"
