@@ -31,8 +31,8 @@ data "talos_machine_configuration" "controlplane" {
   talos_version      = "v1.13"
   kubernetes_version = local.kubernetes_version
   config_patches = [
-    file("${path.module}/controlplane.patch.yaml"),
-    file("${path.module}/network.patch.yaml"),
+    file("${path.module}/patches/controlplane.yaml"),
+    file("${path.module}/patches/network.yaml"),
     yamlencode({ machine = { install = {
       disk  = ""
       image = "factory.talos.dev/metal-installer/${local.schematic}:${local.talos_version}"
