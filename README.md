@@ -1,6 +1,6 @@
 # homelab
 
-Three machines at home, in two halves and a toolbox.
+Home infrastructure, with a gradual migration to Talos.
 
 **[`core/`](core/)** is executable — the Docker stacks, the bootstrap and the
 backup job for the OpenMediaVault box at `192.168.8.100`. Portainer deploys
@@ -8,6 +8,10 @@ the regular stacks from this repository; exceptional deployment details are
 recorded in `docs/services.yaml`. Start at
 [`core/README.md`](core/README.md) to build the machine from nothing or to
 restore it.
+
+**[`core-talos/`](core-talos/)** is the future replacement for core on the
+ME Pro. Its `bootstrap/` directory holds Talos setup; application directories
+will follow as services migrate.
 
 **[`docs/`](docs/)** is descriptive — what all three machines are, how they are
 wired together, and what has already gone wrong. Facts as YAML, one file per
