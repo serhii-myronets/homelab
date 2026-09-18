@@ -28,6 +28,14 @@ The Talos and Kubernetes client configurations live in their standard paths:
 Use `talosctl` and `kubectl` normally. The current contexts are `me-pro` and
 `admin@me-pro`.
 
+To restore either standard client configuration from Terraform state:
+
+```bash
+terraform output -raw talosconfig > ~/.talos/config
+terraform output -raw kubeconfig > ~/.kube/config
+chmod 600 ~/.talos/config ~/.kube/config
+```
+
 The stable Talos provider 0.11.0 uses the v1.13 configuration contract, while
 the installed OS and validation CLI are Talos 1.14.1. Provider 0.12.0-rc.0 was
 tested during setup but generated incompatible configuration documents.

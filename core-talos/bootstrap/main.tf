@@ -73,3 +73,13 @@ resource "talos_cluster_kubeconfig" "cluster" {
   node                 = local.node_ip
   client_configuration = talos_machine_secrets.cluster.client_configuration
 }
+
+output "talosconfig" {
+  value     = data.talos_client_configuration.cluster.talos_config
+  sensitive = true
+}
+
+output "kubeconfig" {
+  value     = talos_cluster_kubeconfig.cluster.kubeconfig_raw
+  sensitive = true
+}
