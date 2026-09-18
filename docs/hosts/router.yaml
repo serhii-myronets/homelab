@@ -53,6 +53,7 @@ dhcp:
                                           # static address; .100-.149 is now
                                           # free for statics
   reservations:
+    - {mac: "78:55:36:08:cd:fe", ip: 192.168.8.10, host: me-pro} # verified after owner UI reservation
     - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: core}
     - {mac: "F8:89:D2:5B:E3:1B", ip: 192.168.8.110}
     - {mac: "02:A5:88:66:E8:5E", ip: 10.1.1.10}
