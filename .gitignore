@@ -2,9 +2,9 @@
 */.terraform
 **.lock.hcl
 
-/core-talos/bootstrap/private/
 /core-talos/bootstrap/.terraform/
 /core-talos/bootstrap/*.tfstate*
 /core-talos/bootstrap/*.tfplan
 /core-talos/bootstrap/crash*.log
+/core-talos/bootstrap/secrets.yaml
 !/core-talos/bootstrap/.terraform.lock.hcl
