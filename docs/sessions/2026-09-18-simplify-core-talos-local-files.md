@@ -15,3 +15,8 @@ in their standard user paths with the `me-pro` contexts.
 Moved the local state, its backup and the original secrets bundle directly
 under `core-talos/bootstrap/`. They remain plaintext and ignored by Git. The
 explicit local backend was removed, restoring Terraform's default state path.
+
+The owner chose Cilium with kube-proxy replacement for the next clean
+bootstrap. Added the Talos 1.14 CNI patch, which deletes Flannel and disables
+kube-proxy. Helm installation was explicitly deferred; no Cilium workload or
+Talos configuration was applied during this preparation.
