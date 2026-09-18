@@ -32,6 +32,6 @@ releases:
     chart: argo/argo-cd
     version: 9.4.2
     needs:
-      - kube-system/cilium
+      - external-secrets/external-secrets
     values:
       - values/argocd-values.yaml
