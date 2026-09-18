@@ -1,8 +1,5 @@
 terraform {
   required_version = ">= 1.5.0"
-  backend "local" {
-    path = "private/terraform.tfstate"
-  }
   required_providers {
     talos = {
       source  = "siderolabs/talos"
@@ -20,7 +17,7 @@ locals {
 }
 
 resource "talos_machine_secrets" "cluster" {
-  # Imported from private/secrets.yaml; retain its original version contract.
+  # Imported from secrets.yaml; retain its original version contract.
   lifecycle {
     prevent_destroy = true
   }
@@ -75,19 +72,4 @@ resource "talos_cluster_kubeconfig" "cluster" {
   depends_on           = [talos_machine_bootstrap.cluster]
   node                 = local.node_ip
   client_configuration = talos_machine_secrets.cluster.client_configuration
-}
-
-output "talosconfig" {
-  value     = data.talos_client_configuration.cluster.talos_config
-  sensitive = true
-}
-
-output "machine_configuration" {
-  value     = data.talos_machine_configuration.controlplane.machine_configuration
-  sensitive = true
-}
-
-output "kubeconfig" {
-  value     = talos_cluster_kubeconfig.cluster.kubeconfig_raw
-  sensitive = true
 }
