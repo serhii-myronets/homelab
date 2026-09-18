@@ -1,52 +1,81 @@
-# Bootstrap
+# Bootstrap with Terraform
 
-Run from this directory. Requires `talosctl` matching the version in
-`cluster.env`. This is a preparation workflow, not an automatic installer.
+Run commands from this directory. Requires Terraform >= 1.5, Python 3 and
+Talos CLI 1.14.1. `main.tf` owns versions, API address and installer image;
+YAML patches own the installation disk, scheduling and network bridge.
 
-## Generate locally
+The stable Talos provider 0.11.0 uses the v1.13 configuration contract.
+The installer is pinned separately to Talos 1.14.1. The generated configuration
+is validated with the 1.14.1 CLI. Provider 0.12.0-rc.0 was tested but produced
+incompatible configuration documents; do not upgrade the provider casually.
+
+## Local state and secrets
+
+`private/` is ignored by Git and contains plaintext secrets, state, state
+backups, saved plans and generated credentials. Back up this directory
+securely outside this machine. The provider lock file is committed.
+
+The existing `private/secrets.yaml` has already been imported locally. On a
+fresh checkout, restore the private directory and run `terraform init`.
+If restoring only the original secrets bundle before the first deployment:
 
 ```bash
-./generate.sh
+umask 077
+mkdir -p private
+chmod 700 private
+terraform init
+terraform import talos_machine_secrets.cluster private/secrets.yaml
 ```
 
-`cluster.env` pins versions, the initial API address and the Image Factory
-schematic. `controlplane.patch.yaml` selects the installation disk by serial
-and removes the control-plane scheduling taint for the single-node cluster.
-The generator preserves the existing secrets bundle on subsequent runs.
+Do not re-import over existing state or generate new secrets for an existing
+cluster. If the cluster has already been deployed, restore its state as well;
+importing secrets alone does not record the machine or completed bootstrap.
 
-`private/` is ignored by Git and restricted to the local user. It contains
-`secrets.yaml`, `controlplane.yaml` and `talosconfig`; the later `kubeconfig`
-also belongs there. Keep a separate secure copy of the secrets bundle:
-Git cannot restore ignored files. Do not regenerate secrets for an existing cluster.
-
-## Before installation
-
-The bridge between physical LAN ports is still pending. After recabling,
-read the node address from its console, inspect its links and addresses in
-maintenance mode, and add the bridge configuration. Update `NODE_IP` and
-regenerate if necessary. Arrange a stable address before bootstrap.
-
-Review the generated configuration locally. Installation will write the
-selected NVMe disk and reboot the host. Obtain the owner's approval before
-applying; no HDD storage provisioning is included.
-
-## Install and initialize once the network configuration is ready
+## Review the plan
 
 ```bash
-source ./cluster.env
-talosctl apply-config --insecure --nodes "$NODE_IP" --file private/controlplane.yaml
+./plan.sh
 ```
 
-After the installed system starts, use its explicit client configuration
-so commands cannot use another cluster's default context:
+This writes the plan, rendered `controlplane.yaml` and `talosconfig` to
+`private/` and validates the rendered config. It does not change the node.
+The initial plan should have three creates and no changes to cluster secrets.
+
+Before applying, reserve the configured node address in the router UI for
+the bridge MAC in `network.patch.yaml`. The bridge uses DHCP and preserves
+the uplink MAC; a DHCP lease alone does not guarantee a permanent address.
+Keep Mac Wi-Fi available while the bridge is brought up. Physical wiring:
+router to enp3s0, monitor Ethernet to enp2s0, monitor Thunderbolt to Mac.
+Disconnect the old USB network connection between ME Pro and the monitor.
+
+## Install and bootstrap
+
+Obtain owner approval first: applying writes the selected NVMe and may reboot
+the node. It also changes networking and initializes the cluster. The HDDs
+have no provisioning configuration. Inspect `private/controlplane.yaml`
+locally before proceeding.
 
 ```bash
-talosctl --talosconfig private/talosconfig version
-talosctl --talosconfig private/talosconfig bootstrap
+umask 077
+terraform apply private/bootstrap.tfplan
+terraform output -raw talosconfig > private/talosconfig
+terraform output -raw kubeconfig > private/kubeconfig
 talosctl --talosconfig private/talosconfig health
-talosctl --talosconfig private/talosconfig kubeconfig private/kubeconfig
 kubectl --kubeconfig private/kubeconfig get nodes
 ```
 
-Run `bootstrap` only once for the new cluster. The generated configuration
-uses the default Flannel CNI. Application GitOps setup follows separately.
+Terraform orders configuration application, one-time bootstrap, then kubeconfig
+retrieval. Keep its state to preserve that history. The default CNI is Flannel.
+The node is allowed to run application workloads. Applications are managed
+separately from this bootstrap directory.
+
+## Later changes
+
+Edit the source, run `./plan.sh`, inspect the patch and apply the reviewed plan.
+Configuration changes can interrupt networking or require a reboot.
+`prevent_destroy` protects secrets, the machine configuration and bootstrap;
+node reset on destroy is disabled explicitly.
+
+Changing the installer image or Kubernetes version in generated configuration
+is not an upgrade procedure for a running cluster. Plan Talos and Kubernetes
+upgrades separately using their supported upgrade workflows.
