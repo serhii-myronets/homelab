@@ -36,3 +36,8 @@ Before the first Helm installation, Cilium was pinned to 1.20.2 and Argo CD to
 chart 10.9.2. External Secrets remains at 2.10.0; its admission webhook and
 certificate controller are disabled because CRD conversion is disabled. Its
 single controller is limited to 100m CPU and 128Mi memory.
+
+The generated Talos config retained its default installation path `/dev/sda`
+alongside the NVMe selector. The node was verified to run its EPHEMERAL volume
+from `/dev/nvme0n1p4`; the control-plane patch now explicitly selects
+`/dev/nvme0n1` as well, protecting the two 10 TB HDDs during a later install.
