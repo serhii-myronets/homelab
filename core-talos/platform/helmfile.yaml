@@ -16,7 +16,7 @@ releases:
   - name: cilium
     namespace: kube-system
     chart: cilium/cilium
-    version: 1.19.0
+    version: 1.20.2
     values:
       - values/cilium-values.yaml
 
@@ -26,11 +26,13 @@ releases:
     version: 2.10.0
     needs:
       - kube-system/cilium
+    values:
+      - values/external-secrets-values.yaml
 
   - name: argocd
     namespace: argocd
     chart: argo/argo-cd
-    version: 9.4.2
+    version: 10.9.2
     needs:
       - external-secrets/external-secrets
     values:
