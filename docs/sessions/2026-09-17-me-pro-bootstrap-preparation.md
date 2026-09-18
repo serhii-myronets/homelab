@@ -27,3 +27,8 @@ validation. Stable provider 0.11.0 with the v1.13 contract produced a config
 accepted by the v1.14.1 CLI. All on_destroy booleans must be explicit in this
 provider to avoid a null-value conversion error. The final plan has only the
 three initial cluster operations, with no secrets changes. No apply ran.
+
+The owner added the ME Pro reservation in the router UI and reconnected the
+uplink cable. Read-only DHCP and Talos API checks confirmed the reserved
+address (recorded in hosts/router.yaml) is now active. Updated the Terraform
+endpoint and regenerated the plan; installation remains unapplied.

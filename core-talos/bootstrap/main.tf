@@ -13,7 +13,7 @@ terraform {
 
 locals {
   cluster_name       = "me-pro"
-  node_ip            = "192.168.8.239"
+  node_ip            = "192.168.8.10"
   talos_version      = "v1.14.1"
   kubernetes_version = "1.37.0"
   schematic          = "4b3cd373a192c8469e859b7a0cfbed3ecc3577c4a2d346a37b0aeff9cd17cdb0"
