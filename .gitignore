@@ -7,4 +7,5 @@
 /core-talos/bootstrap/*.tfplan
 /core-talos/bootstrap/crash*.log
 /core-talos/bootstrap/secrets.yaml
+/core-talos/platform/prepare-hook/initial-secret.yaml
 !/core-talos/bootstrap/.terraform.lock.hcl
