@@ -1,6 +1,12 @@
-# OpenEBS would size a missing thin pool to the first claim and share it with
-# every later one, so the pool is created here once, over nearly the whole
-# volume group Talos provides. The rest stays free for the pool's metadata.
+# The Talos provider still speaks the v1.13 configuration contract, which has
+# no LVMVolumeGroupConfig, so the WD NVMe becomes a volume group here instead.
+# OpenEBS would also size a missing thin pool to the first claim and share it
+# with every later one, so the pool is created once, over nearly the whole
+# group; the rest stays free for its metadata.
+#
+# Every step is skipped when it is already done, and nothing here erases a
+# disk: on a disk that still holds partitions, pvcreate fails and the job
+# retries until the disk is wiped by hand.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -9,7 +15,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  backoffLimit: 20
+  backoffLimit: 30
   template:
     spec:
       restartPolicy: OnFailure
@@ -20,9 +26,12 @@ spec:
             - sh
             - -c
             - >-
-              vgs nvme &&
-              if lvs nvme/nvme_thinpool; then echo "thin pool exists";
-              else lvcreate --type thin-pool --extents 95%FREE --name nvme_thinpool nvme; fi
+              set -e;
+              DISK=/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b444a46596260;
+              vgs nvme || { pvs "$DISK" || pvcreate "$DISK"; vgcreate nvme "$DISK"; };
+              lvs nvme/nvme_thinpool ||
+              lvcreate --type thin-pool --extents 95%FREE --name nvme_thinpool nvme;
+              vgs nvme; lvs nvme
           env:
             # No udev inside the container.
             - {name: DM_DISABLE_UDEV, value: "1"}

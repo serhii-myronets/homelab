@@ -1,13 +1,7 @@
-# The whole WD NVMe is an LVM volume group. OpenEBS LVM LocalPV carves a thin
-# logical volume per claim, with a hard size and snapshots VolSync can restore
-# from; Talos owns only the group, never the volumes inside it.
-apiVersion: v1alpha1
-kind: LVMVolumeGroupConfig
-name: nvme
-provisioning:
-  volumeSelector:
-    match: disk.serial == "204390442013"
----
+# The WD NVMe is left to OpenEBS LVM LocalPV: the Talos provider still
+# speaks the v1.13 contract, which has no LVMVolumeGroupConfig, so the volume
+# group and its thin pool are created by a Job in 03-gitops instead. Talos
+# must not claim the disk.
 # The two HDDs report no serial through Talos, so they are selected by WWID.
 apiVersion: v1alpha1
 kind: UserVolumeConfig
