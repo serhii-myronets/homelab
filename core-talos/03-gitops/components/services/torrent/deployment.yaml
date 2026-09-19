@@ -49,12 +49,18 @@ spec:
             # longer answers on, so gluetun refreshes it; until it does, it
             # may spend a few minutes picking dead servers at startup.
             - {name: UPDATER_PERIOD, value: 24h}
+            # Each dead address otherwise costs about a minute before the
+            # next one is tried.
+            - {name: OPENVPN_FLAGS, value: "--connect-timeout 10 --hand-window 20"}
             - {name: SERVER_COUNTRIES, value: Netherlands}
             - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
             # Replies to LAN clients and kubelet probes must bypass the tunnel.
             - {name: FIREWALL_OUTBOUND_SUBNETS, value: "192.168.8.0/24,10.244.0.0/16"}
           envFrom:
             - secretRef: {name: nordvpn}
+          volumeMounts:
+            # Keeps the refreshed server list across restarts.
+            - {name: gluetun, mountPath: /gluetun}
           securityContext:
             capabilities:
               add: [NET_ADMIN]
@@ -113,6 +119,8 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /data, subPath: flood}
       volumes:
+        - name: gluetun
+          persistentVolumeClaim: {claimName: gluetun}
         - name: data
           persistentVolumeClaim: {claimName: data}
         - name: hdd-a
