@@ -45,6 +45,12 @@ The stable Talos provider 0.11.0 uses the v1.13 configuration contract, while
 the installed OS and validation CLI are Talos 1.14.1. Provider 0.12.0-rc.0 was
 tested during setup but generated incompatible configuration documents.
 
-The two HDDs are not provisioned by this bootstrap. Talos and Kubernetes
+It also provisions each 10 TB HDD, selected by WWID, as the XFS user volumes
+`hdd-a` and `hdd-b` at `/var/mnt/hdd-a` and `/var/mnt/hdd-b`, and labels the
+node `homelab/media-hdd=true` for the static PVs that use them. A reinstall
+with this configuration reuses the existing partitions; never reset the node
+with its user disks wiped. See `docs/decisions/0016`.
+
+Talos and Kubernetes
 upgrades also need their supported upgrade workflows; changing version strings
 in generated machine configuration is not an upgrade procedure.

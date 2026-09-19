@@ -13,6 +13,11 @@ one child Application for each component, which Argo then reconciles from Git.
 Hostpath class. Its backing XFS volume is provisioned and mounted by Talos;
 OpenEBS only creates PVC directories under `/var/mnt/fast/openebs`.
 
+`components/system/media-storage/` binds the HDD volumes to the `media`
+namespace as the claims `hdd-a` and `hdd-b`, through static PVs with fixed
+paths. Argo neither prunes nor deletes them: a released PV does not rebind to a
+recreated claim.
+
 The Cilium, External Secrets and Argo CD releases remain in `../02-platform/`.
 They establish GitOps; GitOps does not manage its own bootstrap layer yet.
 

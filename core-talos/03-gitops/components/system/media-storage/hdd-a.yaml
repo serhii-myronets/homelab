@@ -1,0 +1,43 @@
+# Bound to a fixed Talos mount rather than a provisioner, so a reinstalled
+# cluster finds the same data. Argo never deletes it: a released PV would not
+# rebind to a recreated claim.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 9000Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  local:
+    path: /var/mnt/hdd-a
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: homelab/media-hdd
+              operator: In
+              values:
+                - "true"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hdd-a
+  namespace: media
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: media-hdd-a
+  resources:
+    requests:
+      storage: 9000Gi
