@@ -68,7 +68,10 @@ network:
 
 platform:
   scheduling: control-plane enabled
-  cni: Cilium with kube-proxy replacement
+  cni: Cilium with kube-proxy replacement and BPF masquerading
+  load_balancer_ips:
+    - {ip: 192.168.8.15, service: gateway-system/cilium-gateway-main-gateway}
+    - {ip: 192.168.8.16, service: media/samba, port: 445}
   releases:
     - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
     - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
@@ -77,6 +80,15 @@ platform:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
     - {name: media-storage, namespace: media, status: deployed}
+    - {name: samba, namespace: media, status: deployed}
+  samba:
+    auth: guest
+    shares:
+      - {name: torrents, path: /var/mnt/hdd-a/torrents}
+      - {name: scan, path: /var/mnt/hdd-b/scan}
+      - {name: hdd-b, path: /var/mnt/hdd-b}
+    owner: "1000:1000"
+    discovery: none; connect by IP
   node_labels: {homelab/media-hdd: "true"}
   deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
 

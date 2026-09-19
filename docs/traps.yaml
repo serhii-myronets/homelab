@@ -4,7 +4,7 @@
 
 meta:
   updated: 2026-09-18
-  tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard, helmfile, kubernetes]
+  tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard, helmfile, kubernetes, samba]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -12,6 +12,40 @@ traps:
     symptom: Cilium's agent exits with "unable to determine direct routing device".
     cause: "The node's LAN IP is assigned to a Talos bridge, so Cilium cannot infer a physical direct-routing device."
     fix: "Set `nodePort.directRoutingDevice: br0` and `devices: br0` in the Cilium Helm values, then run `kubectl -n kube-system rollout restart daemonset/cilium`; the config init container only runs for a new pod."
+    diagnosed: 2026-09-18, on the Beelink
+
+  - id: cilium-iptables-masquerade-breaks-nodeport
+    applies_to: [cilium, talos, networking, kubernetes]
+    symptom: >-
+      A LoadBalancer or NodePort Service accepts TCP connections from the LAN,
+      then hangs until the client resets. The pod receives the request and
+      answers; from inside the cluster the same address works. The Cilium
+      Gateway, served by Envoy on the host, is unaffected.
+    cause: >-
+      With kube-proxy replacement and iptables masquerading, the SYN-ACK
+      leaves with the service port, but data segments are masqueraded by
+      iptables first. They leave from the node IP with the pod's port, which
+      the client does not recognise.
+    fix: >-
+      Set `bpf.masquerade: true` in the Cilium values and restart the
+      DaemonSet. `cilium-dbg status` must report `Masquerading: BPF`. A
+      capture on br0 with `talosctl pcap` shows the wrong source port.
+    diagnosed: 2026-09-18, on the Beelink
+
+  - id: samba-guest-writes-need-group-and-no-nfs-aces
+    applies_to: [samba, kubernetes, macos]
+    symptom: >-
+      A guest share with `force user` returns ACCESS_DENIED for creating files
+      in a directory owned by that user with mode 0755; after that is fixed,
+      guests still cannot write inside directories created from macOS.
+    cause: >-
+      Samba's own access check does not match the guest session to the
+      directory owner, only to its group. Separately, the fruit module lets
+      Finder reset each new directory to 0755 through NFS ACEs, after
+      `force directory mode` has applied.
+    fix: >-
+      Keep share roots group-writable (0775) with `force create mode = 0664`
+      and `force directory mode = 0775`, and set `fruit:nfs_aces = no`.
     diagnosed: 2026-09-18, on the Beelink
 
   - id: cilium-gateway-api-needs-v1-6-crds
