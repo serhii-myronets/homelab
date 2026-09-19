@@ -7,7 +7,7 @@
 
 meta:
   host: router
-  updated: 2026-09-10
+  updated: 2026-09-19
   tags: [router, openwrt, glinet, firewall, vlan, dns, wireguard, tailscale]
 
 identity:
@@ -28,8 +28,11 @@ wan:
     WireGuard peer endpoints above all.
   ddns:
     hostname: bf403f6.glddns.com   # allocated by GL.iNet, never published
-    enabled: no                    # gl_ddns.glddns.enabled='0'; does not resolve
+    enabled: yes                   # gl_ddns.glddns.enabled='1'; resolved to the
+                                   # WAN address on 2026-09-19
   port_forwards: none              # nothing reaches the LAN from outside
+  open_ports:                      # the router itself, from the internet
+    - {port: 51820, proto: udp, rule: wgserver_allow, for: WireGuard server}
 
 vlans:                             # both are VLANs on the one br-lan bridge
   - {id: 1, device: br-lan.1, subnet: 192.168.8.0/24, ports: [lan2, lan3, lan4, lan5]}
@@ -37,7 +40,15 @@ vlans:                             # both are VLANs on the one br-lan bridge
 
 other_networks:
   - {name: guest, subnet: 192.168.9.0/24}
-  - {name: wgserver, subnet: 10.1.0.0/24, port: 51820, peers: 5, disabled: yes}
+  - name: wgserver
+    subnet: 10.66.66.0/24          # router is 10.66.66.1
+    port: 51820
+    enabled: yes
+    peers_seen: 2                  # both last handshook from the LAN, not
+                                   # yet from outside (verified 2026-09-19)
+  - name: tailscale
+    running: no                    # tailscaled stopped by the owner; its
+                                   # tailscale0 zone and forwardings remain
 
 dns:
   resolver: AdGuard Home on the router, port 3053
