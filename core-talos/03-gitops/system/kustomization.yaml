@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - project.yaml
+  - external-secrets/clustersecretstore-infisical.yaml
+  - gateway-system/cilium-lb-pool.yaml
+  - gateway-system/l2-announcement-policy.yaml
+  - gateway-system/gateway.yaml
