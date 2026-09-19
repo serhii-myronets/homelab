@@ -4,3 +4,4 @@ resources:
   - project.yaml
   - external-secrets
   - gateway-system
+  - metrics-server
