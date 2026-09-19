@@ -27,7 +27,7 @@ spec:
             - -c
             - mkdir -p /apps/config /apps/flood && chown 1000:1000 /apps/flood
           volumeMounts:
-            - {name: apps, mountPath: /apps}
+            - {name: data, mountPath: /apps}
         # A native sidecar: qBittorrent and Flood start only once the tunnel
         # is healthy, so nothing leaves the pod outside the VPN.
         - name: gluetun
@@ -73,7 +73,7 @@ spec:
             requests: {cpu: 100m, memory: 256Mi}
             limits: {memory: 1Gi}
           volumeMounts:
-            - {name: apps, mountPath: /config, subPath: config}
+            - {name: data, mountPath: /config, subPath: config}
             # Read-only, as on core: the settings are owned by Git.
             - {name: config, mountPath: /config/qBittorrent/qBittorrent.conf, subPath: qBittorrent.conf, readOnly: true}
             # The same /downloads path as on core, so its torrents can move over.
@@ -101,10 +101,10 @@ spec:
             requests: {cpu: 20m, memory: 64Mi}
             limits: {memory: 256Mi}
           volumeMounts:
-            - {name: apps, mountPath: /data, subPath: flood}
+            - {name: data, mountPath: /data, subPath: flood}
       volumes:
-        - name: apps
-          persistentVolumeClaim: {claimName: apps}
+        - name: data
+          persistentVolumeClaim: {claimName: data}
         - name: hdd-a
           persistentVolumeClaim: {claimName: hdd-a}
         - name: config

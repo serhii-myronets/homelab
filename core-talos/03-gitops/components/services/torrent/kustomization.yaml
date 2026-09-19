@@ -8,8 +8,17 @@ resources:
   - deployment.yaml
   - service.yaml
   - httproute.yaml
-# The generated name carries a content hash, so a config change rolls the pod.
+# The data claim from the VolSync component: backed up hourly to R2 and, on an
+# empty cluster, restored from it.
+components:
+  - ../../system/storage/templates/volsync
 configMapGenerator:
+  # The generated name carries a content hash, so a config change rolls the pod.
   - name: torrent-config
     files:
       - config/qBittorrent.conf
+  - name: volsync
+    literals: [APP=torrent, CAPACITY=5Gi]
+    options:
+      disableNameSuffixHash: true
+      annotations: {config.kubernetes.io/local-config: "true"}

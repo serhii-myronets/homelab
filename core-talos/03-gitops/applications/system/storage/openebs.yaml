@@ -14,13 +14,13 @@ spec:
       helm:
         valueFiles:
           - $values/core-talos/03-gitops/components/system/storage/openebs/values.yaml
-    # Supplies the values file and, as manifests, only the namespace.
+    # Supplies the values file and, as manifests, the namespace, the thin pool and the classes.
     - repoURL: https://github.com/serhii-myronets/homelab.git
       targetRevision: main
       ref: values
       path: core-talos/03-gitops/components/system/storage/openebs
       directory:
-        include: namespace.yaml
+        include: "{namespace.yaml,thinpool-job.yaml,storageclass.yaml}"
   destination:
     server: https://kubernetes.default.svc
     namespace: openebs

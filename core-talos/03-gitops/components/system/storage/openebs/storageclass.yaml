@@ -1,0 +1,26 @@
+# Thin volumes: only thin snapshots can be restored into a new claim, which
+# VolSync needs. Created after the thin pool, so no claim can bind earlier.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: lvm
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+provisioner: local.csi.openebs.io
+parameters:
+  storage: lvm
+  volgroup: nvme
+  thinProvision: "yes"
+  fsType: xfs
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: lvm
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+driver: local.csi.openebs.io
+deletionPolicy: Delete

@@ -13,23 +13,7 @@ spec:
     requests:
       storage: 9000Gi
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: apps
-  annotations:
-    argocd.argoproj.io/sync-options: Prune=false,Delete=false
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: ""
-  volumeName: jellyfin-apps
-  resources:
-    requests:
-      storage: 20Gi
----
-# Transcodes and image caches: rebuilt on demand, so a generated directory
-# on the cache volume is enough.
+# Transcodes and image caches: rebuilt on demand, so never backed up.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -37,7 +21,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: fast-local
+  storageClassName: lvm
   resources:
     requests:
       storage: 50Gi

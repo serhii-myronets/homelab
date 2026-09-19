@@ -1,0 +1,35 @@
+# OpenEBS would size a missing thin pool to the first claim and share it with
+# every later one, so the pool is created here once, over nearly the whole
+# volume group Talos provides. The rest stays free for the pool's metadata.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nvme-thinpool
+  namespace: openebs
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  backoffLimit: 20
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: lvm
+          image: docker.io/openebs/lvm-driver:1.10.1
+          command:
+            - sh
+            - -c
+            - >-
+              vgs nvme &&
+              if lvs nvme/nvme_thinpool; then echo "thin pool exists";
+              else lvcreate --type thin-pool --extents 95%FREE --name nvme_thinpool nvme; fi
+          env:
+            # No udev inside the container.
+            - {name: DM_DISABLE_UDEV, value: "1"}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - {name: dev, mountPath: /dev}
+      volumes:
+        - name: dev
+          hostPath: {path: /dev}

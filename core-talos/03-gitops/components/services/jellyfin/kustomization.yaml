@@ -6,3 +6,13 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
+components:
+  - ../../system/storage/templates/volsync
+# The data claim from the VolSync component: backed up hourly to R2 and, on an
+# empty cluster, restored from it.
+configMapGenerator:
+  - name: volsync
+    literals: [APP=jellyfin, CAPACITY=10Gi]
+    options:
+      disableNameSuffixHash: true
+      annotations: {config.kubernetes.io/local-config: "true"}

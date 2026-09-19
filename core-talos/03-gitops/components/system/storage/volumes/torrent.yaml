@@ -25,24 +25,3 @@ spec:
               operator: In
               values:
                 - "true"
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: torrent-apps
-  annotations:
-    argocd.argoproj.io/sync-options: Prune=false,Delete=false
-spec:
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: ""
-  volumeMode: Filesystem
-  claimRef:
-    namespace: torrent
-    name: apps
-  hostPath:
-    path: /var/mnt/apps/torrent
-    type: DirectoryOrCreate

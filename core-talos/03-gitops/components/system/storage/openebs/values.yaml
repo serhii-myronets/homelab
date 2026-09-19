@@ -3,20 +3,24 @@ openebs-crds:
     volumeSnapshots:
       enabled: false
 
+# LVM LocalPV only; its StorageClass and VolumeSnapshotClass are declared
+# beside this file, after the thin pool exists. The snapshot CRDs come from
+# the snapshot-controller component.
+lvm-localpv:
+  crds:
+    csi:
+      volumeSnapshots:
+        enabled: false
+
 localpv-provisioner:
-  enabled: true
-  hostpathClass:
-    name: fast-local
-    isDefaultClass: false
-    basePath: /var/mnt/cache/openebs
-    reclaimPolicy: Retain
+  enabled: false
 
 engines:
   local:
     hostpath:
-      enabled: true
-    lvm:
       enabled: false
+    lvm:
+      enabled: true
     rawfile:
       enabled: false
     zfs:
