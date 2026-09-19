@@ -11,8 +11,6 @@ spec:
     repoURL: https://github.com/serhii-myronets/homelab.git
     targetRevision: main
     path: core-talos/03-gitops/components/system/project
-    directory:
-      recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
