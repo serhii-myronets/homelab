@@ -1,0 +1,111 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended"],
+  timezone: "America/Los_Angeles",
+  schedule: ["before 6am on monday"],
+  semanticCommits: "disabled",
+
+  // Commits and pull requests carry the owner's name only; see AGENTS.md.
+  gitAuthor: "Serhii Myronets <hardmail88@gmail.com>",
+  prFooter: "",
+
+  // This repository itself, which Argo follows on main.
+  ignoreDeps: ["https://github.com/serhii-myronets/homelab.git"],
+
+  kubernetes: {
+    managerFilePatterns: ["/^core-talos/03-gitops/components/.+\\.ya?ml$/"],
+  },
+  argocd: {
+    managerFilePatterns: ["/^core-talos/03-gitops/applications/.+\\.ya?ml$/"],
+  },
+
+  customManagers: [
+    {
+      // The three-part version only: the data source's two-part
+      // talos_version is the machine configuration contract, not a release.
+      customType: "regex",
+      managerFilePatterns: ["/^core-talos/01-talos/main\\.tf$/"],
+      matchStrings: ['talos_version\\s*=\\s*"(?<currentValue>v\\d+\\.\\d+\\.\\d+)"'],
+      depNameTemplate: "siderolabs/talos",
+      datasourceTemplate: "github-releases",
+    },
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^core-talos/01-talos/main\\.tf$/"],
+      matchStrings: ['kubernetes_version\\s*=\\s*"(?<currentValue>\\d+\\.\\d+\\.\\d+)"'],
+      depNameTemplate: "kubernetes/kubernetes",
+      datasourceTemplate: "github-releases",
+      extractVersionTemplate: "^v(?<version>.+)$",
+    },
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^core-talos/02-platform/prepare-hook/kustomization\\.yaml$/"],
+      matchStrings: ["gateway-api/releases/download/(?<currentValue>v[\\d.]+)/"],
+      depNameTemplate: "kubernetes-sigs/gateway-api",
+      datasourceTemplate: "github-releases",
+    },
+  ],
+
+  packageRules: [
+    {
+      // core/ is deployed by Portainer from floating tags and is being
+      // retired. A rule rather than ignorePaths, which config:recommended's
+      // own ignorePaths replaces.
+      matchFileNames: ["core/**"],
+      enabled: false,
+    },
+    {
+      // What Argo deploys by itself: one weekly pull request for everything
+      // that is not a major version.
+      matchManagers: ["kubernetes", "argocd", "kustomize"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "Beelink GitOps updates",
+    },
+    {
+      // Tags such as 5.2.3_v2.0.14-ls475: qBittorrent's version, then
+      // libtorrent's, then the linuxserver build.
+      matchPackageNames: ["ghcr.io/linuxserver/qbittorrent"],
+      versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)_v[\\d.]+-ls(?<build>\\d+)$",
+    },
+    {
+      // Tags such as 12.1.20260915-010956: the release, then the build date.
+      matchPackageNames: ["jellyfin/jellyfin"],
+      versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d{8})-(?<build>\\d{6})$",
+    },
+    {
+      // Tags such as a3.24.2-s4.23.8-r0: Alpine, then Samba, then the image
+      // revision. Samba's version decides.
+      matchPackageNames: ["ghcr.io/servercontainers/samba"],
+      versioning: "regex:^a[\\d.]+-s(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-r(?<build>\\d+)$",
+    },
+    {
+      // Helmfile releases are applied by hand: one pull request each.
+      matchManagers: ["helmfile"],
+      prBodyNotes: [
+        "Merging does not deploy this. Apply it from `core-talos/02-platform/` with Helmfile.",
+      ],
+    },
+    {
+      matchDepNames: ["kubernetes-sigs/gateway-api"],
+      prBodyNotes: [
+        "Merging does not deploy this. Check that Cilium supports this Gateway API version, then apply it with Helmfile's prepare hook.",
+      ],
+    },
+    {
+      // Upgrading Talos or Kubernetes is a procedure, not a version change:
+      // list them on the dashboard and open nothing unasked.
+      matchManagers: ["custom.regex"],
+      matchDepNames: ["siderolabs/talos", "kubernetes/kubernetes"],
+      dependencyDashboardApproval: true,
+      prBodyNotes: [
+        "Changing this version does not upgrade the node. Follow the upgrade procedure in `core-talos/01-talos/README.md`.",
+      ],
+    },
+    {
+      // Provider 0.12.0-rc.0 generated incompatible configuration; see the
+      // Talos README before accepting a new provider.
+      matchManagers: ["terraform"],
+      dependencyDashboardApproval: true,
+    },
+  ],
+}
