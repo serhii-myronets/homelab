@@ -25,8 +25,9 @@ spec:
           command:
             - sh
             - -c
+            # No `set -e`: each step tests for its own result, and the shell
+            # would exit on the first check that finds nothing yet.
             - >-
-              set -e;
               DISK=/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b444a46596260;
               vgs nvme || { pvs "$DISK" || pvcreate "$DISK"; vgcreate nvme "$DISK"; };
               lvs nvme/nvme_thinpool ||
