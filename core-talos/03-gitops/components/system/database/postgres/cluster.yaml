@@ -19,11 +19,18 @@ spec:
       isWALArchiver: true
       parameters:
         barmanObjectName: r2
-        # Each generation archives under its own name; a rebuilt cluster
-        # restores from the previous one and writes to a new one.
-        serverName: postgres-v1
-  # A first boot creates an empty cluster. Once R2 holds a backup, this
-  # becomes a recovery from postgres-v1 so that a rebuilt cluster restores
-  # itself; bootstrap runs only when the cluster is created.
+        serverName: postgres-v2
+  # Bootstrap runs only when the cluster is created, so this does nothing
+  # while it exists: a cluster rebuilt from this repository restores itself
+  # from R2 instead of starting empty. It then keeps archiving to the same
+  # series, which is safe only because the cluster it recovered from is gone.
   bootstrap:
-    initdb: {}
+    recovery:
+      source: r2
+  externalClusters:
+    - name: r2
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: r2
+          serverName: postgres-v2
