@@ -14,3 +14,6 @@ They establish GitOps; GitOps does not manage its own bootstrap layer yet.
 Apply `apps/system.yaml` once to start reconciliation of the shared resources.
 It uses Argo's built-in `default` project only to create the `system` project;
 future system applications use that dedicated project.
+
+Apply `apps/metrics-server.yaml` after `system` is Synced. It installs the
+official metrics-server Helm chart in `kube-system`.
