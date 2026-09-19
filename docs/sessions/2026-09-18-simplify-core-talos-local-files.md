@@ -160,12 +160,25 @@ both disks on every restart. The files already written as `nobody` were
 chowned once by hand. NetBIOS is on again for phone clients that browse with
 it.
 
+The owner disliked Samba living in a namespace called `media`, which existed
+only because the HDD claims did. Several static PVs may point at one path, so
+each consumer now gets its own: `hdd-volumes` defines `samba-hdd-a` and
+`samba-hdd-b`, pre-bound to claims in the new `samba` namespace, which alone is
+privileged. Samba owns its namespace, and each AppProject now lives in the
+`applications/` directory it serves, replacing the project component. The
+`torrents` directory and share were renamed `media` at the owner's request.
+Argo Applications carry no finalizer, so removed Applications orphaned their
+objects: the old `media` namespace and PVs were deleted by hand, and the
+namespace and projects were adopted without being recreated. The Samba pod
+kept running throughout the handover.
+
 ## Handoff
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo
 Applications were `Synced` and `Healthy` after commit `bd2484f`. Samba serves
-the HDD shares to guests on the LAN as `Beelink.local`; it is the only
-service. Torrent and Jellyfin are not installed, no data has been copied from
+the `media`, `scan` and `hdd-b` shares to guests on the LAN as
+`Beelink.local`; it is the only service. A new service that needs the HDDs
+gets its own PVs in `hdd-volumes`. Torrent and Jellyfin are not installed, no data has been copied from
 core, and the printer still writes to core's `scan` share.
 
 `fast-local` has no PVC yet; data on it is local to this node and needs an

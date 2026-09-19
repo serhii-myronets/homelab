@@ -78,19 +78,19 @@ platform:
   gitops_components:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
-    - {name: media-storage, namespace: media, status: deployed}
-    - {name: samba, namespace: media, status: deployed}
+    - {name: hdd-volumes, pvs: [samba-hdd-a, samba-hdd-b], status: deployed}
+    - {name: samba, namespace: samba, status: deployed}
   samba:
     auth: guest
     shares:
-      - {name: torrents, path: /var/mnt/hdd-a/torrents}
+      - {name: media, path: /var/mnt/hdd-a/media}
       - {name: scan, path: /var/mnt/hdd-b/scan}
       - {name: hdd-b, path: /var/mnt/hdd-b}
     owner: "1000:1000"         # shared with every media application
     modes: {files: "0664", directories: "0775"}
     address: 192.168.8.10 (host network), Beelink.local
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
-    pod_security: media enforces privileged for the host network
+    pod_security: the samba namespace alone enforces privileged, for the host network
   node_labels: {homelab/media-hdd: "true"}
   deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
 

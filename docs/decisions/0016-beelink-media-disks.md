@@ -18,7 +18,11 @@ existing partitions instead of formatting them. A reset that wipes user disks
 would still destroy them.
 
 Kubernetes reaches them through static `local` PersistentVolumes with fixed
-paths, one claim each in the `media` namespace. OpenEBS Hostpath was rejected
+paths. Each consuming service has its own namespace and its own PVs, pre-bound
+to its claims; several PVs point at the same disk. A shared namespace for all
+media services was tried first and dropped: its Pod Security level had to be
+relaxed for Samba's host network, which would have covered every other
+service. OpenEBS Hostpath was rejected
 for this data: it names each directory after a generated PVC UID, so a
 reinstalled cluster would provision empty directories beside the old ones, and
 separate claims would not share one library. The PVs select a Talos node label
