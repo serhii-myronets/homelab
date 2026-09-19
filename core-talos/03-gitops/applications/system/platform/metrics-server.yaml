@@ -1,29 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: external-dns
+  name: metrics-server
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
   project: system
   sources:
-    - repoURL: https://kubernetes-sigs.github.io/external-dns/
-      chart: external-dns
-      targetRevision: 1.22.0
+    - repoURL: https://kubernetes-sigs.github.io/metrics-server/
+      chart: metrics-server
+      targetRevision: 3.14.0
       helm:
         valueFiles:
-          - $values/core-talos/03-gitops/components/system/external-dns/values.yaml
-    # Supplies the values file and, as manifests, the namespace and secret.
+          - $values/core-talos/03-gitops/components/system/platform/metrics-server/values.yaml
     - repoURL: https://github.com/serhii-myronets/homelab.git
       targetRevision: main
       ref: values
-      path: core-talos/03-gitops/components/system/external-dns
-      directory:
-        include: "{namespace.yaml,externalsecret.yaml}"
   destination:
     server: https://kubernetes.default.svc
-    namespace: external-dns
+    namespace: kube-system
   syncPolicy:
     automated:
       prune: true
