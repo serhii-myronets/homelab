@@ -14,8 +14,10 @@ the installation, scheduling, network and storage configuration. The provider
 lock file is committed.
 
 `patches/storage.yaml` provisions 499 GB of the dedicated 500 GB WD NVMe by serial
-number as the XFS user volume `fast`. Talos mounts it at `/var/mnt/fast` and
-bind-mounts it into kubelet for the `fast-local` OpenEBS storage class.
+number as two XFS user volumes, bind-mounted into kubelet: `apps` (100 GB) at
+`/var/mnt/apps` for application configurations and databases, and `cache`
+(399 GB) at `/var/mnt/cache` for the `fast-local` OpenEBS storage class. The
+split keeps a growing cache from starving the applications.
 
 `terraform.tfstate`, its backups and `secrets.yaml` are plaintext local files
 ignored by Git. Back them up securely outside the repository. The state is the

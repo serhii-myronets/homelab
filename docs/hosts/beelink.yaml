@@ -35,7 +35,9 @@ disks:
     size: 500G
     transport: nvme
     wwid: eui.e8238fa6bf530001001b444a46596260
-    role: Talos-managed 499 GB XFS volume mounted at /var/mnt/fast for OpenEBS LocalPV Hostpath
+    role: >-
+      Two Talos XFS volumes: apps (100 GB, /var/mnt/apps) for static
+      configuration PVs, cache (399 GB, /var/mnt/cache) for OpenEBS fast-local
   - dev: nvme1n1
     model: 128GB SSD
     serial: MQ49W66504526
@@ -71,6 +73,7 @@ platform:
   cni: Cilium with kube-proxy replacement and BPF masquerading
   load_balancer_ips:
     - {ip: 192.168.8.15, service: gateway-system/cilium-gateway-main-gateway}
+    - {ip: 192.168.8.16, service: torrent/torrent, ports: [8080, 3000]}
   releases:
     - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
     - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
@@ -78,8 +81,20 @@ platform:
   gitops_components:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
-    - {name: hdd-volumes, pvs: [samba-hdd-a, samba-hdd-b], status: deployed}
+    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, torrent-apps], status: deployed}
     - {name: samba, namespace: samba, status: deployed}
+    - {name: torrent, namespace: torrent, status: deployed}
+  torrent:
+    address: 192.168.8.16 (LoadBalancer)
+    ports: {qbittorrent: 8080, flood: 3000}
+    containers:
+      - {name: gluetun, image: "qmcgaw/gluetun:v3.41.3", role: NordVPN OpenVPN, Netherlands; native sidecar}
+      - {name: qbittorrent, image: "ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475", interface: tun0}
+      - {name: flood, image: "jesec/flood:4.16.2"}
+    downloads: /var/mnt/hdd-a/media, mounted as /downloads like core
+    config: /var/mnt/apps/torrent
+    vpn_secret: Infisical /nordvpn (OPENVPN_USER, OPENVPN_PASSWORD)
+    webui_auth: none from 192.168.8.0/24
   samba:
     auth: guest
     shares:
