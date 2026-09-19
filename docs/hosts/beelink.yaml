@@ -1,10 +1,10 @@
 # The future replacement for core. It is independent bare metal, so workloads
 # may move here gradually without becoming a dependency of the current core.
-# Verified 2026-09-18 against Talos and Kubernetes APIs.
+# Verified 2026-09-19 against Talos and Kubernetes APIs.
 
 meta:
   host: beelink
-  updated: 2026-09-18
+  updated: 2026-09-19
   tags: [beelink, talos, kubernetes, bare-metal, storage]
 
 identity:
@@ -30,6 +30,13 @@ hardware:
 
 disks:
   - dev: nvme0n1
+    model: WDS500G1X0E-00AFY0
+    serial: "204390442013"
+    size: 500G
+    transport: nvme
+    wwid: eui.e8238fa6bf530001001b444a46596260
+    role: unconfigured fast Kubernetes storage candidate
+  - dev: nvme1n1
     model: 128GB SSD
     serial: MQ49W66504526
     size: 128G
