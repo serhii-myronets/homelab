@@ -60,5 +60,11 @@ devices: br0
 nodePort:
   directRoutingDevice: br0
 
+# With iptables masquerading, replies from a local NodePort or LoadBalancer
+# backend are masqueraded before BPF can restore the service port, so clients
+# receive data from the pod's port and reset the connection.
+bpf:
+  masquerade: true
+
 operator:
   replicas: 1
