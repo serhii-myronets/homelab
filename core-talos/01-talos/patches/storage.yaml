@@ -9,11 +9,51 @@ provisioning:
 filesystem:
   type: xfs
 ---
+# The two HDDs report no serial through Talos, so they are selected by WWID.
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: hdd-a
+provisioning:
+  diskSelector:
+    match: disk.wwid == "naa.5000c500c754eee9"
+  minSize: 10TB
+  maxSize: 10TB
+filesystem:
+  type: xfs
+---
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: hdd-b
+provisioning:
+  diskSelector:
+    match: disk.wwid == "naa.5000c500c7482270"
+  minSize: 10TB
+  maxSize: 10TB
+filesystem:
+  type: xfs
+---
 machine:
+  # The generated hostname does not survive a reinstall; local PVs select this.
+  nodeLabels:
+    homelab/media-hdd: "true"
   kubelet:
     extraMounts:
       - source: /var/mnt/fast
         destination: /var/mnt/fast
+        type: bind
+        options:
+          - bind
+          - rshared
+          - rw
+      - source: /var/mnt/hdd-a
+        destination: /var/mnt/hdd-a
+        type: bind
+        options:
+          - bind
+          - rshared
+          - rw
+      - source: /var/mnt/hdd-b
+        destination: /var/mnt/hdd-b
         type: bind
         options:
           - bind
