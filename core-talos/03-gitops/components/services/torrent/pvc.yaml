@@ -12,3 +12,15 @@ spec:
   resources:
     requests:
       storage: 9000Gi
+---
+# Gluetun's refreshed list of VPN servers: rebuilt on demand, never backed up.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gluetun
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: lvm
+  resources:
+    requests:
+      storage: 1Gi
