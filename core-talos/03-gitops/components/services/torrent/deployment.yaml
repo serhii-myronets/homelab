@@ -3,7 +3,8 @@ kind: Deployment
 metadata:
   name: torrent
 spec:
-  replicas: 1
+  # Stopped for a restore drill.
+  replicas: 0
   strategy:
     type: Recreate
   selector:
