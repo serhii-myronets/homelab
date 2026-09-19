@@ -51,11 +51,11 @@ spec:
             - {name: SAMBA_GLOBAL_CONFIG_server_SPACE_min_SPACE_protocol, value: SMB2_10}
             - {name: SAMBA_GLOBAL_CONFIG_guest_SPACE_account, value: media}
             - name: SAMBA_VOLUME_CONFIG_torrents
-              value: "[torrents]; path = /data/hdd-a/torrents; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775"
+              value: "[torrents]; path = /data/hdd-a/torrents; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
             - name: SAMBA_VOLUME_CONFIG_scan
-              value: "[scan]; path = /data/hdd-b/scan; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775"
+              value: "[scan]; path = /data/hdd-b/scan; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
             - name: SAMBA_VOLUME_CONFIG_hdd_b
-              value: "[hdd-b]; path = /data/hdd-b; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775"
+              value: "[hdd-b]; path = /data/hdd-b; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
           ports:
             - {name: smb, containerPort: 445}
           readinessProbe:
