@@ -15,12 +15,12 @@ spec:
         app: jellyfin
     spec:
       initContainers:
-        # The configuration directory is created root-owned on first use.
+        # A fresh or restored volume may be root-owned.
         - name: prepare
           image: busybox:1.37
           command: [sh, -c, "chown 1000:1000 /config /cache"]
           volumeMounts:
-            - {name: apps, mountPath: /config}
+            - {name: data, mountPath: /config}
             - {name: cache, mountPath: /cache}
       containers:
         - name: jellyfin
@@ -49,13 +49,13 @@ spec:
               # The iGPU, for Quick Sync transcoding.
               gpu.intel.com/i915: "1"
           volumeMounts:
-            - {name: apps, mountPath: /config}
+            - {name: data, mountPath: /config}
             - {name: cache, mountPath: /cache}
             # The same /media path as on core, so its library can move over.
             - {name: hdd-a, mountPath: /media, subPath: media, readOnly: true}
       volumes:
-        - name: apps
-          persistentVolumeClaim: {claimName: apps}
+        - name: data
+          persistentVolumeClaim: {claimName: data}
         - name: cache
           persistentVolumeClaim: {claimName: cache}
         - name: hdd-a

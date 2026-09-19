@@ -12,18 +12,3 @@ spec:
   resources:
     requests:
       storage: 9000Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: apps
-  annotations:
-    argocd.argoproj.io/sync-options: Prune=false,Delete=false
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: ""
-  volumeName: torrent-apps
-  resources:
-    requests:
-      storage: 5Gi

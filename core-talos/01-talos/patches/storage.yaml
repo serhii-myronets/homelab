@@ -1,26 +1,12 @@
-# The WD NVMe is split so that a cache filling its volume cannot starve the
-# application configurations and databases.
+# The whole WD NVMe is an LVM volume group. OpenEBS LVM LocalPV carves a thin
+# logical volume per claim, with a hard size and snapshots VolSync can restore
+# from; Talos owns only the group, never the volumes inside it.
 apiVersion: v1alpha1
-kind: UserVolumeConfig
-name: apps
+kind: LVMVolumeGroupConfig
+name: nvme
 provisioning:
-  diskSelector:
+  volumeSelector:
     match: disk.serial == "204390442013"
-  minSize: 100GB
-  maxSize: 100GB
-filesystem:
-  type: xfs
----
-apiVersion: v1alpha1
-kind: UserVolumeConfig
-name: cache
-provisioning:
-  diskSelector:
-    match: disk.serial == "204390442013"
-  minSize: 399GB
-  maxSize: 399GB
-filesystem:
-  type: xfs
 ---
 # The two HDDs report no serial through Talos, so they are selected by WWID.
 apiVersion: v1alpha1
@@ -46,25 +32,15 @@ filesystem:
   type: xfs
 ---
 machine:
+  # Thin logical volumes, which the NVMe volume group's claims use.
+  kernel:
+    modules:
+      - name: dm_thin_pool
   # The generated hostname does not survive a reinstall; local PVs select this.
   nodeLabels:
     homelab/media-hdd: "true"
   kubelet:
     extraMounts:
-      - source: /var/mnt/apps
-        destination: /var/mnt/apps
-        type: bind
-        options:
-          - bind
-          - rshared
-          - rw
-      - source: /var/mnt/cache
-        destination: /var/mnt/cache
-        type: bind
-        options:
-          - bind
-          - rshared
-          - rw
       - source: /var/mnt/hdd-a
         destination: /var/mnt/hdd-a
         type: bind
