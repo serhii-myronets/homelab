@@ -71,7 +71,6 @@ platform:
   cni: Cilium with kube-proxy replacement and BPF masquerading
   load_balancer_ips:
     - {ip: 192.168.8.15, service: gateway-system/cilium-gateway-main-gateway}
-    - {ip: 192.168.8.16, service: media/samba, port: 445}
   releases:
     - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
     - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
@@ -88,7 +87,9 @@ platform:
       - {name: scan, path: /var/mnt/hdd-b/scan}
       - {name: hdd-b, path: /var/mnt/hdd-b}
     owner: "1000:1000"
-    discovery: none; connect by IP
+    address: 192.168.8.10 (host network), Beelink.local
+    discovery: Bonjour (avahi) and WS-Discovery (wsdd2)
+    pod_security: media enforces privileged for the host network
   node_labels: {homelab/media-hdd: "true"}
   deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
 
