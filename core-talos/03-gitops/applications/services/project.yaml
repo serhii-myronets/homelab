@@ -2,22 +2,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: system
+  name: services
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-2"
 spec:
-  description: Cluster-wide services and configuration for the Beelink cluster.
+  description: Service workloads for the Beelink cluster.
   sourceRepos:
     - https://github.com/serhii-myronets/homelab.git
-    - https://kubernetes-sigs.github.io/metrics-server/
-    - https://openebs.github.io/openebs
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
+  # A service creates its own namespace; PVs and other cluster-scoped objects
+  # belong to system components.
   clusterResourceWhitelist:
-    - group: '*'
-      kind: '*'
+    - group: ''
+      kind: Namespace
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'
