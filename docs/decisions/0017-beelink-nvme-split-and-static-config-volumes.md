@@ -2,11 +2,15 @@
 id: "0017"
 title: Split the Beelink NVMe and keep configurations on static volumes
 date: 2026-09-19
-status: accepted
+status: superseded by 0019
 tags: [beelink, talos, kubernetes, storage, nvme, openebs]
 ---
 
 # Split the Beelink NVMe and keep configurations on static volumes
+
+**Superseded by `0019` on 2026-09-19**, once backups to R2 existed: the split
+and the static volumes both served to keep data on a disk that was never
+copied anywhere.
 
 Application configurations and databases must survive a reinstall of the
 cluster, as the media on the HDDs do, and there is no backup yet. OpenEBS

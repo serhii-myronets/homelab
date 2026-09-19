@@ -49,6 +49,48 @@ traps:
       `fruit:nfs_aces = no`. World-writable modes also work.
     diagnosed: 2026-09-18, on the Beelink
 
+  - id: talos-provider-lags-the-machine-config
+    applies_to: [talos, terraform]
+    symptom: >-
+      `terraform plan` fails with "config_patches are invalid ... error
+      decoding document v1alpha1/LVMVolumeGroupConfig: not registered".
+    cause: >-
+      Provider 0.11.0 generates and validates against the v1.13 machine
+      configuration contract, so documents added in Talos 1.14 are unknown to
+      it even though the node supports them.
+    fix: >-
+      Do it another way until a stable provider ships the newer contract; the
+      LVM volume group is created by a job in the cluster instead. Applying
+      such a document with `talosctl patch` would be undone by the next
+      `terraform apply`, which writes the whole machine configuration.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: openebs-lvm-thin-pool-sized-to-first-claim
+    applies_to: [openebs, lvm, kubernetes]
+    symptom: >-
+      Thin volumes run out of space long before the disk does.
+    cause: >-
+      When a thin pool is missing, lvm-localpv creates one as large as the
+      claim being provisioned, and every later claim shares that pool.
+    fix: >-
+      Create the pool first, over nearly the whole volume group, and publish
+      the StorageClass only afterwards - a claim cannot bind to a class that
+      does not exist yet, so none can create a small pool. Watch the pool's
+      usage: when a thin pool fills, every volume in it stops accepting
+      writes.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: argo-cannot-update-a-job
+    applies_to: [argocd, kubernetes]
+    symptom: >-
+      A Job keeps running its old script after the change is pushed and
+      synced.
+    cause: A Job's pod template is immutable, so the update is rejected.
+    fix: >-
+      Delete the Job and let Argo recreate it. Jobs meant to be changed this
+      way have to be safe to run twice.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: openebs-hostpath-needs-privileged-namespace
     applies_to: [openebs, kubernetes, talos]
     symptom: >-

@@ -36,8 +36,8 @@ disks:
     transport: nvme
     wwid: eui.e8238fa6bf530001001b444a46596260
     role: >-
-      Two Talos XFS volumes: apps (100 GB, /var/mnt/apps) for static
-      configuration PVs, cache (399 GB, /var/mnt/cache) for OpenEBS fast-local
+      One LVM volume group, nvme, with a 442 GB thin pool; OpenEBS LVM
+      LocalPV gives each claim a thin logical volume with snapshots
   - dev: nvme1n1
     model: 128GB SSD
     serial: MQ49W66504526
@@ -82,7 +82,13 @@ platform:
   gitops_components:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
-    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, torrent-apps, jellyfin-hdd-a, jellyfin-apps], status: deployed}
+    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, jellyfin-hdd-a], status: deployed}
+    - {name: cert-manager, namespace: cert-manager, chart: v1.21.2, status: deployed}
+    - {name: snapshot-controller, namespace: kube-system, chart: 5.3.0, app: v8.6.0, status: deployed}
+    - {name: cloudnative-pg, namespace: cnpg-system, chart: 0.29.0, app: 1.30.0, status: deployed}
+    - {name: plugin-barman-cloud, namespace: cnpg-system, chart: 0.8.0, status: deployed}
+    - {name: volsync, namespace: volsync-system, chart: 0.16.0, status: deployed}
+    - {name: postgres, namespace: database, image: "18.6-standard-trixie", instances: 1, status: deployed}
     - {name: samba, namespace: samba, status: deployed}
     - {name: torrent, namespace: torrent, status: deployed}
     - {name: intel-gpu, namespace: kube-system, plugin: "intel-gpu-plugin 0.37.0", resource: "gpu.intel.com/i915", shared_by: 3, status: deployed}
@@ -103,8 +109,8 @@ platform:
     image: "jellyfin/jellyfin:12.1.20260915-010956"
     user: "1000:1000"
     gpu: Quick Sync through the Intel iHD driver 26.2.4
-    config: /var/mnt/apps/jellyfin
-    cache: fast-local claim on /var/mnt/cache
+    config: claim data on the lvm class, backed up hourly
+    cache: claim cache on the lvm class, never backed up
     media: /var/mnt/hdd-a/media read-only, mounted as /media like core
   torrent:
     address: 192.168.8.16 (LoadBalancer)
@@ -114,7 +120,7 @@ platform:
       - {name: qbittorrent, image: "ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475", interface: tun0}
       - {name: flood, image: "jesec/flood:4.16.2"}
     downloads: /var/mnt/hdd-a/media, mounted as /downloads like core
-    config: /var/mnt/apps/torrent
+    config: claim data on the lvm class, backed up hourly
     vpn_secret: Infisical /nordvpn (OPENVPN_USER, OPENVPN_PASSWORD)
     webui_auth: none from 192.168.8.0/24
   samba:
@@ -129,6 +135,27 @@ platform:
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: the samba namespace alone enforces privileged, for the host network
   node_labels: {homelab/media-hdd: "true"}
+  storage:
+    classes:
+      - {name: lvm, provisioner: local.csi.openebs.io, volgroup: nvme, thin: yes, fsType: xfs}
+    snapshot_class: lvm
+    thin_pool: nvme_thinpool, 442 GB, created by the nvme-thinpool job
+    note: >-
+      The group and pool are made by that job, not by Talos: the Talos
+      Terraform provider speaks the v1.13 contract, which has no
+      LVMVolumeGroupConfig.
+  backups:
+    target: Cloudflare R2, bucket homelab-backups
+    secrets: Infisical /backups/R2
+    postgres: >-
+      CloudNativePG with the Barman Cloud plugin: continuous WAL plus a daily
+      base backup at 04:00, 30 day retention, under cnpg/postgres-v1. A
+      rebuilt cluster needs its bootstrap switched to recovery once.
+    volumes: >-
+      VolSync, hourly at :15 from a thin snapshot, under volsync/<service>.
+      Keeps 24 hourly, 7 daily, 4 weekly and 3 monthly. Each service's data
+      claim restores itself from R2 on an empty cluster.
+    not_backed_up: [media on the HDDs, caches]
   deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
 
 config:
