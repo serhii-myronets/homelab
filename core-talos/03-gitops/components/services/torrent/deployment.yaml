@@ -41,7 +41,7 @@ spec:
             # longer answers on, and it picks from them at random. These four
             # answered when checked; the updater refreshes the rest daily.
             - {name: UPDATER_PERIOD, value: 24h}
-            - {name: SERVER_HOSTNAMES, value: "nl1254.nordvpn.com,nl1211.nordvpn.com,nl1291.nordvpn.com,nl1202.nordvpn.com"}
+            - {name: VPN_ENDPOINT_IP, value: 186.247.163.10}
             - {name: SERVER_COUNTRIES, value: Netherlands}
             - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
             # Replies to LAN clients and kubelet probes must bypass the tunnel.
