@@ -1,7 +1,7 @@
 # Argo-managed desired state
 
-Each manifest in `apps/` is applied once to connect an Argo CD Application to
-its directory. Argo then reconciles that directory from Git.
+Apply `root.yaml` once to connect Argo CD to `apps/`. It creates one child
+Application for each component, which Argo then reconciles from Git.
 
 - `apps/` holds child `Application` manifests.
 - `system/` holds cluster-wide configuration such as network policy, secret
@@ -11,9 +11,6 @@ its directory. Argo then reconciles that directory from Git.
 The Cilium, External Secrets and Argo CD releases remain in `../02-platform/`.
 They establish GitOps; GitOps does not manage its own bootstrap layer yet.
 
-Apply `apps/system.yaml` once to start reconciliation of the shared resources.
-It uses Argo's built-in `default` project only to create the `system` project;
-future system applications use that dedicated project.
-
-The `system` Application also renders Helm charts declared by its component
-Kustomizations, including Metrics Server in `kube-system`.
+The `system` project is created first. Its component Applications use it for
+cluster-wide configuration and charts; service Applications follow the same
+pattern under `apps/services/`.
