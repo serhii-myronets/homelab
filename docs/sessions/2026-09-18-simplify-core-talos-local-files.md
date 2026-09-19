@@ -98,11 +98,27 @@ kubelet. OpenEBS 4.6.0 uses only LocalPV Hostpath there through the
 non-default `fast-local` StorageClass with `Retain`; Mayastor, LVM, ZFS,
 Rawfile, Loki, Alloy and snapshot CRDs are disabled.
 
-## Handoff
+The two 10 TB HDDs carried empty-looking NTFS partitions from Windows; the
+owner confirmed nothing on them mattered. `talosctl wipe disk sda sdb --method
+FAST` cleared both after their WWIDs were rechecked. Talos then provisioned the
+XFS user volumes `hdd-a` and `hdd-b`, selected by WWID because Talos reports no
+serial for these disks. XFS reserves about 178 GB of each for metadata.
+
+They are meant for a torrent client, Samba and Jellyfin, and must survive a
+cluster reinstall, so they bypass OpenEBS: static `local` PVs point at the fixed
+mount paths and bind to the claims `hdd-a` and `hdd-b` in `media`. The first
+draft pinned the PVs to the hostname `talos-lqh-j5o`, which is generated and
+would change on reinstall; Talos now labels the node `homelab/media-hdd=true`
+and the PVs select that. The reasoning is `decisions/0016`.
+
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`.
 `fast-local` is ready for a first stateful workload, but no PVC has been
 created yet. Keep Kubernetes stateful data on that class explicitly; it is
 local to this node and therefore requires an application-level backup plan.
-All Argo Applications, including `root` and `openebs`, were `Synced` and
-`Healthy` after commit `e8587ba`.
+All Argo Applications, including `root`, `openebs` and `media-storage`, were
+`Synced` and `Healthy` after commit `47ec0e1`. A test pod wrote to both HDD
+claims. Their roots are `root:root 0755`, so the media applications must chown
+them or run as root. No media application is installed yet. Before relying on
+a reinstall keeping the HDD data, confirm Talos reuses the `u-hdd-*`
+partitions.

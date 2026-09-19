@@ -48,14 +48,14 @@ disks:
     transport: sata
     rotational: true
     wwid: naa.5000c500c754eee9
-    role: unconfigured
+    role: Talos XFS user volume hdd-a at /var/mnt/hdd-a, static PV media-hdd-a
   - dev: sdb
     model: ST10000DM0004-1Z
     size: 10T
     transport: sata
     rotational: true
     wwid: naa.5000c500c7482270
-    role: unconfigured
+    role: Talos XFS user volume hdd-b at /var/mnt/hdd-b, static PV media-hdd-b
 
 network:
   bridge: br0
@@ -75,6 +75,9 @@ platform:
     - {name: argocd, namespace: argocd, chart: 10.9.2, app: 3.5.3, status: deployed}
   gitops_components:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
+    - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
+    - {name: media-storage, namespace: media, status: deployed}
+  node_labels: {homelab/media-hdd: "true"}
   deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
 
 config:
