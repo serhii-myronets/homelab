@@ -8,7 +8,7 @@ localpv-provisioner:
   hostpathClass:
     name: fast-local
     isDefaultClass: false
-    basePath: /var/mnt/fast/openebs
+    basePath: /var/mnt/cache/openebs
     reclaimPolicy: Retain
 
 engines:

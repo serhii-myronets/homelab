@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: torrent
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: torrent
+  template:
+    metadata:
+      labels:
+        app: torrent
+    spec:
+      # Every container shares Gluetun's network, so all DNS goes through its
+      # resolver inside the tunnel rather than to the cluster.
+      dnsPolicy: None
+      dnsConfig:
+        nameservers: [127.0.0.1]
+      initContainers:
+        - name: prepare
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - mkdir -p /apps/config /apps/flood && chown 1000:1000 /apps/flood
+          volumeMounts:
+            - {name: apps, mountPath: /apps}
+        # A native sidecar: qBittorrent and Flood start only once the tunnel
+        # is healthy, so nothing leaves the pod outside the VPN.
+        - name: gluetun
+          image: qmcgaw/gluetun:v3.41.3
+          restartPolicy: Always
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: VPN_SERVICE_PROVIDER, value: nordvpn}
+            - {name: VPN_TYPE, value: openvpn}
+            - {name: SERVER_COUNTRIES, value: Netherlands}
+            - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
+            # Replies to LAN clients and kubelet probes must bypass the tunnel.
+            - {name: FIREWALL_OUTBOUND_SUBNETS, value: "192.168.8.0/24,10.244.0.0/16"}
+          envFrom:
+            - secretRef: {name: nordvpn}
+          securityContext:
+            capabilities:
+              add: [NET_ADMIN]
+          startupProbe:
+            exec: {command: [/gluetun-entrypoint, healthcheck]}
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            exec: {command: [/gluetun-entrypoint, healthcheck]}
+            periodSeconds: 60
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {memory: 256Mi}
+      containers:
+        - name: qbittorrent
+          image: ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: PUID, value: "1000"}
+            - {name: PGID, value: "1000"}
+            - {name: UMASK, value: "002"}
+            - {name: WEBUI_PORT, value: "8080"}
+          ports:
+            - {name: qbittorrent, containerPort: 8080}
+          readinessProbe:
+            tcpSocket: {port: qbittorrent}
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - {name: apps, mountPath: /config, subPath: config}
+            # Read-only, as on core: the settings are owned by Git.
+            - {name: config, mountPath: /config/qBittorrent/qBittorrent.conf, subPath: qBittorrent.conf, readOnly: true}
+            # The same /downloads path as on core, so its torrents can move over.
+            - {name: hdd-a, mountPath: /downloads, subPath: media}
+        - name: flood
+          image: jesec/flood:4.16.2
+          env:
+            # FLOOD_OPTION_<flag> maps to Flood's CLI flags, so each name must
+            # match its flag exactly. auth=none also makes Flood take the
+            # client settings below instead of asking in the UI.
+            - {name: FLOOD_OPTION_AUTH, value: none}
+            - {name: FLOOD_OPTION_RUNDIR, value: /data}
+            - {name: FLOOD_OPTION_QBURL, value: "http://localhost:8080"}
+            # Ignored by qBittorrent, which trusts localhost, but required.
+            - {name: FLOOD_OPTION_QBUSER, value: admin}
+            - {name: FLOOD_OPTION_QBPASS, value: adminadmin}
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - {name: flood, containerPort: 3000}
+          readinessProbe:
+            tcpSocket: {port: flood}
+          resources:
+            requests: {cpu: 20m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          volumeMounts:
+            - {name: apps, mountPath: /data, subPath: flood}
+      volumes:
+        - name: apps
+          persistentVolumeClaim: {claimName: apps}
+        - name: hdd-a
+          persistentVolumeClaim: {claimName: hdd-a}
+        - name: config
+          configMap: {name: torrent-config}

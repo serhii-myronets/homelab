@@ -1,18 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: hdd-volumes
+  name: torrent
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-1"
 spec:
-  project: system
+  project: services
   source:
     repoURL: https://github.com/serhii-myronets/homelab.git
     targetRevision: main
-    path: core-talos/03-gitops/components/system/hdd-volumes
+    path: core-talos/03-gitops/components/services/torrent
   destination:
     server: https://kubernetes.default.svc
+    namespace: torrent
   syncPolicy:
     automated:
       prune: true
