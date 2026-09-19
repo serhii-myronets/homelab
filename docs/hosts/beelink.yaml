@@ -1,0 +1,77 @@
+# The future replacement for core. It is independent bare metal, so workloads
+# may move here gradually without becoming a dependency of the current core.
+# Verified 2026-09-18 against Talos and Kubernetes APIs.
+
+meta:
+  host: beelink
+  updated: 2026-09-18
+  tags: [beelink, talos, kubernetes, bare-metal, storage]
+
+identity:
+  model: Beelink ME Pro
+  ip: 192.168.8.10
+  vlan: 1
+  role: future-core
+  cluster: beelink
+  node: talos-lqh-j5o
+  access:
+    talos: talosctl --nodes 192.168.8.10
+    kubernetes_context: admin@beelink
+
+os:
+  distribution: Talos Linux 1.14.1
+  kubernetes: 1.37.0
+  kernel: 6.18.51-talos
+  virtualised: false
+
+hardware:
+  cpu: {model: Intel N95, cores: 4, threads: 4}
+  ram_gb: 12
+
+disks:
+  - dev: nvme0n1
+    model: 128GB SSD
+    serial: MQ49W66504526
+    size: 128G
+    transport: nvme
+    role: Talos system disk
+  - dev: sda
+    model: ST10000DM0004-1Z
+    size: 10T
+    transport: sata
+    rotational: true
+    wwid: naa.5000c500c754eee9
+    role: unconfigured
+  - dev: sdb
+    model: ST10000DM0004-1Z
+    size: 10T
+    transport: sata
+    rotational: true
+    wwid: naa.5000c500c7482270
+    role: unconfigured
+
+network:
+  bridge: br0
+  address: 192.168.8.10/24
+  gateway: 192.168.8.1
+  ports:
+    - {name: enp3s0, role: router uplink}
+    - {name: enp2s0, role: monitor and desktop downlink}
+  cilium_device: br0
+
+platform:
+  scheduling: control-plane enabled
+  cni: Cilium with kube-proxy replacement
+  releases:
+    - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
+    - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
+    - {name: argocd, namespace: argocd, chart: 10.9.2, app: 3.5.3, status: deployed}
+  deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
+
+config:
+  bootstrap: core-talos/bootstrap/
+  platform: core-talos/platform/
+  secret_paths:
+    - core-talos/bootstrap/secrets.yaml
+    - core-talos/platform/prepare-hook/initial-secret.yaml
+  note: Both secret files are local and ignored by Git.

@@ -1,12 +1,12 @@
 # The parts of the network that span hosts. Per-host detail lives in
-# docs/hosts/. Verified 2026-09-10.
+# docs/hosts/. Verified 2026-09-18.
 
 meta:
-  updated: 2026-09-10
+  updated: 2026-09-18
   tags: [network, subnets, dns, tls, vpn, tailscale]
 
 subnets:
-  - {cidr: 192.168.8.0/24, use: LAN, vlan: 1, hosts: [core], gateway: 192.168.8.1}
+  - {cidr: 192.168.8.0/24, use: LAN, vlan: 1, hosts: [core, beelink], gateway: 192.168.8.1}
   - {cidr: 10.1.1.0/24, use: lab, vlan: 10, hosts: [proxmox], gateway: 10.1.1.1}
   - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1}
   - {cidr: 10.1.0.0/24, use: wireguard clients, gateway: 10.1.0.1}

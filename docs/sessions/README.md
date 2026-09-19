@@ -20,3 +20,5 @@ Read the newest one before starting work.
 | 2026-09-08 | [Tailscale routing for LAN and the Proxmox VLAN](2026-09-08-tailscale-subnet-routing.md) | — |
 | 2026-09-10 | [A power cut and its two failures](2026-09-10-power-cut.md) | the certificate warning, unreproduced a second time |
 | 2026-09-12 | [Replace Glances with Pulse](2026-09-12-pulse.md) | Proxmox API and router availability checks can be added in Pulse UI |
+| 2026-09-17 | [Prepare the ME Pro bootstrap](2026-09-17-me-pro-bootstrap-preparation.md) | install and bootstrap the replacement core |
+| 2026-09-18 | [Simplify core Talos local files](2026-09-18-simplify-core-talos-local-files.md) | applications and storage remain to be added |
