@@ -4,5 +4,5 @@ metadata:
   name: external
 spec:
   blocks:
-    - start: 192.168.8.80
-      stop: 192.168.8.85
+    - start: 192.168.8.15
+      stop: 192.168.8.20
