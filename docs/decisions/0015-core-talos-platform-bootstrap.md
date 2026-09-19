@@ -8,7 +8,7 @@ tags: [talos, kubernetes, helmfile, argocd, cilium, external-secrets, infisical]
 
 # Bootstrap the Beelink platform with Helmfile and External Secrets
 
-`bootstrap/` owns Talos machine configuration and the one-time Kubernetes
+`talos/` owns Talos machine configuration and the one-time Kubernetes
 bootstrap. `platform/` owns the in-cluster foundation: Cilium, External
 Secrets and Argo CD, installed in that order by Helmfile.
 

@@ -1,4 +1,4 @@
-# Bootstrap with Terraform
+# Talos with Terraform
 
 This directory manages the bare-metal Talos node, cluster bootstrap and
 kubeconfig retrieval. Run Terraform directly from here:
