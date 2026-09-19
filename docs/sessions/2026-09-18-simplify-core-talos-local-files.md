@@ -71,4 +71,5 @@ supplies the required TLSRoute, BackendTLSPolicy and v1 ReferenceGrant CRDs.
 Added Metrics Server chart 3.14.0 to the Argo-managed system Kustomization.
 Argo's Kustomize build enables Helm, so the component needs no separate Argo
 Application. It runs in `kube-system` and adds `--kubelet-insecure-tls` for
-Talos kubelet certificates.
+Talos kubelet certificates. Argo synced it successfully; the APIService became
+Available and `kubectl top` returned metrics for the node and every pod.
