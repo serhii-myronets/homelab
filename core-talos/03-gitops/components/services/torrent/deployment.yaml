@@ -3,7 +3,8 @@ kind: Deployment
 metadata:
   name: torrent
 spec:
-  replicas: 1
+  # Stopped while core's configuration is copied in.
+  replicas: 0
   strategy:
     type: Recreate
   selector:
