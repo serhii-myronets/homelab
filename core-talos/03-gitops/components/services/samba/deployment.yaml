@@ -17,6 +17,8 @@ spec:
     spec:
       initContainers:
         # Share roots belong to UID 1000, which the media applications share.
+        # Guests match these directories only through the group, so it must
+        # be able to write.
         - name: prepare
           image: busybox:1.37
           command:
@@ -24,7 +26,8 @@ spec:
             - -c
             - >-
               mkdir -p /data/hdd-a/torrents /data/hdd-b/scan &&
-              chown 1000:1000 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan
+              chown 1000:1000 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
+              chmod 0775 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan
           volumeMounts:
             - {name: hdd-a, mountPath: /data/hdd-a}
             - {name: hdd-b, mountPath: /data/hdd-b}
