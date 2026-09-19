@@ -24,13 +24,16 @@ spec:
           image: ghcr.io/servercontainers/samba:a3.24.2-s4.23.8-r0
           # Bypasses the image's entrypoint, which builds smb.conf from
           # environment variables; the configuration is mounted instead.
-          # Fresh XFS roots allow only root to write, so open them first.
+          # Media files belong to UID 1000, shared by every media application.
+          # Only the share roots are fixed at start; a recursive chown would
+          # walk the whole disks on every restart.
           command:
             - sh
             - -c
             - >-
-              mkdir -p /data/hdd-a/torrents /data/hdd-b/scan &&
-              chmod 0777 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
+              adduser -D -H -u 1000 -s /bin/false media &&
+              chown 1000:1000 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
+              chmod 0775 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
               exec runsvdir -P /container/config/runit
           securityContext:
             capabilities:
