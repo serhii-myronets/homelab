@@ -75,9 +75,13 @@ traps:
       longer answers on, and gluetun picks from it at random. NordVPN's own
       API returns different, reachable addresses.
     fix: >-
-      Compare a few addresses from the provider's API with the ones gluetun
-      tries; set VPN_ENDPOINT_IP to one that answers. SERVER_HOSTNAMES only
-      accepts names already in that stale list.
+      Give gluetun a volume for /gluetun and set UPDATER_PERIOD: it rewrites
+      the list there, but only on that period and never at startup, so the
+      list has to survive restarts to be of use. Shorten the wait on a dead
+      address with OPENVPN_FLAGS "--connect-timeout 10 --hand-window 20".
+      SERVER_HOSTNAMES only accepts names already in the stale list, and
+      VPN_ENDPOINT_IP pins one server. After the first refresh here the
+      tunnel came up in 24 seconds instead of minutes.
     diagnosed: 2026-09-19, on the Beelink
 
   - id: cilium-hides-the-client-address
