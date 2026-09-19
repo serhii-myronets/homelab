@@ -14,6 +14,22 @@ traps:
     fix: "Set `nodePort.directRoutingDevice: br0` and `devices: br0` in the Cilium Helm values, then run `kubectl -n kube-system rollout restart daemonset/cilium`; the config init container only runs for a new pod."
     diagnosed: 2026-09-18, on the Beelink
 
+  - id: cilium-gateway-api-needs-v1-6-crds
+    applies_to: [cilium, gateway-api, kubernetes]
+    symptom: >-
+      GatewayClass and Gateway stay Pending with "Waiting for controller" and
+      no LoadBalancer Service is created.
+    cause: >-
+      Cilium 1.20 requires Gateway API v1.6.1 or newer. The old v1.2.0
+      standard CRDs lack TLSRoute and BackendTLSPolicy and expose
+      ReferenceGrant only as v1beta1, so Cilium does not start its Gateway
+      controller.
+    fix: >-
+      Apply Gateway API v1.6.1 standard CRDs server-side, then verify the
+      Cilium operator reports the Gateway controller as running. Existing
+      Gateway resources reconcile automatically.
+    diagnosed: 2026-09-18, on the Beelink
+
   - id: helmfile-build-runs-prepare-hooks
     applies_to: [helmfile, kubernetes]
     symptom: A command intended to inspect the rendered Helmfile changes the cluster.
