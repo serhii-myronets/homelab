@@ -1,9 +1,10 @@
 # core-talos
 
-The future replacement for `core/`, running Talos directly on ME Pro.
-The existing OpenMediaVault deployment remains in `core/` during migration.
+The future replacement for `core/`, running Talos directly on ME Pro. The
+existing OpenMediaVault deployment remains in `core/` during migration.
 
-- [`bootstrap/`](bootstrap/): Talos configuration, local credentials and cluster initialization.
-- Application directories will be added alongside `bootstrap/` as services migrate.
+- [`talos/`](talos/): Terraform-managed Talos configuration, local credentials and cluster initialization.
+- [`platform/`](platform/): Helmfile bootstrap for Cilium, External Secrets and Argo CD.
+- [`gitops/`](gitops/): Argo root application, cluster configuration and services.
 
-Current status: local configuration prepared; installation and bootstrap have not run.
+Current status: the single-node Beelink cluster and its initial platform are running.

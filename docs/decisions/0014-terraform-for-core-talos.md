@@ -8,9 +8,9 @@ tags: [talos, terraform, bootstrap, secrets]
 
 # Manage the replacement core bootstrap with Terraform
 
-The owner chose Terraform for bare-metal cluster configuration application,
-initial bootstrap and client credentials. YAML patches remain reviewable
-inputs. Application deployments will live separately.
+The owner chose Terraform in `core-talos/talos/` for bare-metal cluster
+configuration application, initial bootstrap and client credentials. YAML
+patches remain reviewable inputs. Application deployments live separately.
 
 A standalone talosctl generation script was the initial alternative. It was
 replaced before installation to track bootstrap state and expose a plan.

@@ -1,12 +1,13 @@
 # Working in this repository
 
-Three machines:
+Four machines:
 
 | | | Deployed from here |
 |---|---|---|
 | **core** | the one nothing else may depend on — services, files, backups | yes, out of `core/` |
 | **proxmox** | built and destroyed on purpose — Talos, Terraform | no — only a `tools/` installer, by hand |
 | **router** | the boundary with the internet — routing, DNS, firewall, VPN | no, and never over ssh |
+| **beelink** | gradual future replacement for core — Talos on bare metal | yes, out of `core-talos/` |
 
 The repository has two halves and the split is the point. `core/` is
 *executable*: compose files, the bootstrap and the backup job, deployed onto

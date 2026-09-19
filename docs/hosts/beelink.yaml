@@ -69,9 +69,9 @@ platform:
   deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
 
 config:
-  bootstrap: core-talos/bootstrap/
+  talos: core-talos/talos/
   platform: core-talos/platform/
   secret_paths:
-    - core-talos/bootstrap/secrets.yaml
+    - core-talos/talos/secrets.yaml
     - core-talos/platform/prepare-hook/initial-secret.yaml
   note: Both secret files are local and ignored by Git.

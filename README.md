@@ -10,10 +10,11 @@ recorded in `docs/services.yaml`. Start at
 restore it.
 
 **[`core-talos/`](core-talos/)** is the future replacement for core on the
-ME Pro. Its `bootstrap/` directory holds Talos setup; application directories
-will follow as services migrate.
+ME Pro. `talos/` holds its Terraform-managed Talos configuration, `platform/`
+installs the initial Cilium, External Secrets and Argo CD releases, and
+`gitops/` will hold the Argo-managed cluster and service configuration.
 
-**[`docs/`](docs/)** is descriptive — what all three machines are, how they are
+**[`docs/`](docs/)** is descriptive — what all machines are, how they are
 wired together, and what has already gone wrong. Facts as YAML, one file per
 machine, each verified against the live host; reasoning as Markdown. Nothing in
 it is deployed anywhere. Start at [`docs/index.yaml`](docs/index.yaml), which
