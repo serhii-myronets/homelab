@@ -16,3 +16,14 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    # Local names, with the certificate authority core's Caddy created.
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.home"
+      tls:
+        certificateRefs:
+          - {name: home-tls}
+      allowedRoutes:
+        namespaces:
+          from: All

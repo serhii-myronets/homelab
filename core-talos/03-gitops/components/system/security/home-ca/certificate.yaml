@@ -1,0 +1,20 @@
+# One certificate for every local name, presented by the Gateway.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: home-wildcard
+  namespace: gateway-system
+spec:
+  secretName: home-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: home-ca
+  commonName: "*.home"
+  dnsNames:
+    - "*.home"
+    - home
+  duration: 8760h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256

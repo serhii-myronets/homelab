@@ -6,6 +6,7 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
+  - httproute.yaml
 components:
   - ../../system/storage/templates/volsync
 # The data claim from the VolSync component: backed up hourly to R2 and, on an
