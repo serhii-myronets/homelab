@@ -86,7 +86,8 @@ platform:
       - {name: torrents, path: /var/mnt/hdd-a/torrents}
       - {name: scan, path: /var/mnt/hdd-b/scan}
       - {name: hdd-b, path: /var/mnt/hdd-b}
-    owner: nobody; files 0666, directories 0777
+    owner: "1000:1000"         # shared with every media application
+    modes: {files: "0664", directories: "0775"}
     address: 192.168.8.10 (host network), Beelink.local
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: media enforces privileged for the host network
