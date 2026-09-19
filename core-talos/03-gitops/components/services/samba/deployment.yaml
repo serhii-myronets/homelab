@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: samba
-  namespace: media
+  namespace: samba
 spec:
   replicas: 1
   strategy:
@@ -32,8 +32,8 @@ spec:
             - -c
             - >-
               adduser -D -H -u 1000 -s /bin/false media &&
-              chown 1000:1000 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
-              chmod 0775 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
+              chown 1000:1000 /data/hdd-a /data/hdd-a/media /data/hdd-b /data/hdd-b/scan &&
+              chmod 0775 /data/hdd-a /data/hdd-a/media /data/hdd-b /data/hdd-b/scan &&
               exec runsvdir -P /container/config/runit
           securityContext:
             capabilities:

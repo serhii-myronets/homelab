@@ -1,7 +1,9 @@
+# Pod Security levels are a system decision, so service namespaces are created
+# here rather than by their own Applications.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: media
+  name: samba
   labels:
     # Samba uses the host network so that it can announce itself on the LAN.
     pod-security.kubernetes.io/enforce: privileged

@@ -1,0 +1,60 @@
+# Each consumer gets its own static PVs on the Talos HDD volumes, so that
+# every application keeps its own namespace. Several PVs may point at one
+# path. They are bound to a fixed mount rather than a provisioner, so a
+# reinstalled cluster finds the same data, and Argo never deletes them: a
+# released PV would not rebind to a recreated claim.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: samba-hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 9000Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: samba
+    name: hdd-a
+  local:
+    path: /var/mnt/hdd-a
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: homelab/media-hdd
+              operator: In
+              values:
+                - "true"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: samba-hdd-b
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 9000Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: samba
+    name: hdd-b
+  local:
+    path: /var/mnt/hdd-b
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: homelab/media-hdd
+              operator: In
+              values:
+                - "true"
