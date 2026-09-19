@@ -111,16 +111,48 @@ draft pinned the PVs to the hostname `talos-lqh-j5o`, which is generated and
 would change on reinstall; Talos now labels the node `homelab/media-hdd=true`
 and the PVs select that. The reasoning is `decisions/0016`.
 
+The owner wants the Beelink to replace core after a migration and chose to
+start with Samba: guest access, LAN only, no backups yet, and the share names
+core already uses. Samba runs in `media` from
+`ghcr.io/servercontainers/samba`, with `torrents` on `hdd-a`, and `scan` and
+the whole `hdd-b` on the second disk. Service workloads have their own Argo
+project, which cannot create cluster-scoped objects.
 
-The Beelink is a healthy single-node Talos cluster at `192.168.8.10`.
-`fast-local` is ready for a first stateful workload, but no PVC has been
-created yet. Keep Kubernetes stateful data on that class explicitly; it is
-local to this node and therefore requires an application-level backup plan.
-All Argo Applications, including `root`, `openebs` and `media-storage`, were
-`Synced` and `Healthy` after commit `47ec0e1`. A test pod wrote to both HDD
-claims. Their roots are `root:root 0755`, so the media applications must chown
-them or run as root. Samba is the first service; torrent and Jellyfin are not installed yet, and
-no data has been copied from core. The printer still writes to core's `scan`
-share. Before relying on
-a reinstall keeping the HDD data, confirm Talos reuses the `u-hdd-*`
-partitions.
+The shares first answered inside the cluster but not from the LAN. Every
+NodePort and LoadBalancer Service was affected; only the Gateway worked. A
+`talosctl pcap` on br0 showed correct SYN-ACKs but data segments leaving from
+the pod's port: iptables masqueraded them before Cilium restored the service
+port. The owner applied `bpf.masquerade: true` through Helmfile and restarted
+Cilium, after which the Mac listed the shares.
+
+Guest writes then failed twice. Samba denied creating files in the 0755 share
+roots owned by UID 1000, because it matched guests only through the group; the
+roots became 0775. Directories created from Finder were then reset to 0755
+through the fruit module's NFS ACEs; `fruit:nfs_aces = no` stopped it. A 2 GB
+copy from the Mac wrote at about 52 MB/s and read at about 86 MB/s, before the
+owner added a CPU limit.
+
+The owner then wanted the server listed in Finder's Network like core. The
+announcements are multicast and do not leave the pod network, so Samba moved to
+the host network with the full image, running avahi and wsdd2, and the `media`
+namespace now enforces the `privileged` Pod Security level. The
+`192.168.8.16` LoadBalancer was removed; Samba answers on `192.168.8.10`.
+
+At the owner's request the configuration moved from the image's environment
+variables to files: `smb.conf` and the avahi configuration are generated into a
+hashed ConfigMap, and the pod starts the image's runit services without its
+entrypoint. Samba, avahi and wsdd2 are bound to `br0` only. The owner's Finder
+mounted all three shares through Bonjour, and nested create, rename and delete
+succeeded through those mounts.
+
+## Handoff
+
+The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo
+Applications were `Synced` and `Healthy` after commit `bd2484f`. Samba serves
+the HDD shares to guests on the LAN as `Beelink.local`; it is the only
+service. Torrent and Jellyfin are not installed, no data has been copied from
+core, and the printer still writes to core's `scan` share.
+
+`fast-local` has no PVC yet; data on it is local to this node and needs an
+application-level backup plan. Before relying on a reinstall keeping the HDD
+data, confirm Talos reuses the `u-hdd-*` partitions.
