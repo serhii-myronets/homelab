@@ -41,3 +41,16 @@ The generated Talos config retained its default installation path `/dev/sda`
 alongside the NVMe selector. The node was verified to run its EPHEMERAL volume
 from `/dev/nvme0n1p4`; the control-plane patch now explicitly selects
 `/dev/nvme0n1` as well, protecting the two 10 TB HDDs during a later install.
+
+The first Cilium agent crash loop reported that it could not determine a direct
+routing device. Talos assigns the node IP to bridge `br0`, so Cilium values now
+explicitly select that bridge with `devices: br0` and
+`nodePort.directRoutingDevice: br0`.
+
+The agent reads the generated configuration from an init container, so the
+DaemonSet needed a rollout restart after the Helm upgrade. The replacement
+Cilium pod became Ready and the Kubernetes node stayed Ready.
+
+The Cilium chart defaults to two operator replicas. A single Beelink node can
+run only one because both request the same host port, so the platform values
+set `operator.replicas: 1`.
