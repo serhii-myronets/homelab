@@ -87,6 +87,17 @@ platform:
     - {name: torrent, namespace: torrent, status: deployed}
     - {name: intel-gpu, namespace: kube-system, plugin: "intel-gpu-plugin 0.37.0", resource: "gpu.intel.com/i915", shared_by: 3, status: deployed}
     - {name: jellyfin, namespace: jellyfin, status: deployed}
+    - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 2, status: deployed}
+    - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
+  public_access:
+    tunnel: {name: beelink, id: 2150274f-5bd6-4826-b46f-16992d9f8293, managed: locally, config: core-talos/03-gitops/components/system/cloudflared/config.yaml}
+    secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
+    dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
+    auth: Cloudflare Access covers every serhii.link name, including new ones
+    published: [flood.serhii.link]
+    other_tunnels:
+      - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
+      - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
   jellyfin:
     address: 192.168.8.17:8096 (LoadBalancer)
     image: "jellyfin/jellyfin:12.1.20260915-010956"

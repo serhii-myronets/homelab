@@ -63,6 +63,22 @@ traps:
       privileged`. The claim binds on the provisioner's next retry.
     diagnosed: 2026-09-19, on the Beelink
 
+  - id: external-dns-target-annotation-lost-alpha
+    applies_to: [external-dns, cloudflare, gateway-api]
+    symptom: >-
+      external-dns tries to create an A record with the Gateway's LAN address
+      instead of a CNAME to the tunnel, and Cloudflare answers 400, code 9003:
+      "Target 192.168.8.15 is not allowed for a proxied record".
+    cause: >-
+      external-dns 0.22 reads `external-dns.kubernetes.io/target` on the
+      Gateway and silently ignores the older
+      `external-dns.alpha.kubernetes.io/target`, so it falls back to the
+      Gateway's own address. The target annotation is also ignored on routes.
+    fix: >-
+      Use the prefix without `alpha` on the Gateway. The failed attempt can
+      leave an `a-<name>` ownership TXT record behind; delete it by hand.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: cilium-gateway-api-needs-v1-6-crds
     applies_to: [cilium, gateway-api, kubernetes]
     symptom: >-
