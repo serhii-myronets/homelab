@@ -12,6 +12,11 @@ one child Application for each component, which Argo then reconciles from Git.
 - `components/services/` holds application workloads, one directory per service,
   each with its own namespace.
 
+Every namespace Argo manages is a `namespace.yaml` in its component directory,
+with its Pod Security label when it needs more than the default baseline; no
+Application relies on `CreateNamespace`. A Helm-based component includes that
+file through the repository source that also supplies its values.
+
 `components/system/openebs/` configures the `fast-local` OpenEBS LocalPV
 Hostpath class for scratch data such as caches. Its backing XFS volume `cache`
 is provisioned and mounted by Talos; OpenEBS only creates PVC directories

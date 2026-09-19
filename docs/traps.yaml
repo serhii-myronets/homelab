@@ -49,6 +49,20 @@ traps:
       `fruit:nfs_aces = no`. World-writable modes also work.
     diagnosed: 2026-09-18, on the Beelink
 
+  - id: openebs-hostpath-needs-privileged-namespace
+    applies_to: [openebs, kubernetes, talos]
+    symptom: >-
+      The first claim on an OpenEBS LocalPV Hostpath class stays Pending with
+      ProvisioningFailed, and its pod cannot be scheduled.
+    cause: >-
+      The provisioner creates each PVC directory from a privileged helper pod
+      with a hostPath volume in its own namespace. Talos enforces the baseline
+      Pod Security level by default, which rejects that pod.
+    fix: >-
+      Label the openebs namespace `pod-security.kubernetes.io/enforce:
+      privileged`. The claim binds on the provisioner's next retry.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: cilium-gateway-api-needs-v1-6-crds
     applies_to: [cilium, gateway-api, kubernetes]
     symptom: >-
