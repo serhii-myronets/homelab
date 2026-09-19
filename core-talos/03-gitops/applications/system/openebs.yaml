@@ -27,3 +27,8 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+    # The provisioner creates each PVC directory with a privileged helper pod
+    # in this namespace, which the baseline Pod Security level rejects.
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: privileged
