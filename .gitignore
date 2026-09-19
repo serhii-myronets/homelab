@@ -2,10 +2,10 @@
 */.terraform
 **.lock.hcl
 
-/core-talos/talos/.terraform/
-/core-talos/talos/*.tfstate*
-/core-talos/talos/*.tfplan
-/core-talos/talos/crash*.log
-/core-talos/talos/secrets.yaml
-/core-talos/platform/prepare-hook/initial-secret.yaml
-!/core-talos/talos/.terraform.lock.hcl
+/core-talos/01-talos/.terraform/
+/core-talos/01-talos/*.tfstate*
+/core-talos/01-talos/*.tfplan
+/core-talos/01-talos/crash*.log
+/core-talos/01-talos/secrets.yaml
+/core-talos/02-platform/prepare-hook/initial-secret.yaml
+!/core-talos/01-talos/.terraform.lock.hcl
