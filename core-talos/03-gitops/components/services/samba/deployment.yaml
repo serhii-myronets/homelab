@@ -19,33 +19,22 @@ spec:
       # the pod network, so Samba answers on the node's own address.
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
-      initContainers:
-        # Share roots belong to UID 1000, which the media applications share.
-        # Guests match these directories only through the group, so it must
-        # be able to write.
-        - name: prepare
-          image: busybox:1.37
-          command:
-            - sh
-            - -c
-            - >-
-              mkdir -p /data/hdd-a/torrents /data/hdd-b/scan &&
-              chown 1000:1000 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
-              chmod 0775 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan
-          volumeMounts:
-            - {name: hdd-a, mountPath: /data/hdd-a}
-            - {name: hdd-b, mountPath: /data/hdd-b}
       containers:
         - name: samba
           image: ghcr.io/servercontainers/samba:a3.24.2-s4.23.8-r0
           # Bypasses the image's entrypoint, which builds smb.conf from
           # environment variables; the configuration is mounted instead. Only
           # the image's runit services are reused, without NetBIOS.
+          # The share roots start as root-owned XFS roots; UID 1000 is the
+          # owner the media applications share, and everyone may write.
           command:
             - sh
             - -c
             - >-
               adduser -D -H -u 1000 -s /bin/false media &&
+              mkdir -p /data/hdd-a/torrents /data/hdd-b/scan &&
+              chown 1000:1000 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
+              chmod 0777 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
               rm -rf /container/config/runit/nmbd &&
               sed -i 's#^exec /usr/sbin/wsdd2$#exec /usr/sbin/wsdd2 -i br0#' /container/config/runit/wsdd2/run &&
               mkdir -p /run/samba &&
