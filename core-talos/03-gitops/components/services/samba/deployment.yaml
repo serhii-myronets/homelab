@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: samba
+  namespace: media
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: samba
+  template:
+    metadata:
+      labels:
+        app: samba
+    spec:
+      initContainers:
+        # Share roots belong to UID 1000, which the media applications share.
+        - name: prepare
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - >-
+              mkdir -p /data/hdd-a/torrents /data/hdd-b/scan &&
+              chown 1000:1000 /data/hdd-a /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan
+          volumeMounts:
+            - {name: hdd-a, mountPath: /data/hdd-a}
+            - {name: hdd-b, mountPath: /data/hdd-b}
+      containers:
+        - name: samba
+          image: ghcr.io/servercontainers/samba:smbd-only-a3.24.2-s4.23.8-r0
+          # The image creates Unix users only together with a Samba password.
+          # Guests need just an account that owns what they write.
+          command:
+            - sh
+            - -c
+            - >-
+              adduser -D -H -u 1000 -s /bin/false media &&
+              exec /container/scripts/entrypoint.sh runsvdir -P /container/config/runit
+          env:
+            - {name: NETBIOS_DISABLE, value: "1"}
+            - {name: AVAHI_DISABLE, value: "1"}
+            - {name: WSDD2_DISABLE, value: "1"}
+            - {name: SAMBA_CONF_SERVER_STRING, value: Beelink}
+            - {name: SAMBA_GLOBAL_CONFIG_netbios_SPACE_name, value: BEELINK}
+            - {name: SAMBA_GLOBAL_CONFIG_server_SPACE_min_SPACE_protocol, value: SMB2_10}
+            - {name: SAMBA_GLOBAL_CONFIG_guest_SPACE_account, value: media}
+            - name: SAMBA_VOLUME_CONFIG_torrents
+              value: "[torrents]; path = /data/hdd-a/torrents; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775"
+            - name: SAMBA_VOLUME_CONFIG_scan
+              value: "[scan]; path = /data/hdd-b/scan; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775"
+            - name: SAMBA_VOLUME_CONFIG_hdd_b
+              value: "[hdd-b]; path = /data/hdd-b; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775"
+          ports:
+            - {name: smb, containerPort: 445}
+          readinessProbe:
+            tcpSocket: {port: smb}
+          livenessProbe:
+            tcpSocket: {port: smb}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: hdd-a, mountPath: /data/hdd-a}
+            - {name: hdd-b, mountPath: /data/hdd-b}
+      volumes:
+        - name: hdd-a
+          persistentVolumeClaim: {claimName: hdd-a}
+        - name: hdd-b
+          persistentVolumeClaim: {claimName: hdd-b}

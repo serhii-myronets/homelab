@@ -18,3 +18,21 @@ spec:
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: services
+  namespace: argocd
+spec:
+  description: Service workloads for the Beelink cluster.
+  sourceRepos:
+    - https://github.com/serhii-myronets/homelab.git
+  destinations:
+    - namespace: '*'
+      server: https://kubernetes.default.svc
+  # Namespaces, PVs and other cluster-scoped objects belong to system components.
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
