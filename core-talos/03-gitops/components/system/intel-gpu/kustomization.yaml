@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# kube-system is exempt from Pod Security, which the plugin's hostPath mounts
+# of /dev/dri and the kubelet socket need.
+namespace: kube-system
+resources:
+  - https://github.com/intel/intel-device-plugins-for-kubernetes//deployments/gpu_plugin?ref=v0.37.0
+patches:
+  # Lets more than one pod use the single iGPU, e.g. Jellyfin and later Immich.
+  - target: {kind: DaemonSet, name: intel-gpu-plugin}
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args
+        value: ["-shared-dev-num=3"]

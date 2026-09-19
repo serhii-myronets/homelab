@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: jellyfin-hdd-a
+  resources:
+    requests:
+      storage: 9000Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: apps
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: jellyfin-apps
+  resources:
+    requests:
+      storage: 20Gi
+---
+# Transcodes and image caches: rebuilt on demand, so a generated directory
+# on the cache volume is enough.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cache
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-local
+  resources:
+    requests:
+      storage: 50Gi
