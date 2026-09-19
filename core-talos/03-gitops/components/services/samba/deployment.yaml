@@ -15,6 +15,10 @@ spec:
       labels:
         app: samba
     spec:
+      # Bonjour and WS-Discovery announce by multicast, which does not leave
+      # the pod network, so Samba answers on the node's own address.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       initContainers:
         # Share roots belong to UID 1000, which the media applications share.
         # Guests match these directories only through the group, so it must
@@ -33,7 +37,7 @@ spec:
             - {name: hdd-b, mountPath: /data/hdd-b}
       containers:
         - name: samba
-          image: ghcr.io/servercontainers/samba:smbd-only-a3.24.2-s4.23.8-r0
+          image: ghcr.io/servercontainers/samba:a3.24.2-s4.23.8-r0
           # The image creates Unix users only together with a Samba password.
           # Guests need just an account that owns what they write.
           command:
@@ -44,8 +48,7 @@ spec:
               exec /container/scripts/entrypoint.sh runsvdir -P /container/config/runit
           env:
             - {name: NETBIOS_DISABLE, value: "1"}
-            - {name: AVAHI_DISABLE, value: "1"}
-            - {name: WSDD2_DISABLE, value: "1"}
+            - {name: AVAHI_NAME, value: Beelink}
             - {name: SAMBA_CONF_SERVER_STRING, value: Beelink}
             - {name: SAMBA_GLOBAL_CONFIG_netbios_SPACE_name, value: BEELINK}
             - {name: SAMBA_GLOBAL_CONFIG_server_SPACE_min_SPACE_protocol, value: SMB2_10}
@@ -59,6 +62,9 @@ spec:
               value: "[scan]; path = /data/hdd-b/scan; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
             - name: SAMBA_VOLUME_CONFIG_hdd_b
               value: "[hdd-b]; path = /data/hdd-b; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
+          securityContext:
+            capabilities:
+              add: [NET_ADMIN]   # wsdd2
           ports:
             - {name: smb, containerPort: 445}
           readinessProbe:
@@ -68,7 +74,7 @@ spec:
             periodSeconds: 30
           resources:
             requests: {cpu: 50m, memory: 64Mi}
-            limits: {memory: 512Mi}
+            limits: {cpu: 200m, memory: 512Mi}
           volumeMounts:
             - {name: hdd-a, mountPath: /data/hdd-a}
             - {name: hdd-b, mountPath: /data/hdd-b}
