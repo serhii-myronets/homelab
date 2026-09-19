@@ -3,8 +3,10 @@ kind: Deployment
 metadata:
   name: cloudflared
 spec:
-  # Two connectors keep the tunnel up while one of them restarts.
-  replicas: 2
+  # One node, so a second replica would not survive its loss; each connector
+  # already keeps four connections to Cloudflare, and a rolling update starts
+  # the new pod before stopping the old one.
+  replicas: 1
   selector:
     matchLabels:
       app: cloudflared

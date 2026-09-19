@@ -87,7 +87,7 @@ platform:
     - {name: torrent, namespace: torrent, status: deployed}
     - {name: intel-gpu, namespace: kube-system, plugin: "intel-gpu-plugin 0.37.0", resource: "gpu.intel.com/i915", shared_by: 3, status: deployed}
     - {name: jellyfin, namespace: jellyfin, status: deployed}
-    - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 2, status: deployed}
+    - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   public_access:
     tunnel: {name: beelink, id: 2150274f-5bd6-4826-b46f-16992d9f8293, managed: locally, config: core-talos/03-gitops/components/system/cloudflared/config.yaml}
