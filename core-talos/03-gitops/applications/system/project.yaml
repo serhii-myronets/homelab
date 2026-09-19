@@ -12,6 +12,7 @@ spec:
     - https://github.com/serhii-myronets/homelab.git
     - https://kubernetes-sigs.github.io/metrics-server/
     - https://openebs.github.io/openebs
+    - https://kubernetes-sigs.github.io/external-dns/
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
