@@ -145,6 +145,13 @@ entrypoint. Samba, avahi and wsdd2 are bound to `br0` only. The owner's Finder
 mounted all three shares through Bonjour, and nested create, rename and delete
 succeeded through those mounts.
 
+The owner asked for the simplest possible access, so shares became
+world-writable (0777 directories, 0666 files, still owned by UID 1000), and
+the Samba container prepares the share roots itself instead of an init
+container. The owner reported that whichever of a phone and the Mac connects
+second waits 10 to 15 seconds before seeing files. With the Mac mounted, a
+second client listed shares in 0.2 to 1.4 seconds, so the cause was not found.
+
 ## Handoff
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo
