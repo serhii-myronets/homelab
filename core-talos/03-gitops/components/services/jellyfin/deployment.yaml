@@ -3,7 +3,8 @@ kind: Deployment
 metadata:
   name: jellyfin
 spec:
-  replicas: 1
+  # Stopped while core's configuration is copied in.
+  replicas: 0
   strategy:
     type: Recreate
   selector:
