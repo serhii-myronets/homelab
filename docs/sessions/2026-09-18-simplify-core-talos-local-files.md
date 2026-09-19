@@ -235,7 +235,7 @@ secret paths pointed at `/cloudflare/beelink`; the owner's folder is
 because 0.22 ignores the `alpha` target annotation, which Cloudflare refused.
 A dead-end test route proved that Cloudflare Access covers new names before
 `flood.serhii.link` was published. The orphaned test TXT record was deleted
-through the API. The owner declined to wait on external-dns: it is light, and
+through the API. The owner chose external-dns over creating records by hand;
 records now follow the routes in Git.
 
 A full copy of core's `samba/torrents` (1.7 TB) to `hdd-a/media` started on
