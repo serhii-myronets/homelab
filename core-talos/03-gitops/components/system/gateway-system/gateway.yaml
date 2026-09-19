@@ -6,7 +6,7 @@ metadata:
   annotations:
     # external-dns points public names at the Beelink tunnel, not at the
     # Gateway's LAN address.
-    external-dns.alpha.kubernetes.io/target: 2150274f-5bd6-4826-b46f-16992d9f8293.cfargotunnel.com
+    external-dns.kubernetes.io/target: 2150274f-5bd6-4826-b46f-16992d9f8293.cfargotunnel.com
 spec:
   gatewayClassName: cilium
   listeners:
