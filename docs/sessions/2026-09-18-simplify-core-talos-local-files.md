@@ -97,3 +97,12 @@ partition as `u-fast`, mounted at `/var/mnt/fast` and bind-mounted into
 kubelet. OpenEBS 4.6.0 uses only LocalPV Hostpath there through the
 non-default `fast-local` StorageClass with `Retain`; Mayastor, LVM, ZFS,
 Rawfile, Loki, Alloy and snapshot CRDs are disabled.
+
+## Handoff
+
+The Beelink is a healthy single-node Talos cluster at `192.168.8.10`.
+`fast-local` is ready for a first stateful workload, but no PVC has been
+created yet. Keep Kubernetes stateful data on that class explicitly; it is
+local to this node and therefore requires an application-level backup plan.
+All Argo Applications, including `root` and `openebs`, were `Synced` and
+`Healthy` after commit `e8587ba`.
