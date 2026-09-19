@@ -6,6 +6,9 @@ metadata:
     lbipam.cilium.io/ips: 192.168.8.16
 spec:
   type: LoadBalancer
+  # qBittorrent admits the LAN without a password, so it has to see the
+  # client's own address rather than a translated one.
+  externalTrafficPolicy: Local
   selector:
     app: torrent
   ports:
