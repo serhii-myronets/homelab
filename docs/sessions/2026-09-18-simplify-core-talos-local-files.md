@@ -181,12 +181,34 @@ deleted afterwards. Checksums matched. The daemon's umask left 0755/0644
 despite `--chmod`, which rsync applies only with `-p`; the modes were fixed by
 hand. For the full migration, set `incoming chmod = D775,F664` in the daemon.
 
+On 2026-09-19 the WD NVMe, still empty, was split into the Talos volumes
+`apps` (100 GB) and `cache` (399 GB); the reasoning is `decisions/0017`.
+Applying the new configuration unmounted `fast` but could not provision the
+new volumes until the owner wiped the disk, which auto mode refused to do.
+`hdd-volumes` became `volumes`, one file of static PVs per service.
+
+The torrent stack followed in the `torrent` namespace, privileged because
+Gluetun needs NET_ADMIN. The owner stored the NordVPN credentials in Infisical
+under `/nordvpn` by hand: a PushSecret from core's files was refused with 403,
+because the cluster's machine identity may only read. Gluetun runs as a native
+sidecar, so qBittorrent and Flood start only after the tunnel is healthy.
+qBittorrent keeps core's image, settings and `/downloads` path, is bound to
+`tun0`, and admits the LAN without a password. The pod resolves names through
+Gluetun, and `FIREWALL_OUTBOUND_SUBNETS` lets replies reach the LAN and
+kubelet.
+
+qBittorrent's public IP was a NordVPN address in Amsterdam. Killing OpenVPN
+blocked all traffic for about 17 seconds until it reconnected, and stopping
+the Gluetun container blocked it for about 4 seconds while Kubernetes
+restarted it; the home IP never appeared in either test.
+
 ## Handoff
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo
 Applications were `Synced` and `Healthy` after commit `bd2484f`. Samba serves
 the `media`, `scan` and `hdd-b` shares to guests on the LAN as
-`Beelink.local`; it is the only service. A new service that needs the HDDs
+`Beelink.local`. The torrent stack runs empty at `192.168.8.16`; core's
+torrents and their state have not moved. A new service that needs the HDDs
 gets its own PVs in `hdd-volumes`. Torrent and Jellyfin are not installed, no data has been copied from
 core, and the printer still writes to core's `scan` share.
 

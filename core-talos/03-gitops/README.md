@@ -13,12 +13,17 @@ one child Application for each component, which Argo then reconciles from Git.
   each with its own namespace.
 
 `components/system/openebs/` configures the `fast-local` OpenEBS LocalPV
-Hostpath class. Its backing XFS volume is provisioned and mounted by Talos;
-OpenEBS only creates PVC directories under `/var/mnt/fast/openebs`.
+Hostpath class for scratch data such as caches. Its backing XFS volume `cache`
+is provisioned and mounted by Talos; OpenEBS only creates PVC directories
+under `/var/mnt/cache/openebs`, whose generated names do not survive a
+reinstall.
 
-`components/system/hdd-volumes/` defines static PVs on the Talos HDD volumes,
-one set per consuming service, pre-bound to that service's claims. Several PVs
-may point at the same disk. Argo neither prunes nor deletes them or the claims:
+`components/system/volumes/` defines static PVs, one file per consuming
+service, pre-bound to that service's claims. Media use `local` PVs on the HDD
+volumes `/var/mnt/hdd-a` and `/var/mnt/hdd-b`; configurations and databases
+use `hostPath` PVs in a directory named after the service under
+`/var/mnt/apps`, created on first use. Several PVs may point at the same disk,
+and fixed paths let a reinstalled cluster find the same data. Argo neither prunes nor deletes them or the claims:
 a released PV does not rebind to a recreated claim. A new consumer needs a file
 here and matching claims in its own component.
 
