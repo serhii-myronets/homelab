@@ -13,6 +13,10 @@ spec:
     - https://kubernetes-sigs.github.io/metrics-server/
     - https://openebs.github.io/openebs
     - https://kubernetes-sigs.github.io/external-dns/
+    - https://charts.jetstack.io
+    - https://piraeus.io/helm-charts/
+    - https://cloudnative-pg.github.io/charts
+    - https://backube.github.io/helm-charts/
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc

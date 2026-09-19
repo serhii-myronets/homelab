@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnative-pg
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: system
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cloudnative-pg
+      targetRevision: 0.29.0
+      helm:
+        valueFiles:
+          - $values/core-talos/03-gitops/components/system/cloudnative-pg/values.yaml
+    # Supplies the values file and, as manifests, the namespace the operator shares with its plugins.
+    - repoURL: https://github.com/serhii-myronets/homelab.git
+      targetRevision: main
+      ref: values
+      path: core-talos/03-gitops/components/system/cloudnative-pg
+      directory:
+        include: namespace.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cnpg-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
