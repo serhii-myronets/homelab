@@ -1,4 +1,6 @@
 ---
+id: "0014"
+title: Manage the replacement core bootstrap with Terraform
 date: 2026-09-17
 status: accepted
 tags: [talos, terraform, bootstrap, secrets]

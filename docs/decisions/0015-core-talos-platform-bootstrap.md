@@ -1,5 +1,5 @@
 ---
-id: "0014"
+id: "0015"
 title: Bootstrap the Beelink platform with Helmfile and External Secrets
 date: 2026-09-18
 status: accepted
