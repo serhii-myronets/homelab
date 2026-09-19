@@ -3,7 +3,8 @@
 Apply `root.yaml` once to connect Argo CD to `apps/`. It creates one child
 Application for each component, which Argo then reconciles from Git.
 
-- `apps/` holds child `Application` manifests.
+- `apps/system/` holds child `Application` manifests for cluster-wide components.
+- `apps/services/` holds child `Application` manifests for service workloads.
 - `system/` holds cluster-wide configuration such as network policy, secret
   stores, gateways and storage.
 - `services/` holds application workloads, one directory per service.
