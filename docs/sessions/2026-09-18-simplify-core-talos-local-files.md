@@ -221,8 +221,32 @@ Applications were `Synced` and `Healthy` after commit `bd2484f`. Samba serves
 the `media`, `scan` and `hdd-b` shares to guests on the LAN as
 `Beelink.local`. The torrent stack runs empty at `192.168.8.16`, and
 Jellyfin runs at `192.168.8.17:8096` awaiting its first-run wizard, with
-hardware transcoding still to be enabled in its settings. Core's torrents,
-their state and its Jellyfin library have not moved. A new service that needs the HDDs
+hardware transcoding still to be enabled in its settings.
+
+A full copy of core's `samba/torrents` (1.7 TB) to `hdd-a/media` started on
+2026-09-19 at about 09:50 PDT, expected to take four and a half hours. It runs
+on core as `nohup rsync ... rsync://192.168.8.10/media/`, logging to
+`/tmp/beelink-rsync.log`, into the temporary pod `samba/rsync-receiver`, which
+is not in Git, accepts only core's address and writes as UID 1000 with
+`incoming chmod = D775,F664`.
+
+Still to do, in one maintenance window once the copy has finished:
+
+1. Stop qBittorrent and Jellyfin on core.
+2. Rerun the same rsync for the changes since the first pass.
+3. Copy core's Jellyfin configuration (`/srv/ssd/docker/data/jellyfin/config`,
+   1.8 GB, version 12.0) into `/var/mnt/apps/jellyfin/`, replacing the fresh
+   one, and qBittorrent's state (`BT_backup`, `categories.json` and the rest of
+   `/srv/ssd/docker/data/torrent/qbittorrent/qBittorrent/` except its
+   `qBittorrent.conf`, which Git owns) into `/var/mnt/apps/torrent/config/`,
+   both owned by UID 1000. Both keep core's paths, `/media` and `/downloads`.
+4. Start both on the Beelink; check that torrents resume without a full
+   recheck and that Jellyfin shows the library and watch history. Review the
+   transcoding settings for the N95.
+5. Delete `samba/rsync-receiver`.
+
+Do not configure the fresh Jellyfin on the Beelink before then: core's
+configuration replaces it. A new service that needs the HDDs
 gets its own PVs in `hdd-volumes`. Torrent and Jellyfin are not installed, no data has been copied from
 core, and the printer still writes to core's `scan` share.
 
