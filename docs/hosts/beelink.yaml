@@ -86,9 +86,9 @@ platform:
       - {name: torrents, path: /var/mnt/hdd-a/torrents}
       - {name: scan, path: /var/mnt/hdd-b/scan}
       - {name: hdd-b, path: /var/mnt/hdd-b}
-    owner: "1000:1000"
+    owner: nobody; files 0666, directories 0777
     address: 192.168.8.10 (host network), Beelink.local
-    discovery: Bonjour (avahi) and WS-Discovery (wsdd2)
+    discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: media enforces privileged for the host network
   node_labels: {homelab/media-hdd: "true"}
   deferred: [cert-manager, prometheus, victoriametrics, strimzi, hubble-ui]
