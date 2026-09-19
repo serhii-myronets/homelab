@@ -1,28 +1,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: snapshot-controller
+  name: plugin-barman-cloud
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
   project: system
   sources:
-    - repoURL: https://piraeus.io/helm-charts/
-      chart: snapshot-controller
-      targetRevision: 5.3.0
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: plugin-barman-cloud
+      targetRevision: 0.8.0
       helm:
         valueFiles:
-          - $values/core-talos/03-gitops/components/system/snapshot-controller/values.yaml
+          - $values/core-talos/03-gitops/components/system/database/plugin-barman-cloud/values.yaml
     - repoURL: https://github.com/serhii-myronets/homelab.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: cnpg-system
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      # cert-manager's and CNPG's CRDs may not exist yet on a fresh cluster.
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 10
+      backoff: {duration: 30s, factor: 2, maxDuration: 10m}

@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/serhii-myronets/homelab.git
     targetRevision: main
-    path: core-talos/03-gitops/components/system/cloudflared
+    path: core-talos/03-gitops/components/system/network/cloudflared
   destination:
     server: https://kubernetes.default.svc
     namespace: cloudflared

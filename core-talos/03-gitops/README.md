@@ -8,7 +8,9 @@ one child Application for each component, which Argo then reconciles from Git.
 - `applications/services/` holds child Applications for service workloads and
   their `services` AppProject.
 - `components/system/` holds cluster-wide configuration such as network policy, secret
-  stores, gateways and storage.
+  stores, gateways and storage, grouped by purpose: `network/`, `storage/`,
+  `database/`, `security/` and `platform/`. `applications/system/` mirrors the
+  same groups, one Application per component.
 - `components/services/` holds application workloads, one directory per service,
   each with its own namespace.
 
@@ -17,13 +19,13 @@ with its Pod Security label when it needs more than the default baseline; no
 Application relies on `CreateNamespace`. A Helm-based component includes that
 file through the repository source that also supplies its values.
 
-`components/system/openebs/` configures the `fast-local` OpenEBS LocalPV
+`components/system/storage/openebs/` configures the `fast-local` OpenEBS LocalPV
 Hostpath class for scratch data such as caches. Its backing XFS volume `cache`
 is provisioned and mounted by Talos; OpenEBS only creates PVC directories
 under `/var/mnt/cache/openebs`, whose generated names do not survive a
 reinstall.
 
-`components/system/volumes/` defines static PVs, one file per consuming
+`components/system/storage/volumes/` defines static PVs, one file per consuming
 service, pre-bound to that service's claims. Media use `local` PVs on the HDD
 volumes `/var/mnt/hdd-a` and `/var/mnt/hdd-b`; configurations and databases
 use `hostPath` PVs in a directory named after the service under

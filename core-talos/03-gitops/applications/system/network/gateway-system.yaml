@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/serhii-myronets/homelab.git
     targetRevision: main
-    path: core-talos/03-gitops/components/system/gateway-system
+    path: core-talos/03-gitops/components/system/network/gateway-system
   destination:
     server: https://kubernetes.default.svc
     namespace: gateway-system

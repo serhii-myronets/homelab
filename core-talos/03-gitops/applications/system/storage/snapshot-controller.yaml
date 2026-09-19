@@ -1,29 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cert-manager
+  name: snapshot-controller
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 spec:
   project: system
   sources:
-    - repoURL: https://charts.jetstack.io
-      chart: cert-manager
-      targetRevision: v1.21.2
+    - repoURL: https://piraeus.io/helm-charts/
+      chart: snapshot-controller
+      targetRevision: 5.3.0
       helm:
         valueFiles:
-          - $values/core-talos/03-gitops/components/system/cert-manager/values.yaml
-    # Supplies the values file and, as manifests, only the namespace.
+          - $values/core-talos/03-gitops/components/system/storage/snapshot-controller/values.yaml
     - repoURL: https://github.com/serhii-myronets/homelab.git
       targetRevision: main
       ref: values
-      path: core-talos/03-gitops/components/system/cert-manager
-      directory:
-        include: namespace.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: cert-manager
+    namespace: kube-system
   syncPolicy:
     automated:
       prune: true
