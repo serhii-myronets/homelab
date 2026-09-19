@@ -1,5 +1,3 @@
-# Pod Security levels are a system decision, so service namespaces are created
-# here rather than by their own Applications.
 apiVersion: v1
 kind: Namespace
 metadata:
