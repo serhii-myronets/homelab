@@ -25,9 +25,17 @@ spec:
           command:
             - sh
             - -c
-            - mkdir -p /apps/config /apps/flood && chown 1000:1000 /apps/flood
+            # qBittorrent prefers its own qBittorrent_new.conf and only
+            # falls back to qBittorrent.conf, so Git's copy is installed here
+            # and the rewritten one removed; otherwise changes never apply.
+            - >-
+              mkdir -p /apps/config/qBittorrent /apps/flood &&
+              cp /git/qBittorrent.conf /apps/config/qBittorrent/qBittorrent.conf &&
+              rm -f /apps/config/qBittorrent/qBittorrent_new.conf &&
+              chown -R 1000:1000 /apps/config/qBittorrent/qBittorrent.conf /apps/flood
           volumeMounts:
             - {name: data, mountPath: /apps}
+            - {name: config, mountPath: /git, readOnly: true}
         # A native sidecar: qBittorrent and Flood start only once the tunnel
         # is healthy, so nothing leaves the pod outside the VPN.
         - name: gluetun
@@ -79,8 +87,6 @@ spec:
             limits: {memory: 1Gi}
           volumeMounts:
             - {name: data, mountPath: /config, subPath: config}
-            # Read-only, as on core: the settings are owned by Git.
-            - {name: config, mountPath: /config/qBittorrent/qBittorrent.conf, subPath: qBittorrent.conf, readOnly: true}
             # The same /downloads path as on core, so its torrents can move over.
             - {name: hdd-a, mountPath: /downloads, subPath: media}
         - name: flood
