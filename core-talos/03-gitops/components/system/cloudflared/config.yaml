@@ -1,0 +1,12 @@
+# A locally managed tunnel: its routing lives here, not in the dashboard.
+# Every name reaches the Gateway, whose HTTPRoutes decide the backend; which
+# names reach this tunnel at all is decided by the DNS records external-dns
+# creates for those routes.
+tunnel: 2150274f-5bd6-4826-b46f-16992d9f8293
+credentials-file: /etc/cloudflared/credentials/credentials.json
+metrics: 0.0.0.0:2000
+no-autoupdate: true
+ingress:
+  - hostname: "*.serhii.link"
+    service: http://cilium-gateway-main-gateway.gateway-system.svc.cluster.local:80
+  - service: http_status:404
