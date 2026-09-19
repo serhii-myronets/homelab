@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: snapshot-controller
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: system
+  sources:
+    - repoURL: https://piraeus.io/helm-charts/
+      chart: snapshot-controller
+      targetRevision: 5.3.0
+      helm:
+        valueFiles:
+          - $values/core-talos/03-gitops/components/system/snapshot-controller/values.yaml
+    - repoURL: https://github.com/serhii-myronets/homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

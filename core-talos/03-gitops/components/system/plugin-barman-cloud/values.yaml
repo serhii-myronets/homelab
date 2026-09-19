@@ -1,0 +1,5 @@
+# Must run in the CNPG operator's namespace. Its TLS certificates come from
+# cert-manager, which may still be starting when this syncs.
+resources:
+  requests: {cpu: 10m, memory: 32Mi}
+  limits: {memory: 128Mi}
