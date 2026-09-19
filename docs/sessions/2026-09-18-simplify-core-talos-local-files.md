@@ -245,26 +245,38 @@ on core as `nohup rsync ... rsync://192.168.8.10/media/`, logging to
 is not in Git, accepts only core's address and writes as UID 1000 with
 `incoming chmod = D775,F664`.
 
-Still to do, in one maintenance window once the copy has finished:
+It finished in 4 hours 33 minutes at about 110 MB/s: 1,109 files and 1.80 TB
+on both sides.
+
+The NVMe then became one LVM volume group with a 442 GB thin pool, and every
+claim on it is a thin logical volume that VolSync can snapshot; the reasoning
+is `decisions/0019`. Talos could not declare the group - its Terraform
+provider still speaks the v1.13 contract - so a job in the cluster creates the
+physical volume, the group and the pool, and the `lvm` StorageClass is
+published only after it. Three traps came out of that step. Jellyfin,
+qBittorrent and a shared CloudNativePG cluster now sit on that class, and R2
+holds their first backups: WAL and a base backup under `cnpg/postgres-v1`,
+restic repositories under `volsync/jellyfin` and `volsync/torrent`.
+
+## Handoff
+
+Still to do, in one maintenance window:
 
 1. Stop qBittorrent and Jellyfin on core.
 2. Rerun the same rsync for the changes since the first pass.
 3. Copy core's Jellyfin configuration (`/srv/ssd/docker/data/jellyfin/config`,
-   1.8 GB, version 12.0) into `/var/mnt/apps/jellyfin/`, replacing the fresh
-   one, and qBittorrent's state (`BT_backup`, `categories.json` and the rest of
+   1.8 GB, version 12.0) and qBittorrent's state (`BT_backup`,
+   `categories.json` and the rest of
    `/srv/ssd/docker/data/torrent/qbittorrent/qBittorrent/` except its
-   `qBittorrent.conf`, which Git owns) into `/var/mnt/apps/torrent/config/`,
-   both owned by UID 1000. Both keep core's paths, `/media` and `/downloads`.
+   `qBittorrent.conf`, which Git owns) into the services' `data` claims, owned
+   by UID 1000. Both keep core's paths, `/media` and `/downloads`.
 4. Start both on the Beelink; check that torrents resume without a full
    recheck and that Jellyfin shows the library and watch history. Review the
    transcoding settings for the N95.
 5. Delete `samba/rsync-receiver`.
+6. Drill a restore: delete a service's claim and watch VolSync refill it.
 
 Do not configure the fresh Jellyfin on the Beelink before then: core's
-configuration replaces it. A new service that needs the HDDs
-gets its own PVs in `hdd-volumes`. Torrent and Jellyfin are not installed, no data has been copied from
-core, and the printer still writes to core's `scan` share.
-
-`fast-local` has no PVC yet; data on it is local to this node and needs an
-application-level backup plan. Before relying on a reinstall keeping the HDD
-data, confirm Talos reuses the `u-hdd-*` partitions.
+configuration replaces it. The printer still writes to core's `scan` share.
+Nothing is backed up but the NVMe claims: the media on the HDDs are treated
+as re-downloadable, and the only copy of them is on this node.
