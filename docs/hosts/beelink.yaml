@@ -112,17 +112,19 @@ platform:
     config: claim data on the lvm class, backed up hourly
     cache: claim cache on the lvm class, never backed up
     media: /var/mnt/hdd-a/media read-only, mounted as /media like core
+    migrated: core's 12.0 library and watch history on 2026-09-19, upgraded to 12.1
   torrent:
     address: 192.168.8.16 (LoadBalancer)
     ports: {qbittorrent: 8080, flood: 3000}
     containers:
-      - {name: gluetun, image: "qmcgaw/gluetun:v3.41.3", role: NordVPN OpenVPN, Netherlands; native sidecar}
+      - {name: gluetun, image: "qmcgaw/gluetun:v3.41.3", role: "NordVPN OpenVPN, Netherlands, native sidecar", endpoint: 186.247.163.10}
       - {name: qbittorrent, image: "ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475", interface: tun0}
       - {name: flood, image: "jesec/flood:4.16.2"}
     downloads: /var/mnt/hdd-a/media, mounted as /downloads like core
     config: claim data on the lvm class, backed up hourly
     vpn_secret: Infisical /nordvpn (OPENVPN_USER, OPENVPN_PASSWORD)
-    webui_auth: none from 192.168.8.0/24
+    webui_auth: none from 192.168.8.0/24 and the pod network
+    migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
   samba:
     auth: guest
     shares:
