@@ -68,8 +68,16 @@ Cilium 1.20.2 refused to start its Gateway controller because the bootstrap
 had installed Gateway API v1.2.0. The platform source now pins v1.6.1, which
 supplies the required TLSRoute, BackendTLSPolicy and v1 ReferenceGrant CRDs.
 
-Added Metrics Server chart 3.14.0 to the Argo-managed system Kustomization.
-Argo's Kustomize build enables Helm, so the component needs no separate Argo
-Application. It runs in `kube-system` and adds `--kubelet-insecure-tls` for
-Talos kubelet certificates. Argo synced it successfully; the APIService became
-Available and `kubectl top` returned metrics for the node and every pod.
+Added Metrics Server chart 3.14.0 as its own Argo Application. It runs in
+`kube-system` and adds `--kubelet-insecure-tls` for Talos kubelet certificates.
+Argo synced it successfully; the APIService became Available and `kubectl top`
+returned metrics for the node and every pod.
+
+The owner chose one Argo Application per component so the Argo UI exposes
+independent status, history and synchronization. A root Application now reads
+`03-gitops/apps/` recursively; component Applications point straight to their
+directories or, for Helm charts, to their chart and local values. The former
+monolithic `system` Application was deleted with orphan propagation only after
+the child Applications were Healthy, so no component was removed during the
+migration. Kustomization files were removed because none of these components
+needs patches or overlays.
