@@ -67,3 +67,8 @@ The first Argo sync created all system resources but left the Gateway pending.
 Cilium 1.20.2 refused to start its Gateway controller because the bootstrap
 had installed Gateway API v1.2.0. The platform source now pins v1.6.1, which
 supplies the required TLSRoute, BackendTLSPolicy and v1 ReferenceGrant CRDs.
+
+Prepared a separate Argo Application for Metrics Server chart 3.14.0. It uses
+the official Helm repository, runs in `kube-system`, and adds
+`--kubelet-insecure-tls` for Talos kubelet certificates. The application is
+not applied yet.
