@@ -82,3 +82,9 @@ or, for Helm charts, to their chart and local values. The former monolithic
 Applications were Healthy, so no component was removed during the migration.
 Kustomization files were removed because none of these components needs patches
 or overlays.
+
+The owner added a 500 GB WD NVMe. It enumerates as `/dev/nvme0n1`, moving the
+128 GB Talos system disk to `/dev/nvme1n1`; its serial selector is unchanged.
+Updated the install patch's path for a future reinstall. The reboot logged DNS,
+time-sync and Kubernetes API errors while `br0` had no default route; DHCP
+finished, the route appeared and Talos health checks then passed.

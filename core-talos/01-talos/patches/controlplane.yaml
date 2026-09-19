@@ -1,6 +1,6 @@
 machine:
   install:
-    disk: /dev/nvme0n1
+    disk: /dev/nvme1n1
     diskSelector:
       serial: MQ49W66504526
 cluster:
