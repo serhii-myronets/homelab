@@ -62,3 +62,8 @@ pool is `192.168.8.80-192.168.8.85`, outside the router's DHCP range. The
 old Proxmox-specific `10.1.1.x` pool, duplicate External Secrets values,
 cert-manager, cloudflared and metrics-server files were removed. They need
 their own installation and migration work before becoming desired state.
+
+The first Argo sync created all system resources but left the Gateway pending.
+Cilium 1.20.2 refused to start its Gateway controller because the bootstrap
+had installed Gateway API v1.2.0. The platform source now pins v1.6.1, which
+supplies the required TLSRoute, BackendTLSPolicy and v1 ReferenceGrant CRDs.
