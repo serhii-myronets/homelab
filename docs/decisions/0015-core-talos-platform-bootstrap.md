@@ -8,13 +8,13 @@ tags: [talos, kubernetes, helmfile, argocd, cilium, external-secrets, infisical]
 
 # Bootstrap the Beelink platform with Helmfile and External Secrets
 
-`talos/` owns Talos machine configuration and the one-time Kubernetes
-bootstrap. `platform/` owns the in-cluster foundation: Cilium, External
+`01-talos/` owns Talos machine configuration and the one-time Kubernetes
+bootstrap. `02-platform/` owns the in-cluster foundation: Cilium, External
 Secrets and Argo CD, installed in that order by Helmfile.
 
 External Secrets remains part of the initial platform. Its Infisical machine
 credential is the unavoidable first secret, stored only in the ignored
-`platform/prepare-hook/initial-secret.yaml`; the tracked example records its
+`02-platform/prepare-hook/initial-secret.yaml`; the tracked example records its
 shape. The External Secrets Helm chart owns its CRDs, so controller and CRD
 versions are installed together.
 

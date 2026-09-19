@@ -8,5 +8,5 @@ Everything below then reconciles from Git.
   stores, gateways and storage.
 - `services/` holds application workloads, one directory per service.
 
-The Cilium, External Secrets and Argo CD releases remain in `../platform/`.
+The Cilium, External Secrets and Argo CD releases remain in `../02-platform/`.
 They establish GitOps; GitOps does not manage its own bootstrap layer yet.
