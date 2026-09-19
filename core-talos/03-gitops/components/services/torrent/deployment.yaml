@@ -46,10 +46,9 @@ spec:
             - {name: VPN_SERVICE_PROVIDER, value: nordvpn}
             - {name: VPN_TYPE, value: openvpn}
             # The list built into the image holds addresses NordVPN no
-            # longer answers on, and it picks from them at random. These four
-            # answered when checked; the updater refreshes the rest daily.
+            # longer answers on, so gluetun refreshes it; until it does, it
+            # may spend a few minutes picking dead servers at startup.
             - {name: UPDATER_PERIOD, value: 24h}
-            - {name: VPN_ENDPOINT_IP, value: 186.247.163.10}
             - {name: SERVER_COUNTRIES, value: Netherlands}
             - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
             # Replies to LAN clients and kubelet probes must bypass the tunnel.
