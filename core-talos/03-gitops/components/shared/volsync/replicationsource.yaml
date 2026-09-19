@@ -1,0 +1,19 @@
+# Hourly: snapshot the volume, then send what changed to R2.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: data
+spec:
+  sourcePVC: data
+  trigger:
+    schedule: "15 * * * *"
+  restic:
+    repository: volsync-restic
+    copyMethod: Snapshot
+    storageClassName: lvm
+    volumeSnapshotClassName: lvm
+    cacheStorageClassName: lvm
+    pruneIntervalDays: 7
+    retain: {hourly: 24, daily: 7, weekly: 4, monthly: 3}
+    # Media applications share UID 1000; the mover must read their files.
+    moverSecurityContext: {runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000}

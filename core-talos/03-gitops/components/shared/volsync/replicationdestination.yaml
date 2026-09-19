@@ -1,0 +1,21 @@
+# The latest backup in R2, restored once into a snapshot the claim below is
+# populated from.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: data-restore
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: volsync-restic
+    copyMethod: Snapshot
+    capacity: CAPACITY
+    accessModes: [ReadWriteOnce]
+    storageClassName: lvm
+    volumeSnapshotClassName: lvm
+    cacheStorageClassName: lvm
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    enableFileDeletion: true
+    moverSecurityContext: {runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000}

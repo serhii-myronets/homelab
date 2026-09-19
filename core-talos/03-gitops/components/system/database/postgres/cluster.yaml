@@ -1,0 +1,29 @@
+# The shared Postgres for the Beelink's applications. One instance: there is
+# one node, and R2 is the copy that survives it.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  namespace: database
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6-standard-trixie
+  storage:
+    storageClass: lvm
+    size: 10Gi
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {memory: 1Gi}
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: r2
+        # Each generation archives under its own name; a rebuilt cluster
+        # restores from the previous one and writes to a new one.
+        serverName: postgres-v1
+  # A first boot creates an empty cluster. Once R2 holds a backup, this
+  # becomes a recovery from postgres-v1 so that a rebuilt cluster restores
+  # itself; bootstrap runs only when the cluster is created.
+  bootstrap:
+    initdb: {}

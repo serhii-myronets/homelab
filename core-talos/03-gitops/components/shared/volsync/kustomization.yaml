@@ -1,0 +1,33 @@
+# A backed-up, self-restoring volume named `data`, shared by every service
+# that includes this component. The service supplies a local ConfigMap named
+# `volsync` with APP, the R2 folder, and CAPACITY:
+#
+#   components: [../../shared/volsync]
+#   configMapGenerator:
+#     - name: volsync
+#       literals: [APP=jellyfin, CAPACITY=5Gi]
+#       options:
+#         disableNameSuffixHash: true
+#         annotations: {config.kubernetes.io/local-config: "true"}
+#
+# On an empty cluster the claim is filled from R2 before the service starts;
+# with no backup yet it starts empty.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - externalsecret.yaml
+  - replicationsource.yaml
+  - replicationdestination.yaml
+  - pvc.yaml
+replacements:
+  - source: {kind: ConfigMap, name: volsync, fieldPath: data.APP}
+    targets:
+      - select: {kind: ExternalSecret, name: volsync-restic}
+        fieldPaths: [spec.target.template.data.RESTIC_REPOSITORY]
+        options: {delimiter: /, index: 3}
+  - source: {kind: ConfigMap, name: volsync, fieldPath: data.CAPACITY}
+    targets:
+      - select: {kind: PersistentVolumeClaim, name: data}
+        fieldPaths: [spec.resources.requests.storage]
+      - select: {kind: ReplicationDestination, name: data-restore}
+        fieldPaths: [spec.restic.capacity]
