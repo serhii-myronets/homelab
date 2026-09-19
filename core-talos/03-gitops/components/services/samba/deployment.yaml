@@ -38,30 +38,18 @@ spec:
       containers:
         - name: samba
           image: ghcr.io/servercontainers/samba:a3.24.2-s4.23.8-r0
-          # The image creates Unix users only together with a Samba password.
-          # Guests need just an account that owns what they write.
+          # Bypasses the image's entrypoint, which builds smb.conf from
+          # environment variables; the configuration is mounted instead. Only
+          # the image's runit services are reused, without NetBIOS.
           command:
             - sh
             - -c
             - >-
               adduser -D -H -u 1000 -s /bin/false media &&
-              exec /container/scripts/entrypoint.sh runsvdir -P /container/config/runit
-          env:
-            - {name: NETBIOS_DISABLE, value: "1"}
-            - {name: AVAHI_NAME, value: Beelink}
-            - {name: SAMBA_CONF_SERVER_STRING, value: Beelink}
-            - {name: SAMBA_GLOBAL_CONFIG_netbios_SPACE_name, value: BEELINK}
-            - {name: SAMBA_GLOBAL_CONFIG_server_SPACE_min_SPACE_protocol, value: SMB2_10}
-            - {name: SAMBA_GLOBAL_CONFIG_guest_SPACE_account, value: media}
-            # Otherwise macOS resets new directories to 0755 after creating
-            # them, locking guests out through the group.
-            - {name: SAMBA_GLOBAL_CONFIG_fruit_COLON_nfs_aces, value: "no"}
-            - name: SAMBA_VOLUME_CONFIG_torrents
-              value: "[torrents]; path = /data/hdd-a/torrents; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
-            - name: SAMBA_VOLUME_CONFIG_scan
-              value: "[scan]; path = /data/hdd-b/scan; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
-            - name: SAMBA_VOLUME_CONFIG_hdd_b
-              value: "[hdd-b]; path = /data/hdd-b; guest ok = yes; guest only = yes; read only = no; force user = media; force group = media; create mask = 0664; directory mask = 0775; force create mode = 0664; force directory mode = 0775"
+              rm -rf /container/config/runit/nmbd &&
+              sed -i 's#^exec /usr/sbin/wsdd2$#exec /usr/sbin/wsdd2 -i br0#' /container/config/runit/wsdd2/run &&
+              mkdir -p /run/samba &&
+              exec runsvdir -P /container/config/runit
           securityContext:
             capabilities:
               add: [NET_ADMIN]   # wsdd2
@@ -74,11 +62,16 @@ spec:
             periodSeconds: 30
           resources:
             requests: {cpu: 50m, memory: 64Mi}
-            limits: {cpu: 200m, memory: 512Mi}
+            limits: {cpu: 1000m, memory: 512Mi}
           volumeMounts:
             - {name: hdd-a, mountPath: /data/hdd-a}
             - {name: hdd-b, mountPath: /data/hdd-b}
+            - {name: config, mountPath: /etc/samba/smb.conf, subPath: smb.conf}
+            - {name: config, mountPath: /etc/avahi/avahi-daemon.conf, subPath: avahi-daemon.conf}
+            - {name: config, mountPath: /etc/avahi/services/samba.service, subPath: samba.service}
       volumes:
+        - name: config
+          configMap: {name: samba-config}
         - name: hdd-a
           persistentVolumeClaim: {claimName: hdd-a}
         - name: hdd-b
