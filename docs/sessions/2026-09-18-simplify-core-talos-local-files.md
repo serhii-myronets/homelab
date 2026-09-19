@@ -75,10 +75,10 @@ returned metrics for the node and every pod.
 
 The owner chose one Argo Application per component so the Argo UI exposes
 independent status, history and synchronization. A root Application now reads
-`03-gitops/applications/` recursively while excluding its own manifest;
-component Applications point straight to `03-gitops/components/` or, for Helm
-charts, to their chart and local values. The former monolithic `system`
-Application was deleted with orphan propagation only after the child
+`03-gitops/applications/` recursively; its bootstrap manifest stays at the
+GitOps root. Component Applications point straight to `03-gitops/components/`
+or, for Helm charts, to their chart and local values. The former monolithic
+`system` Application was deleted with orphan propagation only after the child
 Applications were Healthy, so no component was removed during the migration.
 Kustomization files were removed because none of these components needs patches
 or overlays.
