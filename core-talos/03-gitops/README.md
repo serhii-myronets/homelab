@@ -9,6 +9,10 @@ one child Application for each component, which Argo then reconciles from Git.
   stores, gateways and storage.
 - `components/services/` holds application workloads, one directory per service.
 
+`components/system/openebs/` configures the `fast-local` OpenEBS LocalPV
+Hostpath class. Its backing XFS volume is provisioned and mounted by Talos;
+OpenEBS only creates PVC directories under `/var/mnt/fast/openebs`.
+
 The Cilium, External Secrets and Argo CD releases remain in `../02-platform/`.
 They establish GitOps; GitOps does not manage its own bootstrap layer yet.
 

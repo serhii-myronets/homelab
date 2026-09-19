@@ -8,6 +8,7 @@ spec:
   sourceRepos:
     - https://github.com/serhii-myronets/homelab.git
     - https://kubernetes-sigs.github.io/metrics-server/
+    - https://openebs.github.io/openebs
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc

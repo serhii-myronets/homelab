@@ -88,3 +88,12 @@ The owner added a 500 GB WD NVMe. It enumerates as `/dev/nvme0n1`, moving the
 Updated the install patch's path for a future reinstall. The reboot logged DNS,
 time-sync and Kubernetes API errors while `br0` had no default route; DHCP
 finished, the route appeared and Talos health checks then passed.
+
+The WD NVMe contained old data partitions, so Talos could not provision a user
+volume until the owner explicitly approved wiping it. `talosctl wipe disk
+nvme0n1 --method FAST` cleared only the verified WD disk with serial
+`204390442013`. The Talos `UserVolumeConfig` now provisions its 499 GB XFS
+partition as `u-fast`, mounted at `/var/mnt/fast` and bind-mounted into
+kubelet. OpenEBS 4.6.0 uses only LocalPV Hostpath there through the
+non-default `fast-local` StorageClass with `Retain`; Mayastor, LVM, ZFS,
+Rawfile, Loki, Alloy and snapshot CRDs are disabled.

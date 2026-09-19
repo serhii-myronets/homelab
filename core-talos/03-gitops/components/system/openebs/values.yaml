@@ -1,0 +1,35 @@
+openebs-crds:
+  csi:
+    volumeSnapshots:
+      enabled: false
+
+localpv-provisioner:
+  enabled: true
+  hostpathClass:
+    name: fast-local
+    isDefaultClass: false
+    basePath: /var/mnt/fast/openebs
+    reclaimPolicy: Retain
+
+engines:
+  local:
+    hostpath:
+      enabled: true
+    lvm:
+      enabled: false
+    rawfile:
+      enabled: false
+    zfs:
+      enabled: false
+  replicated:
+    mayastor:
+      enabled: false
+
+alloy:
+  enabled: false
+
+loki:
+  enabled: false
+
+preUpgradeHook:
+  enabled: false

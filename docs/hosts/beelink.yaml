@@ -35,7 +35,7 @@ disks:
     size: 500G
     transport: nvme
     wwid: eui.e8238fa6bf530001001b444a46596260
-    role: unconfigured fast Kubernetes storage candidate
+    role: Talos-managed 499 GB XFS volume mounted at /var/mnt/fast for OpenEBS LocalPV Hostpath
   - dev: nvme1n1
     model: 128GB SSD
     serial: MQ49W66504526
