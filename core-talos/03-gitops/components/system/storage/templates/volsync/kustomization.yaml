@@ -2,7 +2,7 @@
 # that includes this component. The service supplies a local ConfigMap named
 # `volsync` with APP, the R2 folder, and CAPACITY:
 #
-#   components: [../../shared/volsync]
+#   components: [../../system/storage/templates/volsync]
 #   configMapGenerator:
 #     - name: volsync
 #       literals: [APP=jellyfin, CAPACITY=5Gi]
