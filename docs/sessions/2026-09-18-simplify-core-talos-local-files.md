@@ -152,6 +152,14 @@ container. The owner reported that whichever of a phone and the Mac connects
 second waits 10 to 15 seconds before seeing files. With the Mac mounted, a
 second client listed shares in 0.2 to 1.4 seconds, so the cause was not found.
 
+The owner then asked how to avoid ownership conflicts between the media
+services. Every media application will run as UID 1000, as on core, so Samba
+went back to forcing that user with group-writable 0775/0664 modes. The
+container only chowns the share roots at start: a recursive chown would walk
+both disks on every restart. The files already written as `nobody` were
+chowned once by hand. NetBIOS is on again for phone clients that browse with
+it.
+
 ## Handoff
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo

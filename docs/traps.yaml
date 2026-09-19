@@ -44,9 +44,9 @@ traps:
       Finder reset each new directory to 0755 through NFS ACEs, after
       `force directory mode` has applied.
     fix: >-
-      Make everything writable by others (share roots 0777, `force create mode
-      = 0666`, `force directory mode = 0777`); group-writable 0775/0664 also
-      works. Either way set `fruit:nfs_aces = no`.
+      Keep share roots and everything below group-writable (0775/0664 with
+      matching `force create mode` and `force directory mode`), and set
+      `fruit:nfs_aces = no`. World-writable modes also work.
     diagnosed: 2026-09-18, on the Beelink
 
   - id: cilium-gateway-api-needs-v1-6-crds
