@@ -8,4 +8,5 @@
 /core-talos/01-talos/crash*.log
 /core-talos/01-talos/secrets.yaml
 /core-talos/02-platform/prepare-hook/initial-secret.yaml
+/core-talos/03-gitops/system/*/charts/
 !/core-talos/01-talos/.terraform.lock.hcl
