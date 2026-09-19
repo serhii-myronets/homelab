@@ -258,25 +258,36 @@ qBittorrent and a shared CloudNativePG cluster now sit on that class, and R2
 holds their first backups: WAL and a base backup under `cnpg/postgres-v1`,
 restic repositories under `volsync/jellyfin` and `volsync/torrent`.
 
+That evening the services moved. qBittorrent, Flood and Jellyfin were stopped
+on core, a final rsync found one changed file, and their state was pushed into
+the new claims through temporary rsync daemons: Jellyfin's 1.8 GB
+configuration and qBittorrent's `BT_backup`. Both kept core's paths, so
+Jellyfin's 12.0 library upgraded itself to 12.1 with its watch history, and 55
+torrents resumed seeding without a recheck.
+
+Three things fought back, each now a trap. qBittorrent ignored the
+configuration from Git, because it prefers the `qBittorrent_new.conf` it
+writes itself; the init container installs Git's copy and deletes that file.
+Gluetun could not connect at all until it was pointed at an address from
+NordVPN's API: the list inside the image holds servers that no longer answer.
+And LAN clients reach services as the node's internal address even with
+`externalTrafficPolicy: Local`, so qBittorrent's web UI trusts the pod network
+as well as the LAN.
+
 ## Handoff
 
-Still to do, in one maintenance window:
+The Beelink now serves the media: Samba, the torrent stack and Jellyfin, with
+backups to R2. Core still runs Caddy, cloudflared, homepage, Pulse and
+Portainer; its qBittorrent, Flood, Jellyfin and VPN containers are stopped but
+not removed, and its data is untouched.
 
-1. Stop qBittorrent and Jellyfin on core.
-2. Rerun the same rsync for the changes since the first pass.
-3. Copy core's Jellyfin configuration (`/srv/ssd/docker/data/jellyfin/config`,
-   1.8 GB, version 12.0) and qBittorrent's state (`BT_backup`,
-   `categories.json` and the rest of
-   `/srv/ssd/docker/data/torrent/qbittorrent/qBittorrent/` except its
-   `qBittorrent.conf`, which Git owns) into the services' `data` claims, owned
-   by UID 1000. Both keep core's paths, `/media` and `/downloads`.
-4. Start both on the Beelink; check that torrents resume without a full
-   recheck and that Jellyfin shows the library and watch history. Review the
-   transcoding settings for the N95.
-5. Delete `samba/rsync-receiver`.
-6. Drill a restore: delete a service's claim and watch VolSync refill it.
+Still to do:
 
-Do not configure the fresh Jellyfin on the Beelink before then: core's
-configuration replaces it. The printer still writes to core's `scan` share.
-Nothing is backed up but the NVMe claims: the media on the HDDs are treated
-as re-downloadable, and the only copy of them is on this node.
+1. Drill a restore: delete a service's claim and watch VolSync refill it.
+2. Check Jellyfin's transcoding settings for the N95, and that the library
+   plays; hardware decoding of AV1 is new here.
+3. Point the printer at `\\192.168.8.10\scan` when Paperless is ready.
+4. Move the remaining core services, then retire core's stack and its tunnel.
+
+The media on the HDDs are still the only copy: they are treated as
+re-downloadable.

@@ -49,6 +49,50 @@ traps:
       `fruit:nfs_aces = no`. World-writable modes also work.
     diagnosed: 2026-09-18, on the Beelink
 
+  - id: qbittorrent-prefers-its-own-config
+    applies_to: [qbittorrent, kubernetes]
+    symptom: >-
+      Changes to qBittorrent.conf never take effect, and the file it writes
+      keeps the old values.
+    cause: >-
+      qBittorrent reads qBittorrent_new.conf when it exists and only falls
+      back to qBittorrent.conf, and it rewrites that file from memory when it
+      shuts down.
+    fix: >-
+      Copy the file from Git into the volume at startup and delete
+      qBittorrent_new.conf there, rather than mounting the configuration
+      read-only. To fix a running instance, delete the file and kill the pod
+      without a graceful stop, which would write it back.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: gluetun-ships-dead-vpn-servers
+    applies_to: [gluetun, nordvpn, kubernetes]
+    symptom: >-
+      OpenVPN reports "TLS handshake failed" or the host being unreachable on
+      one server after another, and connects only occasionally.
+    cause: >-
+      The server list built into the image holds addresses the provider no
+      longer answers on, and gluetun picks from it at random. NordVPN's own
+      API returns different, reachable addresses.
+    fix: >-
+      Compare a few addresses from the provider's API with the ones gluetun
+      tries; set VPN_ENDPOINT_IP to one that answers. SERVER_HOSTNAMES only
+      accepts names already in that stale list.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: cilium-hides-the-client-address
+    applies_to: [cilium, kubernetes, networking]
+    symptom: >-
+      A service that trusts LAN addresses rejects LAN clients; the pod sees
+      the node's cilium_host address instead.
+    cause: >-
+      Traffic through the LoadBalancer is masqueraded even with
+      externalTrafficPolicy set to Local. Not understood further.
+    fix: >-
+      Until this is understood, trust the pod network too, or use the
+      service's own authentication.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: talos-provider-lags-the-machine-config
     applies_to: [talos, terraform]
     symptom: >-
