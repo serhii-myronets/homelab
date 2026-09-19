@@ -1,4 +1,9 @@
 configs:
+  # Compare desired and live objects through the API server, so fields it
+  # defaults (such as an HTTPRoute's path match and backend weight) do not
+  # leave Applications permanently OutOfSync.
+  params:
+    controller.diff.server.side: "true"
   cm:
     kustomize.buildOptions: "--enable-helm"
     users.anonymous.enabled: "true"
