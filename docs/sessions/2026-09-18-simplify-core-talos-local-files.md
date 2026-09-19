@@ -119,6 +119,8 @@ local to this node and therefore requires an application-level backup plan.
 All Argo Applications, including `root`, `openebs` and `media-storage`, were
 `Synced` and `Healthy` after commit `47ec0e1`. A test pod wrote to both HDD
 claims. Their roots are `root:root 0755`, so the media applications must chown
-them or run as root. No media application is installed yet. Before relying on
+them or run as root. Samba is the first service; torrent and Jellyfin are not installed yet, and
+no data has been copied from core. The printer still writes to core's `scan`
+share. Before relying on
 a reinstall keeping the HDD data, confirm Talos reuses the `u-hdd-*`
 partitions.
