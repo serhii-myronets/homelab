@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: torrent
+  labels:
+    # Gluetun needs NET_ADMIN to build the tunnel and its firewall.
+    pod-security.kubernetes.io/enforce: privileged

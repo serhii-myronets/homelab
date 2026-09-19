@@ -1,11 +1,24 @@
+# The WD NVMe is split so that a cache filling its volume cannot starve the
+# application configurations and databases.
 apiVersion: v1alpha1
 kind: UserVolumeConfig
-name: fast
+name: apps
 provisioning:
   diskSelector:
     match: disk.serial == "204390442013"
-  minSize: 499GB
-  maxSize: 499GB
+  minSize: 100GB
+  maxSize: 100GB
+filesystem:
+  type: xfs
+---
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: cache
+provisioning:
+  diskSelector:
+    match: disk.serial == "204390442013"
+  minSize: 399GB
+  maxSize: 399GB
 filesystem:
   type: xfs
 ---
@@ -38,8 +51,15 @@ machine:
     homelab/media-hdd: "true"
   kubelet:
     extraMounts:
-      - source: /var/mnt/fast
-        destination: /var/mnt/fast
+      - source: /var/mnt/apps
+        destination: /var/mnt/apps
+        type: bind
+        options:
+          - bind
+          - rshared
+          - rw
+      - source: /var/mnt/cache
+        destination: /var/mnt/cache
         type: bind
         options:
           - bind

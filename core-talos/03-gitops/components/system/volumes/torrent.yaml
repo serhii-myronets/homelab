@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: torrent-hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 9000Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: torrent
+    name: hdd-a
+  local:
+    path: /var/mnt/hdd-a
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: homelab/media-hdd
+              operator: In
+              values:
+                - "true"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: torrent-apps
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: torrent
+    name: apps
+  hostPath:
+    path: /var/mnt/apps/torrent
+    type: DirectoryOrCreate
