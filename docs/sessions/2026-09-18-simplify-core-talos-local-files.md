@@ -172,6 +172,15 @@ objects: the old `media` namespace and PVs were deleted by hand, and the
 namespace and projects were adopted without being recreated. The Samba pod
 kept running throughout the handover.
 
+For a first test with real files, five movies (25.4 GB, including an H.265
+file and a directory with subtitles) were copied from core's
+`samba/torrents/Movies` to `hdd-a/media/Movies`. A temporary pod in `samba` ran
+an rsync daemon on the host network, writing as UID 1000 and accepting only
+core's address; core pushed with `rsync -rt` at 118 MB/s, and the pod was
+deleted afterwards. Checksums matched. The daemon's umask left 0755/0644
+despite `--chmod`, which rsync applies only with `-p`; the modes were fixed by
+hand. For the full migration, set `incoming chmod = D775,F664` in the daemon.
+
 ## Handoff
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo
