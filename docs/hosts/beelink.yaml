@@ -74,6 +74,7 @@ platform:
   load_balancer_ips:
     - {ip: 192.168.8.15, service: gateway-system/cilium-gateway-main-gateway}
     - {ip: 192.168.8.16, service: torrent/torrent, ports: [8080, 3000]}
+    - {ip: 192.168.8.17, service: jellyfin/jellyfin, port: 8096}
   releases:
     - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
     - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
@@ -81,9 +82,19 @@ platform:
   gitops_components:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
-    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, torrent-apps], status: deployed}
+    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, torrent-apps, jellyfin-hdd-a, jellyfin-apps], status: deployed}
     - {name: samba, namespace: samba, status: deployed}
     - {name: torrent, namespace: torrent, status: deployed}
+    - {name: intel-gpu, namespace: kube-system, plugin: "intel-gpu-plugin 0.37.0", resource: "gpu.intel.com/i915", shared_by: 3, status: deployed}
+    - {name: jellyfin, namespace: jellyfin, status: deployed}
+  jellyfin:
+    address: 192.168.8.17:8096 (LoadBalancer)
+    image: "jellyfin/jellyfin:12.1.20260915-010956"
+    user: "1000:1000"
+    gpu: Quick Sync through the Intel iHD driver 26.2.4
+    config: /var/mnt/apps/jellyfin
+    cache: fast-local claim on /var/mnt/cache
+    media: /var/mnt/hdd-a/media read-only, mounted as /media like core
   torrent:
     address: 192.168.8.16 (LoadBalancer)
     ports: {qbittorrent: 8080, flood: 3000}

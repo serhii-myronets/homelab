@@ -202,13 +202,27 @@ blocked all traffic for about 17 seconds until it reconnected, and stopping
 the Gluetun container blocked it for about 4 seconds while Kubernetes
 restarted it; the home IP never appeared in either test.
 
+Jellyfin came next, fresh rather than migrated. The Intel GPU device plugin
+0.37.0 runs in `kube-system`, exempt from Pod Security, and shares the iGPU
+with up to three pods, so Jellyfin in a baseline namespace gets it as
+`gpu.intel.com/i915`; `vainfo` inside the pod reported the iHD driver with
+H.264 encoding and HEVC 10-bit decoding. Jellyfin runs as UID 1000 with its
+configuration on `apps`, transcodes on a 50 Gi `fast-local` claim, and reads
+`hdd-a/media` as `/media`, the path core uses, so core's 12.0 library could
+move later. That first `fast-local` claim stayed Pending: OpenEBS's
+privileged helper pod was rejected by the baseline level in `openebs`, which
+is now privileged. At the owner's request every Argo-managed namespace is now
+a file in its component directory, OpenEBS included.
+
 ## Handoff
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo
 Applications were `Synced` and `Healthy` after commit `bd2484f`. Samba serves
 the `media`, `scan` and `hdd-b` shares to guests on the LAN as
-`Beelink.local`. The torrent stack runs empty at `192.168.8.16`; core's
-torrents and their state have not moved. A new service that needs the HDDs
+`Beelink.local`. The torrent stack runs empty at `192.168.8.16`, and
+Jellyfin runs at `192.168.8.17:8096` awaiting its first-run wizard, with
+hardware transcoding still to be enabled in its settings. Core's torrents,
+their state and its Jellyfin library have not moved. A new service that needs the HDDs
 gets its own PVs in `hdd-volumes`. Torrent and Jellyfin are not installed, no data has been copied from
 core, and the printer still writes to core's `scan` share.
 
