@@ -37,6 +37,9 @@ spec:
             - {name: TZ, value: America/Los_Angeles}
             - {name: VPN_SERVICE_PROVIDER, value: nordvpn}
             - {name: VPN_TYPE, value: openvpn}
+            # The pod network's MTU is 1450, and OpenVPN's handshake over UDP
+            # kept failing on it; TCP carries it without fragmenting.
+            - {name: OPENVPN_PROTOCOL, value: tcp}
             - {name: SERVER_COUNTRIES, value: Netherlands}
             - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
             # Replies to LAN clients and kubelet probes must bypass the tunnel.
