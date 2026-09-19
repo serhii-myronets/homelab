@@ -58,7 +58,7 @@ set `operator.replicas: 1`.
 Prepared the first Argo-managed system directory without applying it. It owns
 the Infisical `ClusterSecretStore`, the `gateway-system` namespace and a Cilium
 Gateway. The Gateway's L2 policy announces through Talos bridge `br0`; its
-pool is `192.168.8.80-192.168.8.85`, outside the router's DHCP range. The
+pool is `192.168.8.15-192.168.8.20`, outside the router's DHCP range. The
 old Proxmox-specific `10.1.1.x` pool, duplicate External Secrets values,
 cert-manager, cloudflared and metrics-server files were removed. They need
 their own installation and migration work before becoming desired state.
