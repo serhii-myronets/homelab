@@ -14,9 +14,13 @@ spec:
       helm:
         valueFiles:
           - $values/core-talos/03-gitops/components/system/openebs/values.yaml
+    # Supplies the values file and, as manifests, only the namespace.
     - repoURL: https://github.com/serhii-myronets/homelab.git
       targetRevision: main
       ref: values
+      path: core-talos/03-gitops/components/system/openebs
+      directory:
+        include: namespace.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: openebs
@@ -25,10 +29,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
       - ServerSideApply=true
-    # The provisioner creates each PVC directory with a privileged helper pod
-    # in this namespace, which the baseline Pod Security level rejects.
-    managedNamespaceMetadata:
-      labels:
-        pod-security.kubernetes.io/enforce: privileged

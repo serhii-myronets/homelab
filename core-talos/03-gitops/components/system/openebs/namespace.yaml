@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openebs
+  labels:
+    # The provisioner creates each PVC directory with a privileged helper pod
+    # in this namespace, which the baseline Pod Security level rejects.
+    pod-security.kubernetes.io/enforce: privileged
