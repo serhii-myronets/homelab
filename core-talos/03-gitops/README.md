@@ -32,6 +32,13 @@ and fixed paths let a reinstalled cluster find the same data. Argo neither prune
 a released PV does not rebind to a recreated claim. A new consumer needs a file
 here and matching claims in its own component.
 
+A service is published on the internet by an HTTPRoute on `main-gateway` with
+a name under `serhii.link`. external-dns then creates a proxied CNAME to the
+Beelink tunnel, which `cloudflared` forwards to the Gateway, and Cloudflare
+Access guards every such name. Other names on the Gateway get no public
+record. external-dns owns only records it created (`txtOwnerId: beelink`), so
+names still served by core's tunnel move by deleting them from that tunnel.
+
 The Cilium, External Secrets and Argo CD releases remain in `../02-platform/`.
 They establish GitOps; GitOps does not manage its own bootstrap layer yet.
 

@@ -223,6 +223,21 @@ the `media`, `scan` and `hdd-b` shares to guests on the LAN as
 Jellyfin runs at `192.168.8.17:8096` awaiting its first-run wizard, with
 hardware transcoding still to be enabled in its settings.
 
+Public access followed. Cloudflare routes a name to a tunnel by its DNS
+record, not by the tunnel's ingress rules, so each cluster gets its own tunnel
+and names move one record at a time. The owner created the locally managed
+tunnel `beelink` with `cloudflared tunnel create`; `wildcard-tunnel`, whose
+credentials were already in Infisical, stays for a future Proxmox cluster.
+`cloudflared` sends every `serhii.link` name to the Gateway, and external-dns
+publishes a proxied CNAME for each HTTPRoute under that domain. The first
+secret paths pointed at `/cloudflare/beelink`; the owner's folder is
+`/cloudflared/beelink`. external-dns first published the Gateway's LAN address,
+because 0.22 ignores the `alpha` target annotation, which Cloudflare refused.
+A dead-end test route proved that Cloudflare Access covers new names before
+`flood.serhii.link` was published. The orphaned test TXT record was deleted
+through the API. The owner declined to wait on external-dns: it is light, and
+records now follow the routes in Git.
+
 A full copy of core's `samba/torrents` (1.7 TB) to `hdd-a/media` started on
 2026-09-19 at about 09:50 PDT, expected to take four and a half hours. It runs
 on core as `nohup rsync ... rsync://192.168.8.10/media/`, logging to
