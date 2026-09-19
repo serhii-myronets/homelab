@@ -53,5 +53,12 @@ envoy:
 l2announcements:
   enabled: true
 
-# devices:
-#   - eth0
+# Talos exposes the LAN through this bridge, so auto-detection has no physical
+# default route to select for direct routing.
+devices: br0
+
+nodePort:
+  directRoutingDevice: br0
+
+operator:
+  replicas: 1

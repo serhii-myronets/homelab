@@ -7,6 +7,13 @@ meta:
   tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard, helmfile, kubernetes]
 
 traps:
+  - id: cilium-bridge-needs-explicit-device
+    applies_to: [cilium, talos, networking]
+    symptom: Cilium's agent exits with "unable to determine direct routing device".
+    cause: "The node's LAN IP is assigned to a Talos bridge, so Cilium cannot infer a physical direct-routing device."
+    fix: "Set `nodePort.directRoutingDevice: br0` and `devices: br0` in the Cilium Helm values, then run `kubectl -n kube-system rollout restart daemonset/cilium`; the config init container only runs for a new pod."
+    diagnosed: 2026-09-18, on the Beelink
+
   - id: helmfile-build-runs-prepare-hooks
     applies_to: [helmfile, kubernetes]
     symptom: A command intended to inspect the rendered Helmfile changes the cluster.
