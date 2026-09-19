@@ -1,0 +1,21 @@
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: fast
+provisioning:
+  diskSelector:
+    match: disk.serial == "204390442013"
+  minSize: 499GB
+  maxSize: 499GB
+filesystem:
+  type: xfs
+---
+machine:
+  kubelet:
+    extraMounts:
+      - source: /var/mnt/fast
+        destination: /var/mnt/fast
+        type: bind
+        options:
+          - bind
+          - rshared
+          - rw

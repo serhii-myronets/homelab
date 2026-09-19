@@ -10,8 +10,12 @@ terraform apply
 ```
 
 `main.tf` pins the Talos, Kubernetes and provider versions. `patches/` holds
-the installation, scheduling and network configuration. The provider lock
-file is committed.
+the installation, scheduling, network and storage configuration. The provider
+lock file is committed.
+
+`patches/storage.yaml` provisions 499 GB of the dedicated 500 GB WD NVMe by serial
+number as the XFS user volume `fast`. Talos mounts it at `/var/mnt/fast` and
+bind-mounts it into kubelet for the `fast-local` OpenEBS storage class.
 
 `terraform.tfstate`, its backups and `secrets.yaml` are plaintext local files
 ignored by Git. Back them up securely outside the repository. The state is the
