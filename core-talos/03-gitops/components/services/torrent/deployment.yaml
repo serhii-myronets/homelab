@@ -48,7 +48,7 @@ spec:
             # The list built into the image holds addresses NordVPN no
             # longer answers on, so gluetun refreshes it; until it does, it
             # may spend a few minutes picking dead servers at startup.
-            - {name: UPDATER_PERIOD, value: 5m}
+            - {name: UPDATER_PERIOD, value: 24h}
             # Each dead address otherwise costs about a minute before the
             # next one is tried.
             - {name: OPENVPN_FLAGS, value: "--connect-timeout 10 --hand-window 20"}
