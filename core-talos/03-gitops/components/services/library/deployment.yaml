@@ -141,13 +141,17 @@ spec:
         # neither has to be opened to ask for something. Viewers sign in
         # with their Jellyfin account and each carries its own default
         # quality profile, which is how one household asks in two languages.
+        # The project renamed itself from Jellyseerr to Seerr and moved to
+        # seerr-team/seerr; ghcr.io/fallenbagel/jellyseerr stops at 2.7.3 and
+        # takes no more releases, so that tag reads current and is not. The
+        # local name stays jellyseerr.home, which is what the certificate and
+        # the household know it by.
         - name: jellyseerr
-          image: ghcr.io/fallenbagel/jellyseerr:2.7.3
+          image: ghcr.io/seerr-team/seerr:v3.4.1
           env:
             - {name: TZ, value: America/Los_Angeles}
-            # The image names no user, so Node would look for a home
-            # directory that uid 1000 cannot write. Its caches go beside the
-            # configuration instead.
+            # Node would otherwise look for a home directory this uid cannot
+            # write. Its caches go beside the configuration instead.
             - {name: HOME, value: /app/config}
           securityContext:
             runAsUser: 1000
