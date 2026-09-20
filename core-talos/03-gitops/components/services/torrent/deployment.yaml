@@ -92,6 +92,7 @@ spec:
             limits: {memory: 1Gi}
           volumeMounts:
             - {name: data, mountPath: /config, subPath: config}
+            - {name: cache, mountPath: /incomplete}
             # The same /downloads path as on core, so its torrents can move over.
             - {name: hdd-a, mountPath: /downloads, subPath: media}
         - name: flood
@@ -125,5 +126,7 @@ spec:
           persistentVolumeClaim: {claimName: data}
         - name: hdd-a
           persistentVolumeClaim: {claimName: hdd-a}
+        - name: cache
+          persistentVolumeClaim: {claimName: cache}
         - name: config
           configMap: {name: torrent-config}

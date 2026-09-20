@@ -24,3 +24,16 @@ spec:
   resources:
     requests:
       storage: 1Gi
+---
+# Incomplete downloads land on the NVMe volume, then qBittorrent moves them to
+# the HDD media volume after completion. They can always be downloaded again.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cache
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: lvm
+  resources:
+    requests:
+      storage: 50Gi
