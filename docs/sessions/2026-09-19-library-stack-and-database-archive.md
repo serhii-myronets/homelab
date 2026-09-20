@@ -135,7 +135,3 @@ links.
 All 56 torrents are complete and stopped, with no missing files - they were
 already stopped before the rename. Jellyfin's `/media` mount and
 qBittorrent's `/downloads` mount both exist only until the import is done.
-
-All 56 torrents are complete and stopped, with no missing files - they were
-already stopped before the rename. Jellyfin's `/media` mount and
-qBittorrent's `/downloads` mount both exist only until the import is done.
