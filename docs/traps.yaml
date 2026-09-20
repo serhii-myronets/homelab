@@ -209,6 +209,30 @@ traps:
       way have to be safe to run twice.
     diagnosed: 2026-09-19, on the Beelink
 
+  - id: gluetun-retries-one-vpn-server-for-ever
+    applies_to: [gluetun, openvpn, nordvpn, torrent]
+    symptom: >-
+      The tunnel drops and never comes back. The log repeats AUTH_FAILED
+      every ten seconds - thirteen times in three minutes on 2026-09-19 -
+      and the pod stays unready, so the whole stack answers 503. The
+      credentials are unchanged and worked minutes earlier.
+    cause: >-
+      Gluetun writes a single `remote` into its OpenVPN configuration along
+      with `auth-retry nointeract`. A server that answers AUTH_FAILED is
+      therefore retried for ever: OpenVPN soft-restarts into the same
+      address, and gluetun chooses another server only when the OpenVPN
+      process dies. The cached list of every provider server sits beside it,
+      unused. Restarting the pod works, which makes this look transient.
+    tell: >-
+      `Preserving recently used remote address` names the same IP on every
+      attempt, and `grep remote /etc/openvpn/target.ovpn` inside the
+      container shows exactly one.
+    fix: >-
+      Add `--auth-retry none` to OPENVPN_FLAGS. OpenVPN then exits on a
+      rejected login and gluetun picks the next server. The flags follow
+      --config on the command line, so they override what gluetun wrote.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: openebs-lvm-mounts-a-volume-into-one-pod-only
     applies_to: [openebs, lvm, kubernetes]
     symptom: >-
