@@ -57,7 +57,15 @@ spec:
             - {name: UPDATER_PERIOD, value: 24h}
             # Each dead address otherwise costs about a minute before the
             # next one is tried.
-            - {name: OPENVPN_FLAGS, value: "--connect-timeout 10 --hand-window 20"}
+            #
+            # `auth-retry none` is the one that matters. Gluetun writes a
+            # single `remote` into the configuration and sets `auth-retry
+            # nointeract`, so a server answering AUTH_FAILED is retried for
+            # ever: OpenVPN soft-restarts into the same address, and gluetun
+            # only picks another when the process dies. With `none` it dies,
+            # and the next server is tried. The flags come after --config on
+            # the command line, so this overrides what gluetun wrote.
+            - {name: OPENVPN_FLAGS, value: "--connect-timeout 10 --hand-window 20 --auth-retry none"}
             - {name: SERVER_COUNTRIES, value: Netherlands}
             - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
             # Replies to LAN clients and kubelet probes must bypass the tunnel.
