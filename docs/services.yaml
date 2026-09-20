@@ -1,7 +1,7 @@
-# What runs, where it is deployed from, and every hostname that reaches it.
-# Core only; the Beelink's services are in hosts/beelink.yaml.
-# Verified 2026-09-12; the old Proxmox cluster's routes were removed
-# 2026-09-19 after its hostnames stopped resolving.
+# Retained core Docker stacks, their former routes, and their secrets. Every
+# container below was stopped on 2026-09-19 after its replacement moved to the
+# Beelink or the service became unnecessary. The Beelink's active services are
+# in hosts/beelink.yaml.
 
 meta:
   updated: 2026-09-19
@@ -16,6 +16,7 @@ portainer_stack_settings:      # Stacks -> Add stack -> Repository
 
 stacks:
   - name: homepage
+    status: stopped
     host: core
     deployed_by: portainer-gitops
     compose_path: core/homepage/docker-compose.yaml
@@ -24,6 +25,7 @@ stacks:
     role: home dashboard
     note: Config is in git; logs are ephemeral. No API credentials or Docker socket.
   - name: caddy
+    status: stopped
     host: core
     deployed_by: portainer-gitops
     compose_path: core/caddy/docker-compose.yaml
@@ -31,6 +33,7 @@ stacks:
     filesystem_path: /srv/ssd/docker/gitops/caddy
     role: reverse proxy, internal TLS
   - name: pulse
+    status: stopped
     host: core
     deployed_by: docker-compose-manual
     compose_path: core/pulse/docker-compose.yaml
@@ -41,6 +44,7 @@ stacks:
       Started from the host checkout with project name pulse. Host and Docker
       telemetry arrives through native Pulse agents; no Docker socket is mounted.
   - name: torrent
+    status: stopped
     host: core
     deployed_by: portainer-gitops
     compose_path: core/torrent/docker-compose.yaml
@@ -49,16 +53,19 @@ stacks:
     services: [vpn, qbittorrent, flood]
     note: qbittorrent and flood share vpn's network namespace
   - name: cloudflared
+    status: stopped
     host: core
     deployed_by: portainer-gitops
     compose_path: core/cloudflared/docker-compose.yaml
     relative_path_volumes: false
   - name: jellyfin
+    status: stopped
     host: core
     deployed_by: portainer-gitops
     compose_path: core/jellyfin/docker-compose.yaml
     relative_path_volumes: false
   - name: portainer
+    status: stopped
     host: core
     deployed_by: core/bootstrap.sh       # see decisions/0001
     compose_path: core/portainer/docker-compose.yaml
@@ -68,10 +75,8 @@ stacks:
       docker compose -f core/portainer/docker-compose.yaml up -d
 
 routes:
-  internal:                         # all via Caddy, TLS from its own CA.
-                                    # *.home resolves to the NAS by wildcard,
-                                    # so a new name needs no DNS work; trust
-                                    # the root certificate from ca.home.
+  status: inactive                  # Caddy and the core tunnel are stopped.
+  internal:                         # Formerly served by Caddy and its own CA.
     - {host: omv.home, target: "host.docker.internal:81"}
     - {host: jellyfin.home, target: "jellyfin:8096"}
     - {host: torrent.home, target: "vpn:3000", ui: flood}
@@ -82,7 +87,7 @@ routes:
     - {host: homepage.home, target: "homepage:3000"}
     - {host: pulse.home, target: "pulse:7655"}
     - {host: ca.home, target: Caddy's internal root certificate}
-  external:                         # via Cloudflare Tunnel, each behind
+  external:                         # Formerly via Cloudflare Tunnel, each behind
                                     # Cloudflare Access. Read from the running
                                     # connector's configuration update log on
                                     # 2026-09-07; the dashboard is the source.
@@ -116,7 +121,7 @@ secrets:
     in it is visible to that container whether it is referenced or not.
 
 homepage_publication:
-  status: published
+  status: inactive
   hostname: homepage.serhii.link
   tunnel_origin: http://homepage:3000
   allowed_hosts: [homepage.home, serhii.link, homepage.serhii.link]

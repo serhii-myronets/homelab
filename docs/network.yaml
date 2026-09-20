@@ -1,8 +1,8 @@
 # The parts of the network that span hosts. Per-host detail lives in
-# docs/hosts/. Verified 2026-09-18.
+# docs/hosts/. Verified 2026-09-19.
 
 meta:
-  updated: 2026-09-18
+  updated: 2026-09-19
   tags: [network, subnets, dns, tls, vpn, tailscale]
 
 subnets:
@@ -19,8 +19,10 @@ load_balancers:
 
 dns:
   server: AdGuard Home on the router at 192.168.8.1
-  wildcard: "*.home -> 192.168.8.100"
-  note: New internal hostnames need no DNS work — the wildcard covers them.
+  wildcard: "*.home -> 192.168.8.15"
+  note: >-
+    New internal hostnames need no DNS work, but need an HTTPRoute and an
+    entry in the Gateway certificate before the Gateway can serve them.
 
 tailscale:
   lan_route: {cidr: 192.168.8.0/24, advertised_by: router}
@@ -33,7 +35,7 @@ tailscale:
     The alternative topology proposed in decisions/0012 was withdrawn.
 
 tls:
-  internal: Caddy internal CA; root certificate served at ca.home
+  internal: cert-manager home-ca; root certificate served at ca.home
   external: Cloudflare Tunnel to serhii.link
   tunnel_note: >-
     cloudflared runs with --token-file, so ingress rules live in the

@@ -16,7 +16,7 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
-    # Local names, with the certificate authority core's Caddy created.
+    # Local names, with a certificate from cert-manager's home-ca authority.
     - name: https
       protocol: HTTPS
       port: 443
