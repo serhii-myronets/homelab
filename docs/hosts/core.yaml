@@ -1,7 +1,7 @@
 # core — the OpenMediaVault box. Everything that has to stay up runs here,
 # which is what the name means: not a role as a file server, but the one
 # machine nothing else is allowed to depend on.
-# Verified 2026-09-06 against the live machine; monitoring 2026-09-12.
+# Verified 2026-09-19 after its Docker services were stopped.
 
 meta:
   host: core

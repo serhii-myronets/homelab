@@ -99,9 +99,10 @@ platform:
     names: [jellyfin.home, qbittorrent.home, torrent.home, argocd.home, ca.home]
     gateway: 192.168.8.15, HTTP and HTTPS
     certificate: >-
-      A wildcard *.home from the cluster's own authority, created and renewed
-      by cert-manager. Devices must trust its root, which ca.home serves at
-      /root.crt with instructions.
+      One certificate lists home, argocd.home, ca.home, jellyfin.home,
+      qbittorrent.home and torrent.home. cert-manager creates and renews it
+      from the cluster's own authority; devices trust its root from
+      ca.home/root.crt.
     note: >-
       The router now sends every *.home name here, so core's remaining ones
       (omv, portainer, homepage, pulse, proxmox, proxmenux) answer 404 until
