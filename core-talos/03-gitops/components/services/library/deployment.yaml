@@ -30,18 +30,22 @@ spec:
         app: library
     spec:
       initContainers:
-        # Sonarr and Radarr refuse a root folder that does not exist, and
-        # the library starts empty, so the stack makes its own two. Owned by
-        # the UID every media application shares.
+        # Four directories the stack names but nothing else creates: the two
+        # roots its library is built in, which Sonarr and Radarr refuse to
+        # accept unless they already exist, and the two qBittorrent
+        # categories they hand their grabs to, which qBittorrent would make
+        # only on the first download - until then each reports the path as
+        # missing. Owned by the UID every media application shares.
         - name: prepare
           image: busybox:1.37
           command:
             - sh
             - -c
             - >-
-              mkdir -p /data/media/movies /data/media/tv &&
-              chown 1000:1000 /data/media/movies /data/media/tv &&
-              chmod 0775 /data/media/movies /data/media/tv
+              set -e;
+              for d in /data/media/movies /data/media/tv
+              /data/torrents/radarr /data/torrents/sonarr;
+              do mkdir -p "$d"; chown 1000:1000 "$d"; chmod 0775 "$d"; done
           volumeMounts:
             - {name: hdd-a, mountPath: /data}
       containers:
