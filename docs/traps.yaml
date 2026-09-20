@@ -155,6 +155,26 @@ traps:
       writes.
     diagnosed: 2026-09-19, on the Beelink
 
+  - id: openebs-brings-a-second-snapshot-controller
+    applies_to: [openebs, volsync, kubernetes]
+    symptom: >-
+      Two snapshot controllers watch the same VolumeSnapshot objects, at
+      different versions, with nothing obviously broken.
+    cause: >-
+      The lvm-localpv chart runs a snapshot-controller container inside its
+      CSI controller pod, next to the csi-snapshotter sidecar. Turning off
+      `crds.csi.volumeSnapshots` only skips the CRDs; the controller has its
+      own switch, and the chart's comment says a cluster should have one.
+    tell: >-
+      `kubectl get pods -n openebs -o jsonpath` over container names lists
+      both `csi-snapshotter` and `snapshot-controller`.
+    fix: >-
+      Set `lvm-localpv.lvmController.snapshotController.enabled: false` and
+      keep the cluster-wide controller in kube-system. The csi-snapshotter
+      sidecar stays: it is the driver turning a VolumeSnapshot into an LVM
+      snapshot, which is a different job.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: argo-cannot-update-a-job
     applies_to: [argocd, kubernetes]
     symptom: >-
