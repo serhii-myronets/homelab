@@ -116,6 +116,36 @@ belongs - it lives in their SQLite databases and goes to R2 hourly:
 `copyUsingHardlinks` was already true in both, which is the setting that
 matters most here.
 
+## Choosing a language
+
+The first series added came back as two Russian season packs from RuTracker.
+Sonarr's profiles carry no language - it moved to custom formats in v4 - so
+it compared only quality, and RuTracker's 1080p WEB-DL beat EZTV's 720p
+WEBRip. Radarr had the opposite problem: its profile language was
+`Original`, a hard filter that silently threw away every Ukrainian dub.
+
+Both now work the same way, through custom formats scoring English 100,
+Ukrainian 50 and Russian 10, and Radarr's profile language set to `Any`.
+Nothing is rejected: a release in the wrong language is worse than one in
+the right language, but better than nothing. A second profile,
+`HD - Ukrainian`, scores Ukrainian 500 and sets a minimum score of 200, so
+it takes only releases that carry a Ukrainian track and waits when none
+exists - which is the point, for anything the owner watches rather than
+their son. The profile is chosen when the series or film is added.
+
+Toloka and Mazepa label their releases `Ukr/Eng` or `2xUkr/Eng`, and
+Sonarr's parser reads both as Ukrainian and English, so the scores land
+where they should. They are dual-audio, so "only Ukrainian" means "must
+contain Ukrainian"; the track itself is chosen in Jellyfin.
+
+Sonarr has no scheduled search for missing episodes, only an RSS sync every
+15 minutes. A translation posted today is picked up within the quarter hour;
+one posted before the series was added has fallen out of the feed and needs
+the search pressed once by hand.
+
+Renaming on import was off in both, which would have left release names in
+the library and defeated half the reason for the stack. It is on.
+
 ## Handoff
 
 `prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
