@@ -7,7 +7,8 @@ spec:
     - {name: main-gateway, namespace: gateway-system}
   # A name under serhii.link is published through the Beelink tunnel by
   # external-dns, behind Cloudflare Access.
-  hostnames: [flood.serhii.link]
+  # torrent.serhii.link was Flood's address through the former core tunnel.
+  hostnames: [flood.serhii.link, torrent.serhii.link]
   rules:
     - backendRefs:
         - {name: torrent, port: 3000}
@@ -21,6 +22,7 @@ spec:
     - {name: main-gateway, namespace: gateway-system}
   hostnames:
     - qbittorrent.home
+    - qbittorrent.serhii.link
   rules:
     - backendRefs:
         - {name: torrent, port: 8080}

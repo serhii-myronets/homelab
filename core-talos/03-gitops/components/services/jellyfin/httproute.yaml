@@ -7,6 +7,9 @@ spec:
     - {name: main-gateway, namespace: gateway-system}
   hostnames:
     - jellyfin.home
+    # external-dns publishes this through the Beelink tunnel; Cloudflare
+    # Access protects the public name.
+    - jellyfin.serhii.link
   rules:
     - backendRefs:
         - {name: jellyfin, port: 8096}
