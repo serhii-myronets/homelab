@@ -9,10 +9,17 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: home-ca
-  commonName: "*.home"
+  # Not a wildcard: Apple and Chrome refuse "*.home", because a wildcard
+  # directly under a top-level name covers too much. Every local name a
+  # service answers on has to be listed here.
+  commonName: home
   dnsNames:
-    - "*.home"
     - home
+    - argocd.home
+    - ca.home
+    - jellyfin.home
+    - qbittorrent.home
+    - torrent.home
   duration: 8760h
   renewBefore: 720h
   # Apple platforms reject a server certificate without serverAuth.
