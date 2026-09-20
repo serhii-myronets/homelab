@@ -679,3 +679,47 @@ traps:
       restart. It is a deprecated path, so revisit it when Jellyseerr starts
       sending Authorization.
     diagnosed: 2026-09-20
+
+  - id: sonarr-manual-import-ignores-the-folder-when-given-a-series
+    applies_to: [sonarr, library]
+    symptom: >-
+      A manual import scan passed both a folder and seriesId returns the
+      series' own library files, or fails outright with
+      "Could not find a part of the path /data/media/tv/<series>" when the
+      series has nothing imported yet.
+    cause: >-
+      With seriesId set, the scan reads the series' root folder rather than
+      the folder in the query, so it reports what is already imported and
+      never sees the source.
+    tell: >-
+      The returned relativePath carries the library's naming
+      ("Season 1/<Series> - S01E01 - <title> WEBDL-1080p.mkv") instead of the
+      release's own, and the count matches what is already imported.
+    fix: >-
+      Scan without seriesId, which does read the folder given. Where the
+      release names carry no series name, Sonarr answers "Unknown Series";
+      supply seriesId and episodeIds per file in the ManualImport command
+      instead, working them out from the path.
+    diagnosed: 2026-09-20
+
+  - id: a-release-numbered-straight-through-is-read-as-a-season-number
+    applies_to: [sonarr, library]
+    symptom: >-
+      Episodes import without a single rejection and land under the wrong
+      titles: a file called "14.Risky Beesness" becomes
+      "S02E14 - The Case of the Cola Cult".
+    cause: >-
+      Some releases number every episode straight through the series while
+      splitting them into season folders. Sonarr reads the leading number as
+      the episode within that folder's season, which is right only for the
+      first season.
+    tell: >-
+      Compare inodes, not names - `stat -c %i` on the source and
+      `find <library> -inum` - because the library file is the same file
+      under the name Sonarr chose. A mismatch between the title in the
+      source name and the title in the library name is the whole symptom.
+    fix: >-
+      Delete the episode files (which removes only the library's hard link,
+      never the seeding copy) and import again, matching each file to an
+      episode by its title rather than its number.
+    diagnosed: 2026-09-20
