@@ -133,7 +133,9 @@ platform:
       Two, Movies at /library/movies and TV at /library/tv, named after the
       directories they read. The mixed Kids library is gone: age is
       metadata, not a folder, and each title is now a film or a series on
-      its own. Read-only, so deleting anything is Sonarr's or Radarr's job.
+      its own. Read-only, so deleting anything is Sonarr's or Radarr's job -
+      which also means SaveLocalMetadata and SaveSubtitlesWithMedia must
+      stay off on both, or a scan spends itself on write errors.
     migrated: >-
       core's 12.0 library and watch history on 2026-09-19, upgraded to 12.1.
       Watch history was lost again on 2026-09-20 when the libraries moved to

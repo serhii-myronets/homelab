@@ -723,3 +723,47 @@ traps:
       never the seeding copy) and import again, matching each file to an
       episode by its title rather than its number.
     diagnosed: 2026-09-20
+
+  - id: renaming-a-jellyfin-library-leaves-the-old-one-behind
+    applies_to: [jellyfin, beelink]
+    symptom: >-
+      After renaming a library, the sidebar shows both the old name and the
+      new one, listing the same titles twice.
+    cause: >-
+      The rename creates a library under the new name and removes the old
+      one's directory under /config/root/default, but its CollectionFolder
+      row stays in the database, so it is still a view with children.
+    tell: >-
+      /Library/VirtualFolders lists only the new name while
+      /Users/<id>/Views lists both, each with its own id.
+    fix: >-
+      Delete the leftover by id, DELETE /Items/<id>. Every series hanging
+      off it goes too, because they were its children, so a full library
+      scan has to follow. The files are untouched - /library is mounted
+      read-only - and anything reading the library by id, Jellyseerr among
+      them, has to be pointed at the new one.
+    diagnosed: 2026-09-20
+
+  - id: a-new-jellyfin-library-writes-artwork-into-a-read-only-mount
+    applies_to: [jellyfin, beelink]
+    symptom: >-
+      A scan crawls and leaves most series with no poster and no summary,
+      while every film is fine. The log repeats "IOException saving to
+      /library/tv/<series>/backdrop.jpg. Will retry saving to
+      /config/metadata/...".
+    cause: >-
+      A library created fresh takes the defaults, and SaveLocalMetadata is
+      one of them: artwork and NFO go beside the media. The media mount is
+      read-only on purpose, so every write throws before the fallback path
+      is tried, and the scan spends its time on exceptions.
+    tell: >-
+      Compare LibraryOptions between a library that works and one that does
+      not - the difference is SaveLocalMetadata, with SaveSubtitlesWithMedia
+      behind it.
+    fix: >-
+      Turn off SaveLocalMetadata and SaveSubtitlesWithMedia through
+      /Library/VirtualFolders/LibraryOptions and scan again. Worth turning
+      off the embedded-title options at the same time, since a file's own
+      tags would otherwise overwrite the episode titles the import worked
+      out.
+    diagnosed: 2026-09-20
