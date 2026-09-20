@@ -656,3 +656,26 @@ traps:
       Finish the wizard once by hand; it needs a Jellyfin password, so no key
       can stand in for it. Configure the rest through the API afterwards.
     diagnosed: 2026-09-20
+
+  - id: jellyfin-12-rejects-the-header-jellyseerr-sends
+    applies_to: [jellyfin, jellyseerr, library]
+    symptom: >-
+      Jellyseerr's setup wizard reports it cannot connect, while the same
+      pod reaches Jellyfin perfectly well. Its log shows status 400 from
+      /Users/AuthenticateByName; Jellyfin's log shows only "Error processing
+      request" with no reason.
+    cause: >-
+      Jellyfin 12 no longer reads X-Emby-Authorization, and that is the only
+      header Jellyseerr sends - 2.7.3 and the develop build alike, checked in
+      both images. A malformed authorization header is a bad request, not a
+      failed login, which is why the status is 400 and never 401.
+    tell: >-
+      The same POST with a deliberately wrong password answers 400 under
+      X-Emby-Authorization and 401 under Authorization. The 401 is the proof:
+      that header was parsed and only the password was refused.
+    fix: >-
+      Jellyfin keeps a switch for the old header, EnableLegacyAuthorization
+      in /config/config/system.xml, off by default. Set it to true and
+      restart. It is a deprecated path, so revisit it when Jellyseerr starts
+      sending Authorization.
+    diagnosed: 2026-09-20

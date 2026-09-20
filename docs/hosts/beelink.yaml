@@ -183,7 +183,10 @@ platform:
       title, works out whether Radarr or Sonarr owns it, and asks on the
       viewer's behalf. Sign-in is a Jellyfin account, and a per-account
       override sets which quality profile that person's requests use, so
-      one household asks in two languages without switching anything.
+      one household asks in two languages without switching anything. It
+      signs in only because Jellyfin's EnableLegacyAuthorization is on:
+      Jellyseerr still sends X-Emby-Authorization, which Jellyfin 12 answers
+      with 400.
     flaresolverr: >-
       Its own pod, stateless. Passes the Cloudflare challenge for the
       indexers tagged with it, currently RuTracker and EZTV.

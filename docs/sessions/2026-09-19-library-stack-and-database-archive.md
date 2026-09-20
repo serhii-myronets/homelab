@@ -226,6 +226,22 @@ signed in with Jellyfin there is no account for it to resolve to - the
 answer is 403 while `settings/public` still reports `initialized: false`.
 The wizard needs a person once, because it asks for a Jellyfin password.
 
+That sign-in then failed, and not over the network: the same pod fetched
+`/System/Info/Public` in five milliseconds. Jellyfin answered the
+authentication itself with 400, which is the giveaway - a wrong password is
+401, so this was never a login being refused. Jellyseerr sends
+`X-Emby-Authorization` and Jellyfin 12 no longer reads it; the same request
+under `Authorization` answered 401 with the same deliberately wrong
+password. The development image sends the old header too, so there was
+nothing to upgrade to.
+
+Jellyfin keeps its own switch for this, `EnableLegacyAuthorization`, off by
+default. It was first set from an init container, and the owner pointed out
+that this is a setting on a volume that goes to R2 hourly - nothing else
+about Jellyfin lives in Git either - so the init container was reverted and
+the switch set where the rest of its configuration is. It is a deprecated
+header, so it comes off once Jellyseerr sends the current one.
+
 ## Handoff
 
 `prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
