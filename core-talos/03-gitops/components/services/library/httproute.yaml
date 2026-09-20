@@ -1,0 +1,37 @@
+# Local names only: these are the stack's own controls, not something to
+# publish, so no record is created under serhii.link.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: prowlarr
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [prowlarr.home]
+  rules:
+    - backendRefs:
+        - {name: prowlarr, port: 9696}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sonarr
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [sonarr.home]
+  rules:
+    - backendRefs:
+        - {name: sonarr, port: 8989}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: radarr
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [radarr.home]
+  rules:
+    - backendRefs:
+        - {name: radarr, port: 7878}
