@@ -14,12 +14,16 @@ Credentials are in Infisical under `/backups/R2`; the restic password also
 belongs in a password manager, because without it the backups are unreadable.
 
 Postgres backs itself up through CloudNativePG's Barman Cloud plugin:
-continuous WAL archiving plus a daily base backup. Everything else is a
-PersistentVolumeClaim backed up hourly by VolSync with restic, from a
-snapshot rather than from live files, so a SQLite database is never copied
-mid-write. A service's claim declares where it restores from, so an empty
-cluster fills it from R2 before the service starts; with no backup yet it
-starts empty.
+continuous WAL archiving plus a daily base backup. That half is switched off
+as of 2026-09-19, waiting for an application that needs a database; the
+manifests are kept whole in `core-talos/03-gitops/archive/database/` and its
+backups stay in R2.
+
+Everything else is a PersistentVolumeClaim backed up hourly by VolSync with
+restic, from a snapshot rather than from live files, so a SQLite database is
+never copied mid-write. A service's claim declares where it restores from, so
+an empty cluster fills it from R2 before the service starts; with no backup
+yet it starts empty.
 
 This needs snapshots, which OpenEBS Hostpath cannot take, so the WD NVMe is
 now a single LVM volume group with a thin pool, and OpenEBS LVM LocalPV gives
