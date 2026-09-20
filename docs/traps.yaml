@@ -767,3 +767,28 @@ traps:
       tags would otherwise overwrite the episode titles the import worked
       out.
     diagnosed: 2026-09-20
+
+  - id: volsync-waits-for-ever-on-a-snapshot-of-a-deleted-volume
+    applies_to: [volsync, openebs, beelink]
+    symptom: >-
+      A ReplicationSource reports "Synchronization in-progress" for hours
+      with no mover job and no pod, and lastSyncTime is never set, so the
+      application looks backed up on a schedule that has never once run.
+    cause: >-
+      The VolumeSnapshot was taken while the claim was bound to a volume
+      that was later deleted - here the broken claim from the csi-provisioner
+      leak-protection race. The content keeps the old volume handle, the
+      driver answers "lvmvolumes.local.openebs.io <old pv> not found", and
+      VolSync waits for a snapshot that can never become ready instead of
+      giving up and taking a new one.
+    tell: >-
+      Compare the claim's current volumeName with the volume named in the
+      snapshot's error, and check `kubectl get lvmvolume -A` - the one in
+      the error is not there. A Released PV that refuses to delete "with 1
+      active snapshot" usually sits beside it.
+    fix: >-
+      Delete the VolumeSnapshot. VolSync takes a fresh one against the live
+      volume on its next pass. Worth checking lastSyncTime on every
+      ReplicationSource after any claim is recreated, because nothing else
+      reports this as a failure.
+    diagnosed: 2026-09-20
