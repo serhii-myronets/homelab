@@ -1,0 +1,58 @@
+# Serves the authority's certificate at http://ca.home/root.crt, so a device
+# can fetch and trust it the way Caddy's ca.home worked. Only the public
+# half of the key pair is mounted.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ca-server
+  namespace: cert-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: ca-server}
+  template:
+    metadata:
+      labels: {app: ca-server}
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.29-alpine
+          ports:
+            - {name: http, containerPort: 80}
+          readinessProbe:
+            httpGet: {path: /root.crt, port: http}
+          resources:
+            requests: {cpu: 10m, memory: 16Mi}
+            limits: {memory: 64Mi}
+          volumeMounts:
+            - {name: ca, mountPath: /usr/share/nginx/html/root.crt, subPath: root.crt, readOnly: true}
+      volumes:
+        - name: ca
+          secret:
+            secretName: home-ca
+            items:
+              - {key: tls.crt, path: root.crt}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ca-server
+  namespace: cert-manager
+spec:
+  selector: {app: ca-server}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ca-server
+  namespace: cert-manager
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - ca.home
+  rules:
+    - backendRefs:
+        - {name: ca-server, port: 80}
