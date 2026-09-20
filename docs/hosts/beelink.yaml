@@ -112,7 +112,7 @@ platform:
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones
-    published: [flood.serhii.link, jellyfin.serhii.link, qbittorrent.serhii.link, torrent.serhii.link]
+    published: [jellyfin.serhii.link, qbittorrent.serhii.link, torrent.serhii.link]
     other_tunnels:
       - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
       - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
