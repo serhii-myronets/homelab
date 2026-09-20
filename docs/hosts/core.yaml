@@ -73,6 +73,7 @@ moved_to_beelink:                   # 2026-09-19; containers stopped, data kept
   - {what: qbittorrent and flood, note: 55 torrents resumed there}
   - {what: vpn, note: stopped with them}
   - {what: samba/torrents, note: 1.8 TB copied to the Beelink's hdd-a}
+  - {what: samba/scan, note: 89 document files copied to the Beelink's hdd-b}
   - {what: "*.home names", note: the router's wildcard now points at the Beelink}
 
 shares:
