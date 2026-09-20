@@ -157,6 +157,15 @@ platform:
       path Sonarr and Radarr also use.
     config: claim data on the lvm class, backed up hourly
     cache: 50Gi lvm claim for incomplete downloads, never backed up
+    vpn: >-
+      gluetun to NordVPN over WireGuard since 2026-09-20, in the Netherlands.
+      It was OpenVPN, which cost 1.5 of four cores to carry 1.7 MiB/s: this
+      traffic is millions of tiny packets - 8 million outbound peer
+      acknowledgements of about 73 bytes against 14 million inbound - and
+      OpenVPN pays per packet, in user space. WireGuard is built into the
+      Talos kernel; measured afterwards at 5.5 MiB/s for 1-5 millicores.
+      qBittorrent binds to the tunnel by name, and that name is tun0 under
+      both protocols - see traps.yaml.
     seeding: >-
       Stops at ratio 2 or 14 days, whichever comes first. Stopping rather
       than deleting is deliberate: it is what tells Sonarr and Radarr the
