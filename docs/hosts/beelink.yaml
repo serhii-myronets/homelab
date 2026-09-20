@@ -95,6 +95,17 @@ platform:
     - {name: jellyfin, namespace: jellyfin, status: deployed}
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
+  local_access:
+    names: [jellyfin.home, qbittorrent.home, torrent.home, argocd.home, ca.home]
+    gateway: 192.168.8.15, HTTP and HTTPS
+    certificate: >-
+      A wildcard *.home from the cluster's own authority, created and renewed
+      by cert-manager. Devices must trust its root, which ca.home serves at
+      /root.crt with instructions.
+    note: >-
+      The router now sends every *.home name here, so core's remaining ones
+      (omv, portainer, homepage, pulse, proxmox, proxmenux) answer 404 until
+      they move or get a route.
   public_access:
     tunnel: {name: beelink, id: 2150274f-5bd6-4826-b46f-16992d9f8293, managed: locally, config: core-talos/03-gitops/components/system/network/cloudflared/config.yaml}
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
