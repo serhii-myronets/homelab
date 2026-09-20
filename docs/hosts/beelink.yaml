@@ -130,10 +130,10 @@ platform:
       library Sonarr and Radarr build. The seeding directory was mounted
       beside it until the migration finished on 2026-09-20.
     libraries: >-
-      Two, Movies at /library/movies and Shows at /library/tv. The mixed
-      Kids library is gone: age is metadata, not a folder, and each title
-      is now a film or a series on its own. Read-only, so deleting anything
-      is Sonarr's or Radarr's job.
+      Two, Movies at /library/movies and TV at /library/tv, named after the
+      directories they read. The mixed Kids library is gone: age is
+      metadata, not a folder, and each title is now a film or a series on
+      its own. Read-only, so deleting anything is Sonarr's or Radarr's job.
     migrated: >-
       core's 12.0 library and watch history on 2026-09-19, upgraded to 12.1.
       Watch history was lost again on 2026-09-20 when the libraries moved to
@@ -171,9 +171,13 @@ platform:
       - {name: jellyseerr, image: "ghcr.io/fallenbagel/jellyseerr:2.7.3", port: 5055, role: requests}
     config: one claim data on the lvm class, a directory each, backed up hourly
     disk: >-
-      /var/mnt/hdd-a whole, mounted as /data. Downloads stay in
-      /data/torrents and the library in /data/media is hard links into them,
-      so organising a release cannot break its torrent and costs no space.
+      /var/mnt/hdd-a whole, mounted as /data. A download lands in
+      /data/torrents under its category and the library in /data/media is a
+      hard link to it, so organising a release cannot break its torrent and
+      costs no space. Since 2026-09-20 the old collection has only the
+      library's name: its torrents were deleted once everything was
+      imported, leaving /data/torrents holding the two category directories
+      and whatever is still seeding.
     names: [jellyseerr.home, prowlarr.home, sonarr.home, radarr.home]   # local only
     one_pod: >-
       The OpenEBS LVM driver mounts a volume into one pod only, so the four

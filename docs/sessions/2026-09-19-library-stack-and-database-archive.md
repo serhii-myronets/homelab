@@ -296,6 +296,35 @@ Jellyfin now counts 66 films and 31 series against Radarr's 66 and Sonarr's
 31, and 992 episodes against 1058 library files, the difference being the
 double episodes that share one file.
 
+## Letting the old copies go
+
+With the library holding every file under its own name, the seeding copies
+were no longer worth their directory tree. 56 torrents were finished and
+stopped; the two left alone are The Really Loud House, one still seeding
+under Sonarr's share limit and one at 49 per cent.
+
+The audit before deleting is the whole job. 1056 of 1147 files had a second
+name and could lose the first without consequence; 91 did not, and those
+were the ones to decide about. They were the colour cut of Spider-Noir,
+deliberately not imported; two Angry Beavers files; three Jumanji subtitle
+tracks; ten Friends subtitle archives; and a few megabytes of macOS
+droppings. The subtitles were hard linked and copied into the library
+first, one Angry Beavers episode was imported as the single episode it
+actually fills, and the rest went.
+
+Deleting the torrents freed only 28 GiB, because everything else simply
+lost one of its two names. qBittorrent removed only what it managed - 909
+files remained, the collection that predated the stack and was never a
+torrent here - and those directories were deleted outright after the same
+link-count check. `/data/torrents` now holds two category directories and
+one series still seeding.
+
+The owner also asked for The Night Manager to go entirely: its release
+splits six episodes into eight parts, so the library had the first six and
+no ending, and a better release is worth more than the repair.
+
+Jellyfin's Shows library was renamed TV, after the directory it reads.
+
 ## Handoff
 
 Everything answers over HTTPS and is in the certificate: `prowlarr.home`,
