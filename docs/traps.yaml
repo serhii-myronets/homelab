@@ -49,6 +49,29 @@ traps:
       `fruit:nfs_aces = no`. World-writable modes also work.
     diagnosed: 2026-09-18, on the Beelink
 
+  - id: a-nameless-http-listener-swallows-the-local-names
+    applies_to: [gateway-api, cilium, cloudflared]
+    symptom: >-
+      A local name typed without a scheme is served in the clear and the
+      browser calls it insecure, although the Gateway holds a valid
+      certificate for it and HTTPS works.
+    cause: >-
+      A listener with no hostname matches every name. The tunnel needs one
+      like that, because cloudflared speaks plain HTTP, so the local names
+      were answered there as well and never reached the HTTPS listener.
+    tell: >-
+      `curl --resolve <name>:80:<gateway> http://<name>/` returns 200 rather
+      than a redirect.
+    fix: >-
+      Give each listener a hostname: the public one `*.serhii.link`, and a
+      second on port 80 for `*.home` carrying only a redirect to HTTPS. The
+      redirect route must be alone on its listener - a route whose hostname
+      matches exactly beats a wildcard, so a service route sharing the
+      listener would take its own name back off the redirect. Keep the name
+      that serves the root certificate on a plain listener of its own: a
+      device that has yet to trust the authority cannot be asked to use it.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: no-wildcard-under-a-top-level-name
     applies_to: [cert-manager, tls, macos]
     symptom: >-

@@ -72,6 +72,22 @@ had removed the temporary `vs-prime-` claim it was provisioned for. It is a
 race; deleting the claim and letting it be made again was enough. All three
 traps are in `docs/traps.yaml`.
 
+## Local names reach their certificate
+
+The owner asked why the services had no certificates. They have one - TLS
+ends at the Gateway, and the routes only claim a name - but the HTTP
+listener carried no hostname, so it answered local names too and a name
+typed without a scheme never reached HTTPS. A blanket redirect was not
+available: cloudflared speaks plain HTTP to the same port, and redirecting
+it would have looped every public name.
+
+The listeners are now told apart by hostname. `*.serhii.link` on port 80 is
+the tunnel's. `*.home` on port 80 admits routes from gateway-system alone
+and holds one redirect to HTTPS - alone, because an exact hostname beats a
+wildcard and any service route sharing that listener would take its own
+name back. `ca.home` keeps a plain listener, since a device fetching the
+root certificate does not trust it yet.
+
 ## Handoff
 
 `prowlarr.home`, `sonarr.home` and `radarr.home` answer 200 over HTTPS and

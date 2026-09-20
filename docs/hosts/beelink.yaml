@@ -95,7 +95,10 @@ platform:
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
     names: [jellyfin.home, qbittorrent.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
-    gateway: 192.168.8.15, HTTP and HTTPS
+    gateway: >-
+      192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
+      *.home on 80 redirecting to HTTPS, ca.home on 80 in the clear so the
+      root certificate can be fetched, and *.home on 443 with home-tls.
     certificate: >-
       One certificate lists home, argocd.home, ca.home, jellyfin.home,
       prowlarr.home, qbittorrent.home, radarr.home, sonarr.home and
