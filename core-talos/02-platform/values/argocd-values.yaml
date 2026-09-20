@@ -4,6 +4,10 @@ configs:
   # leave Applications permanently OutOfSync.
   params:
     controller.diff.server.side: "true"
+    # This cluster reconciles only a small number of Applications. The upstream
+    # defaults (20 status and 10 operation workers) retain unnecessary queues.
+    controller.status.processors: "2"
+    controller.operation.processors: "1"
   cm:
     kustomize.buildOptions: "--enable-helm"
     users.anonymous.enabled: "true"
