@@ -645,3 +645,24 @@ traps:
       application claims an update that the registry does not have, whether
       the registry is still the right one.
     diagnosed: 2026-09-20
+
+  - id: gluetun-names-the-tunnel-tun0-whatever-the-protocol
+    applies_to: [gluetun, qbittorrent, torrent, wireguard]
+    symptom: >-
+      After switching gluetun from OpenVPN to WireGuard every torrent sits at
+      zero peers. The tunnel is up and gluetun reports a public IP in the
+      right country; qBittorrent starts and logs nothing wrong.
+    cause: >-
+      qBittorrent is bound to the tunnel by interface name, and the name
+      comes from gluetun's VPN_INTERFACE, which is tun0 for WireGuard as much
+      as for OpenVPN. Binding it to wg0 - the name WireGuard usually takes
+      elsewhere - leaves it bound to an interface that does not exist.
+    tell: >-
+      `ip -brief addr` in the gluetun container shows tun0 holding the
+      tunnel address, while Session\Interface in qBittorrent.conf says
+      something else. Nothing in either log mentions it.
+    fix: >-
+      Keep both on tun0, or set VPN_INTERFACE and change the two together.
+      Binding to a missing interface is silent by design: qBittorrent treats
+      it as "no interface available" rather than an error.
+    diagnosed: 2026-09-20
