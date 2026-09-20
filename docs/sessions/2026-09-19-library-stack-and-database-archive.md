@@ -298,26 +298,19 @@ double episodes that share one file.
 
 ## Handoff
 
-`prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
-the certificate, and are wired to each other and to qBittorrent. Two things
-are left, and both need a person.
+Everything answers over HTTPS and is in the certificate: `prowlarr.home`,
+`sonarr.home`, `radarr.home`, `jellyseerr.home` and `jellyfin.home`. The
+five are wired to each other, to qBittorrent and to Jellyfin, and the
+migration is finished - 30 series and 66 films, all with files.
 
-Prowlarr has no indexers: which trackers, and any credentials they need, are
-the owner's to choose. Everything else is already pointed at Prowlarr, so
-adding one there puts it in both applications.
+Jellyseerr is the one to open day to day; its wizard is done and both
+managers are registered with profile `Ukrainian` as the default. What is
+left there is one account per viewer, each with an override choosing the
+profile its requests use - English for the owner's son.
 
-Then the import of about 97 directories, in the order above: add without
-searching, Manual Import, then search. `Kids` needs no sorting, since each
-item is identified on its own and lands in films or series. Releases named
-in Ukrainian or Russian will need identifying by hand. Nothing stops
-seeding, because the library is hard links.
+qBittorrent keeps its `/downloads` mount, and will: fifty-eight torrents
+carry that path in their resume data. It is Jellyfin that no longer sees
+the seeding directory.
 
-All 56 torrents are complete and stopped, with no missing files - they were
-already stopped before the rename. Jellyfin's `/media` mount and
-qBittorrent's `/downloads` mount both exist only until the import is done.
-
-`jellyseerr.home` answers over HTTPS and is in the certificate, but its
-setup wizard is unfinished: sign in with the Jellyfin administrator
-account, after which Radarr and Sonarr can be registered through its API.
-Both use profile `Ukrainian` as the default, since the second language is
-an override on one account rather than a second server.
+Two titles of the ninety-seven are not tracked by Jellyseerr, which knows
+95. Nothing depends on it; they will still play and still update.
