@@ -214,6 +214,21 @@ privileged helper pod was rejected by the baseline level in `openebs`, which
 is now privileged. At the owner's request every Argo-managed namespace is now
 a file in its component directory, OpenEBS included.
 
+The local names moved next. cert-manager creates its own authority, whose
+root `ca.home` serves at `/root.crt` behind a page explaining how to trust it,
+and the Gateway answers `jellyfin.home`, `qbittorrent.home`, `torrent.home`,
+`argocd.home` and `ca.home` over both HTTP and HTTPS. Reusing core's Caddy
+authority was considered and dropped: it meant copying a private key out of
+core, and a certificate of our own renews itself. Two refusals had to be
+understood first, both now traps: Apple rejects a server certificate without
+serverAuth, and no wildcard is allowed directly under `.home`, which is why
+each name is listed. Caddy never issued one either - it minted a certificate
+per name on demand.
+
+The owner then pointed the router's `*.home` rewrite at the Gateway. Core's
+own names - `omv`, `portainer`, `homepage`, `pulse`, `proxmox`, `proxmenux` -
+answer 404 there until they move or are given routes.
+
 ## Handoff
 
 The Beelink is a healthy single-node Talos cluster at `192.168.8.10`. All Argo
@@ -274,6 +289,21 @@ And LAN clients reach services as the node's internal address even with
 `externalTrafficPolicy: Local`, so qBittorrent's web UI trusts the pod network
 as well as the LAN.
 
+The local names moved next. cert-manager creates its own authority, whose
+root `ca.home` serves at `/root.crt` behind a page explaining how to trust it,
+and the Gateway answers `jellyfin.home`, `qbittorrent.home`, `torrent.home`,
+`argocd.home` and `ca.home` over both HTTP and HTTPS. Reusing core's Caddy
+authority was considered and dropped: it meant copying a private key out of
+core, and a certificate of our own renews itself. Two refusals had to be
+understood first, both now traps: Apple rejects a server certificate without
+serverAuth, and no wildcard is allowed directly under `.home`, which is why
+each name is listed. Caddy never issued one either - it minted a certificate
+per name on demand.
+
+The owner then pointed the router's `*.home` rewrite at the Gateway. Core's
+own names - `omv`, `portainer`, `homepage`, `pulse`, `proxmox`, `proxmenux` -
+answer 404 there until they move or are given routes.
+
 ## Handoff
 
 The Beelink now serves the media: Samba, the torrent stack and Jellyfin, with
@@ -281,13 +311,30 @@ backups to R2. Core still runs Caddy, cloudflared, homepage, Pulse and
 Portainer; its qBittorrent, Flood, Jellyfin and VPN containers are stopped but
 not removed, and its data is untouched.
 
+The restore drill happened by accident and passed: the torrent claim was
+deleted, VolSync refilled it from R2, and all 55 torrents resumed without a
+recheck. Postgres now bootstraps from its archive, so a rebuilt cluster
+restores itself; it writes to the `postgres-v2` series. Gluetun keeps its
+refreshed server list on a volume of its own, after which the tunnel came up
+in 24 seconds instead of minutes.
+
 Still to do:
 
-1. Drill a restore: delete a service's claim and watch VolSync refill it.
-2. Check Jellyfin's transcoding settings for the N95, and that the library
+1. Decide what happens to core's `.home` names: point them at core with
+   specific rules on the router, or route them through the Gateway.
+2. Trust the root from `ca.home` on the phones and any other device; add each
+   new local name to the certificate as its route is added.
+3. Monitoring and alerts: SMART and temperature of the two HDDs, thin pool
+   usage, failed backups, the node and the tunnels. Cloudflare can alert on a
+   tunnel in two minutes.
+4. Check Jellyfin's transcoding settings for the N95, and that the library
    plays; hardware decoding of AV1 is new here.
-3. Point the printer at `\\192.168.8.10\scan` when Paperless is ready.
-4. Move the remaining core services, then retire core's stack and its tunnel.
+5. Paperless, the reason Postgres is here; then point the printer at
+   `\\192.168.8.10\scan`.
+6. Move the remaining core services, then retire core's stack and its tunnel.
+7. Smaller: Terraform state into R2, install the Renovate app, find out why
+   Cilium hides the client address, and confirm Talos reuses the HDD
+   partitions on a reinstall.
 
 The media on the HDDs are still the only copy: they are treated as
 re-downloadable.
