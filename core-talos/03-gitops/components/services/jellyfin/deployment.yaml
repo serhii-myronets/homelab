@@ -51,13 +51,12 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /config}
             - {name: cache, mountPath: /cache}
-            # The same /media path as on core, so its library can move over.
-            # The files themselves, which the existing library points at:
-            # renaming the directory on the disk left these paths untouched.
-            - {name: hdd-a, mountPath: /media, subPath: torrents, readOnly: true}
-            # The library Radarr and Sonarr build out of hard links to those
-            # same files, added as new libraries here. Once everything is
-            # imported, the mount above goes and this one stays.
+            # The library Radarr and Sonarr build, as hard links to the files
+            # qBittorrent is still seeding: the same data under a second,
+            # ordered name. Jellyfin reads it and nothing else - the seeding
+            # directory was mounted here until the last of it was imported on
+            # 2026-09-20, and the two libraries now point at movies and tv
+            # below. Read-only, because deleting is Sonarr's and Radarr's job.
             - {name: hdd-a, mountPath: /library, subPath: media, readOnly: true}
       volumes:
         - name: data
