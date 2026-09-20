@@ -126,11 +126,22 @@ platform:
     config: claim data on the lvm class, backed up hourly
     cache: claim cache on the lvm class, never backed up
     media: >-
-      Two read-only mounts during the changeover: /var/mnt/hdd-a/torrents as
-      /media, which is where the migrated library still points, and
-      /var/mnt/hdd-a/media as /library, which Sonarr and Radarr fill. The
-      first goes once everything is imported.
-    migrated: core's 12.0 library and watch history on 2026-09-19, upgraded to 12.1
+      One read-only mount: /var/mnt/hdd-a/media as /library, the hard-link
+      library Sonarr and Radarr build. The seeding directory was mounted
+      beside it until the migration finished on 2026-09-20.
+    libraries: >-
+      Two, Movies at /library/movies and Shows at /library/tv. The mixed
+      Kids library is gone: age is metadata, not a folder, and each title
+      is now a film or a series on its own. Read-only, so deleting anything
+      is Sonarr's or Radarr's job.
+    migrated: >-
+      core's 12.0 library and watch history on 2026-09-19, upgraded to 12.1.
+      Watch history was lost again on 2026-09-20 when the libraries moved to
+      /library: Jellyfin identifies an item by its path, and every path
+      changed.
+    legacy_auth: >-
+      EnableLegacyAuthorization is on in system.xml. Jellyseerr still sends
+      X-Emby-Authorization, which Jellyfin 12 answers with 400.
   torrent:
     address: 192.168.8.16 (LoadBalancer)
     ports: {qbittorrent: 8080, flood: 3000}

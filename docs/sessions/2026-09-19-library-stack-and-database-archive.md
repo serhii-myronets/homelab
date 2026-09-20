@@ -278,6 +278,24 @@ One title was added from a tvdbId written from memory rather than taken
 from the lookup, and 76079 is The Care Bears. It was deleted; the lesson is
 that a hand-written id deserves the same check as a matched one.
 
+## One structure, at last
+
+With everything imported, Jellyfin's two libraries were repointed from the
+seeding directory to `/library/movies` and `/library/tv` - repointed rather
+than recreated, so the library objects and Jellyseerr's mapping survived -
+and the mixed Kids library was deleted. The seeding mount then came out of
+the Deployment, so Jellyfin reads only what the two managers build, and
+read-only at that.
+
+The cost was known before it was paid: Jellyfin identifies an item by its
+path, every path changed, and watch history went with it - 21 watched items
+and 2 part-watched for one of four accounts. There is no way round it, only
+the choice of when.
+
+Jellyfin now counts 66 films and 31 series against Radarr's 66 and Sonarr's
+31, and 992 episodes against 1058 library files, the difference being the
+double episodes that share one file.
+
 ## Handoff
 
 `prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
