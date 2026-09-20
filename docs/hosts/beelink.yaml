@@ -143,6 +143,7 @@ platform:
       - {name: media, path: /var/mnt/hdd-a/media}
       - {name: scan, path: /var/mnt/hdd-b/scan}
       - {name: hdd-b, path: /var/mnt/hdd-b}
+    migrated: 89 document files from core on 2026-09-19
     owner: "1000:1000"         # shared with every media application
     modes: {files: "0664", directories: "0775"}
     address: 192.168.8.10 (host network), Beelink.local
