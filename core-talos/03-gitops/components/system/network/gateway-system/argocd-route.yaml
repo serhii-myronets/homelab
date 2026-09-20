@@ -10,6 +10,7 @@ spec:
     - {name: main-gateway, namespace: gateway-system}
   hostnames:
     - argocd.home
+    - argocd.serhii.link
   rules:
     - backendRefs:
         - {name: argocd-server, port: 80}
