@@ -15,6 +15,11 @@ spec:
     - home
   duration: 8760h
   renewBefore: 720h
+  # Apple platforms reject a server certificate without serverAuth.
+  usages:
+    - server auth
+    - digital signature
+    - key encipherment
   privateKey:
     algorithm: ECDSA
     size: 256
