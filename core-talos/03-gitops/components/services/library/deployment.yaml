@@ -1,0 +1,105 @@
+# All three in one pod, the way the torrent stack holds qBittorrent and
+# Flood: they share one backed-up claim, each under its own directory, and
+# the OpenEBS LVM driver refuses to mount one logical volume into a second
+# pod even on the same node. They are also started and stopped together in
+# practice, so the shared restart costs little.
+#
+# Sonarr and Radarr see the whole disk at /data, the same path qBittorrent
+# sees, so a finished download needs no translation between them. The
+# library under /data/media is hard links to the files still seeding in
+# /data/torrents: no extra space, and organising one cannot break the other.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: library
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: library
+  template:
+    metadata:
+      labels:
+        app: library
+    spec:
+      containers:
+        # The indexer manager: it holds the tracker definitions and pushes
+        # them to the two below, which then store none of their own.
+        - name: prowlarr
+          image: ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: PUID, value: "1000"}
+            - {name: PGID, value: "1000"}
+            - {name: UMASK, value: "002"}
+          ports:
+            - {name: prowlarr, containerPort: 9696}
+          startupProbe:
+            httpGet: {path: /ping, port: prowlarr}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /ping, port: prowlarr}
+          livenessProbe:
+            httpGet: {path: /ping, port: prowlarr}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 20m, memory: 128Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: data, mountPath: /config, subPath: prowlarr}
+        - name: sonarr
+          image: ghcr.io/linuxserver/sonarr:4.0.20.3014-ls325
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: PUID, value: "1000"}
+            - {name: PGID, value: "1000"}
+            - {name: UMASK, value: "002"}
+          ports:
+            - {name: sonarr, containerPort: 8989}
+          startupProbe:
+            httpGet: {path: /ping, port: sonarr}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /ping, port: sonarr}
+          livenessProbe:
+            httpGet: {path: /ping, port: sonarr}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 256Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - {name: data, mountPath: /config, subPath: sonarr}
+            - {name: hdd-a, mountPath: /data}
+        - name: radarr
+          image: ghcr.io/linuxserver/radarr:6.4.4.10685-ls317
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: PUID, value: "1000"}
+            - {name: PGID, value: "1000"}
+            - {name: UMASK, value: "002"}
+          ports:
+            - {name: radarr, containerPort: 7878}
+          startupProbe:
+            httpGet: {path: /ping, port: radarr}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /ping, port: radarr}
+          livenessProbe:
+            httpGet: {path: /ping, port: radarr}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 256Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - {name: data, mountPath: /config, subPath: radarr}
+            - {name: hdd-a, mountPath: /data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+        - name: hdd-a
+          persistentVolumeClaim: {claimName: hdd-a}

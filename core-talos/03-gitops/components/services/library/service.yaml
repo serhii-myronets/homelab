@@ -1,0 +1,31 @@
+# One pod, three programs: each gets its own Service so its route has a
+# backend of its own.
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+spec:
+  selector:
+    app: library
+  ports:
+    - {name: http, port: 9696, targetPort: prowlarr}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarr
+spec:
+  selector:
+    app: library
+  ports:
+    - {name: http, port: 8989, targetPort: sonarr}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radarr
+spec:
+  selector:
+    app: library
+  ports:
+    - {name: http, port: 7878, targetPort: radarr}
