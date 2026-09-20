@@ -27,6 +27,12 @@ spec:
 ---
 # Incomplete downloads land on the NVMe volume, then qBittorrent moves them to
 # the HDD media volume after completion. They can always be downloaded again.
+#
+# This is what caps how many downloads may run at once: a season pack is
+# 10-20 GiB and holds its space here until it is complete, so the limits in
+# qBittorrent.conf are set against this number. The thin pool is 442 GiB and
+# about 37 GiB of it is written, so the size below costs nothing until it is
+# used - but XFS and Kubernetes both refuse to shrink, so it only goes up.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -36,4 +42,4 @@ spec:
   storageClassName: lvm
   resources:
     requests:
-      storage: 50Gi
+      storage: 200Gi
