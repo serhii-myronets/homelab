@@ -1,3 +1,32 @@
+# A local authority of the cluster's own, for the .home names. Nothing
+# public issues certificates for an invented domain, so devices that should
+# see a valid certificate have to trust this root; without that, browsers
+# warn and the pages still open.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: home-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: Homelab Local Authority
+  secretName: home-ca
+  duration: 87600h
+  renewBefore: 8760h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    kind: ClusterIssuer
+    name: selfsigned
+---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
