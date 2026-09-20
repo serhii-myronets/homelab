@@ -11,6 +11,12 @@ lvm-localpv:
     csi:
       volumeSnapshots:
         enabled: false
+  lvmController:
+    # A cluster takes one snapshot controller, and it is the one in
+    # kube-system. The csi-snapshotter sidecar beside this stays: it turns a
+    # VolumeSnapshot into an LVM snapshot, which is the driver's own work.
+    snapshotController:
+      enabled: false
 
 localpv-provisioner:
   enabled: false
