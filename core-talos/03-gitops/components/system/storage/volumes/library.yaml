@@ -1,0 +1,30 @@
+# Sonarr and Radarr see the whole disk, not a subdirectory: a hard link only
+# works within one filesystem, and the library under media/ is made of links
+# to the files qBittorrent keeps seeding under torrents/.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: library-hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 9000Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: library
+    name: hdd-a
+  local:
+    path: /var/mnt/hdd-a
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: homelab/media-hdd
+              operator: In
+              values:
+                - "true"

@@ -32,8 +32,9 @@ spec:
             - -c
             - >-
               adduser -D -H -u 1000 -s /bin/false media &&
-              chown 1000:1000 /data/hdd-a /data/hdd-a/media /data/hdd-b /data/hdd-b/scan &&
-              chmod 0775 /data/hdd-a /data/hdd-a/media /data/hdd-b /data/hdd-b/scan &&
+              mkdir -p /data/hdd-a/media /data/hdd-a/torrents /data/hdd-b/scan &&
+              chown 1000:1000 /data/hdd-a /data/hdd-a/media /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
+              chmod 0775 /data/hdd-a /data/hdd-a/media /data/hdd-a/torrents /data/hdd-b /data/hdd-b/scan &&
               exec runsvdir -P /container/config/runit
           securityContext:
             capabilities:

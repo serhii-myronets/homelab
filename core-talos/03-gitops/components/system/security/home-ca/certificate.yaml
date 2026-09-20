@@ -18,7 +18,10 @@ spec:
     - argocd.home
     - ca.home
     - jellyfin.home
+    - prowlarr.home
     - qbittorrent.home
+    - radarr.home
+    - sonarr.home
     - torrent.home
   duration: 8760h
   renewBefore: 720h

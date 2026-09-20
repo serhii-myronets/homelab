@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: library
+  namespace: argocd
+spec:
+  project: services
+  source:
+    repoURL: https://github.com/serhii-myronets/homelab.git
+    targetRevision: main
+    path: core-talos/03-gitops/components/services/library
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: library
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
