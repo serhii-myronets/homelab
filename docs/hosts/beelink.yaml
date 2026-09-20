@@ -94,15 +94,15 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, qbittorrent.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
+    names: [jellyfin.home, jellyseerr.home, qbittorrent.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home on 80 in the clear so the
       root certificate can be fetched, and *.home on 443 with home-tls.
     certificate: >-
       One certificate lists home, argocd.home, ca.home, jellyfin.home,
-      prowlarr.home, qbittorrent.home, radarr.home, sonarr.home and
-      torrent.home. cert-manager creates and renews it
+      jellyseerr.home, prowlarr.home, qbittorrent.home, radarr.home,
+      sonarr.home and torrent.home. cert-manager creates and renews it
       from the cluster's own authority; devices trust its root from
       ca.home/root.crt.
     note: >-
@@ -152,19 +152,20 @@ platform:
     webui_auth: none from 192.168.8.0/24 and the pod network
     migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
   library:
-    role: finds and organises what Jellyfin plays; one pod, three programs
+    role: finds and organises what Jellyfin plays; one pod, four programs
     containers:
       - {name: prowlarr, image: "ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161", port: 9696, role: indexers}
       - {name: sonarr, image: "ghcr.io/linuxserver/sonarr:4.0.20.3014-ls325", port: 8989, role: series}
       - {name: radarr, image: "ghcr.io/linuxserver/radarr:6.4.4.10685-ls317", port: 7878, role: films}
+      - {name: jellyseerr, image: "ghcr.io/fallenbagel/jellyseerr:2.7.3", port: 5055, role: requests}
     config: one claim data on the lvm class, a directory each, backed up hourly
     disk: >-
       /var/mnt/hdd-a whole, mounted as /data. Downloads stay in
       /data/torrents and the library in /data/media is hard links into them,
       so organising a release cannot break its torrent and costs no space.
-    names: [prowlarr.home, sonarr.home, radarr.home]   # local only
+    names: [jellyseerr.home, prowlarr.home, sonarr.home, radarr.home]   # local only
     one_pod: >-
-      The OpenEBS LVM driver mounts a volume into one pod only, so the three
+      The OpenEBS LVM driver mounts a volume into one pod only, so the four
       cannot be separate Deployments sharing the configuration claim.
     profiles: >-
       Two each, English and Ukrainian, chosen when a title is added. Each
@@ -177,6 +178,12 @@ platform:
       Deleting anything on purpose is done here, never in Jellyfin, which
       would remove the link, free nothing and have the episode fetched
       again.
+    requests: >-
+      Jellyseerr is the only one meant to be opened day to day: it takes a
+      title, works out whether Radarr or Sonarr owns it, and asks on the
+      viewer's behalf. Sign-in is a Jellyfin account, and a per-account
+      override sets which quality profile that person's requests use, so
+      one household asks in two languages without switching anything.
     flaresolverr: >-
       Its own pod, stateless. Passes the Cloudflare challenge for the
       indexers tagged with it, currently RuTracker and EZTV.

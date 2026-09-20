@@ -197,6 +197,35 @@ folder returned all ten files as `Unknown Series` once the series had been
 deleted. About 97 directories wait in `Shows`, `Movies` and `Kids`, so this
 is a job for the API rather than an evening of clicking.
 
+## One door instead of two
+
+The owner asked what the stack buys, given that it splits films and series
+across two programs and makes the number of names a file has feel like
+something to keep track of, and whether one program could do all of it,
+Jellyfin included. It cannot: the streaming route, Stremio or Kodi with a
+torrent addon, is genuinely one program but keeps nothing, chooses no
+language and would throw away the library, the transcoding and the backups.
+Nothing merges a downloader into a media server, because finding, deciding,
+fetching and playing have different lifetimes - which is also why Jellyfin
+could be swapped for Plex here without touching a download.
+
+What the split does not need is two doors. Jellyseerr joined the pod as a
+fourth container: one search box that decides for itself whether a title
+belongs to Radarr or Sonarr. Viewers sign in with their Jellyfin account,
+and an override on an account chooses the quality profile its requests use,
+which is how the owner asks in Ukrainian and their son in English without
+either of them opening a manager. Sonarr and Radarr stay, as the engine.
+
+It is not a linuxserver image: it names no user and does not chown its own
+configuration, so the init container hands the directory to uid 1000 and
+`HOME` points at it, or Node writes its caches somewhere it cannot.
+
+Its own API key cannot finish the setup. Every settings endpoint wants an
+administrator, the key resolves to the first account, and until someone has
+signed in with Jellyfin there is no account for it to resolve to - the
+answer is 403 while `settings/public` still reports `initialized: false`.
+The wizard needs a person once, because it asks for a Jellyfin password.
+
 ## Handoff
 
 `prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
@@ -216,3 +245,9 @@ seeding, because the library is hard links.
 All 56 torrents are complete and stopped, with no missing files - they were
 already stopped before the rename. Jellyfin's `/media` mount and
 qBittorrent's `/downloads` mount both exist only until the import is done.
+
+`jellyseerr.home` answers over HTTPS and is in the certificate, but its
+setup wizard is unfinished: sign in with the Jellyfin administrator
+account, after which Radarr and Sonarr can be registered through its API.
+Both use profile `Ukrainian` as the default, since the second language is
+an override on one account rather than a second server.
