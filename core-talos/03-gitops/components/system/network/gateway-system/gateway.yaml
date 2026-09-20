@@ -10,9 +10,32 @@ metadata:
 spec:
   gatewayClassName: cilium
   listeners:
+    # cloudflared speaks plain HTTP to the Gateway, so public names have to
+    # be served without TLS here; Cloudflare holds the certificate at its
+    # edge. Naming the listener keeps local names off it.
     - name: http
       protocol: HTTP
       port: 80
+      hostname: "*.serhii.link"
+      allowedRoutes:
+        namespaces:
+          from: All
+    # Local names typed without a scheme land here and are sent to HTTPS.
+    # Only this namespace may attach, so a service route cannot take a name
+    # off the redirect by matching its hostname exactly.
+    - name: http-home
+      protocol: HTTP
+      port: 80
+      hostname: "*.home"
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # The exception: a device fetching the root certificate does not trust
+    # it yet, so this one name stays reachable without TLS.
+    - name: http-ca
+      protocol: HTTP
+      port: 80
+      hostname: ca.home
       allowedRoutes:
         namespaces:
           from: All
