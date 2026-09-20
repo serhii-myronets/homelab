@@ -16,9 +16,26 @@ spec:
     spec:
       initContainers:
         # A fresh or restored volume may be root-owned.
+        #
+        # Jellyfin 12 answers 400 to the X-Emby-Authorization header, which is
+        # the only one Jellyseerr sends - its development build included - so
+        # nothing it asks for gets through. Jellyfin keeps a switch for the
+        # old header; it is off by default and lives in the configuration
+        # volume, so it is set here rather than by hand, and a restore from R2
+        # cannot quietly turn it back off. Remove this once Jellyseerr sends
+        # Authorization, because the switch is for a header already deprecated.
         - name: prepare
           image: busybox:1.37
-          command: [sh, -c, "chown 1000:1000 /config /cache"]
+          command:
+            - sh
+            - -c
+            - >-
+              set -e;
+              chown 1000:1000 /config /cache;
+              f=/config/config/system.xml;
+              if [ -f "$f" ]; then
+              sed -i 's|<EnableLegacyAuthorization>false<|<EnableLegacyAuthorization>true<|' "$f";
+              fi
           volumeMounts:
             - {name: data, mountPath: /config}
             - {name: cache, mountPath: /cache}
