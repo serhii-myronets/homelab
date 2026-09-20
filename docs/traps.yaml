@@ -209,6 +209,30 @@ traps:
       way have to be safe to run twice.
     diagnosed: 2026-09-19, on the Beelink
 
+  - id: gluetun-is-oomkilled-building-its-dns-block-lists
+    applies_to: [gluetun, kubernetes, torrent]
+    symptom: >-
+      The VPN container crash-loops although the log shows no error at all:
+      the tunnel comes up, the public address is reported, and a few seconds
+      later the container is gone. The pod never becomes ready, so the whole
+      stack answers 503.
+    cause: >-
+      Right after connecting, gluetun downloads and builds DNS block lists in
+      memory. That peak does not fit in 256Mi - measured 332Mi in use once it
+      was allowed to finish - and the kubelet kills it.
+    tell: >-
+      `kubectl get pod -o jsonpath` over lastState shows `exitCode: 137,
+      reason: OOMKilled`, and the final log line before each death is
+      `[dns] downloading hostnames and IP block lists`.
+    fix: >-
+      Raise the limit to 512Mi, or turn the block lists off if the memory
+      matters more than they do.
+    note: >-
+      This stayed hidden while the container was failing to authenticate,
+      because it never got far enough to build the lists. Fixing one fault
+      revealed the next.
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: gluetun-retries-one-vpn-server-for-ever
     applies_to: [gluetun, openvpn, nordvpn, torrent]
     symptom: >-

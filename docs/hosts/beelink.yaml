@@ -144,6 +144,10 @@ platform:
       path Sonarr and Radarr also use.
     config: claim data on the lvm class, backed up hourly
     cache: 50Gi lvm claim for incomplete downloads, never backed up
+    seeding: >-
+      Stops at ratio 2 or 14 days, whichever comes first. Stopping rather
+      than deleting is deliberate: it is what tells Sonarr and Radarr the
+      seeding is finished, and they then remove the torrent with its file.
     vpn_secret: Infisical /nordvpn (OPENVPN_USER, OPENVPN_PASSWORD)
     webui_auth: none from 192.168.8.0/24 and the pod network
     migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
@@ -162,6 +166,20 @@ platform:
     one_pod: >-
       The OpenEBS LVM driver mounts a volume into one pod only, so the three
       cannot be separate Deployments sharing the configuration claim.
+    profiles: >-
+      Two each, English and Ukrainian, chosen when a title is added. Each
+      scores its language 500 and requires 200, so the language is a
+      requirement: the profile waits for a translation rather than taking
+      the wrong one. Quality runs from SDTV to Bluray-1080p.
+    cleanup: >-
+      Both remove a completed download from qBittorrent once it has finished
+      seeding, together with its file, leaving only the library's hard link.
+      Deleting anything on purpose is done here, never in Jellyfin, which
+      would remove the link, free nothing and have the episode fetched
+      again.
+    flaresolverr: >-
+      Its own pod, stateless. Passes the Cloudflare challenge for the
+      indexers tagged with it, currently RuTracker and EZTV.
   samba:
     auth: guest
     shares:

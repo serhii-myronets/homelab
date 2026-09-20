@@ -152,6 +152,51 @@ the search pressed once by hand.
 Renaming on import was off in both, which would have left release names in
 the library and defeated half the reason for the stack. It is on.
 
+## Where a file lives, and where to delete it
+
+Two directories hold the same films. `/data/torrents` is qBittorrent's, and
+`/data/media` is the library Sonarr and Radarr build out of hard links into
+it. A hard link is a second name for one file, not a copy and not a
+shortcut: neither name is the original, removing one leaves the other whole,
+and the data goes only when the last name does. A seeding torrent therefore
+cannot be broken by anything done in the library.
+
+Nothing was retiring on its own: qBittorrent had no share limit, so torrents
+seeded for ever, and neither manager was removing anything from the client.
+The chain now closes by itself. A torrent that has given back twice what it
+took, or seeded a fortnight, is stopped by qBittorrent - stopped, not
+deleted, because that is what tells the managers seeding is done. They then
+remove the torrent together with its file, but only for something they
+managed to import, so a failed import never costs the download. The
+library's link keeps the data, and Jellyfin notices nothing.
+
+Deleting deliberately is one place: Sonarr or Radarr. Deleting in Jellyfin
+is the worst of the options - it removes the library's link, frees nothing
+because the torrent still holds the file, and leaves the episode looking
+missing, so Sonarr downloads it again. Jellyfin is the reader here and is
+better off without permission to delete at all.
+
+## Importing what is already on the disk
+
+The order matters, and it was learnt the wrong way round. A series added
+with a search fires that search immediately, and since the library is empty
+the search finds everything missing: MobLand was downloaded a second time
+while its ten episodes, 35 GB, sat in `/data/torrents/Shows/MobLand`. The
+order is to add without searching, import, and only then let it search - it
+then looks for what is genuinely absent.
+
+Two mechanisms carry similar names and only one is safe here. Library Import
+declares a folder to *be* the library and adopts the files where they lie;
+pointed at `/data/torrents` it would make the seeding directory the library,
+and renaming would then rename files out from under 56 torrents. Manual
+Import instead takes files from wherever they are and hard links them into
+the root folder under proper names, which is what this migration needs.
+
+Manual Import only fills series that already exist: a scan of the MobLand
+folder returned all ten files as `Unknown Series` once the series had been
+deleted. About 97 directories wait in `Shows`, `Movies` and `Kids`, so this
+is a job for the API rather than an evening of clicking.
+
 ## Handoff
 
 `prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
@@ -162,11 +207,11 @@ Prowlarr has no indexers: which trackers, and any credentials they need, are
 the owner's to choose. Everything else is already pointed at Prowlarr, so
 adding one there puts it in both applications.
 
-Then the import, out of `/data/torrents` into the two root folders. `Kids`
-needs no sorting: each item is identified on its own and lands in films or
-series. Releases named in Ukrainian or Russian will need identifying by
-hand, and anything imported keeps seeding, because the library is hard
-links.
+Then the import of about 97 directories, in the order above: add without
+searching, Manual Import, then search. `Kids` needs no sorting, since each
+item is identified on its own and lands in films or series. Releases named
+in Ukrainian or Russian will need identifying by hand. Nothing stops
+seeding, because the library is hard links.
 
 All 56 torrents are complete and stopped, with no missing files - they were
 already stopped before the rename. Jellyfin's `/media` mount and
