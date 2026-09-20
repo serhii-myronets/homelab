@@ -29,6 +29,21 @@ spec:
       labels:
         app: library
     spec:
+      initContainers:
+        # Sonarr and Radarr refuse a root folder that does not exist, and
+        # the library starts empty, so the stack makes its own two. Owned by
+        # the UID every media application shares.
+        - name: prepare
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - >-
+              mkdir -p /data/media/movies /data/media/tv &&
+              chown 1000:1000 /data/media/movies /data/media/tv &&
+              chmod 0775 /data/media/movies /data/media/tv
+          volumeMounts:
+            - {name: hdd-a, mountPath: /data}
       containers:
         # The indexer manager: it holds the tracker definitions and pushes
         # them to the two below, which then store none of their own.
