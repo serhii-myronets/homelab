@@ -242,6 +242,42 @@ about Jellyfin lives in Git either - so the init container was reverted and
 the switch set where the rest of its configuration is. It is a deprecated
 header, so it comes off once Jellyseerr sends the current one.
 
+## The migration itself
+
+Ninety-seven directories became thirty series and sixty-six films. The
+names were clean enough that a cleaned search term matched ninety-three of
+them outright; the four left over were a Ukrainian title (Spider-Noir), a
+Russian one (The Angry Beavers), a Ukrainian film whose English title
+shares nothing with it (Diagnosis: Dissent, matched on originalTitle) and
+"F1- The Movie", which is called "F1".
+
+The dry run was worth it. Four confident matches were wrong - The Office
+(CA) for the American one, The Gentleman (2026) for The Gentlemen (2024),
+The Night Manager (CN) for the 2016 series' second season, and Léon G. for
+Léon: The Professional - and three folders needed splitting or merging:
+Landman and The Night Manager each had two folders of one series, and Kill
+Bill held two films. A confident-looking score is not a correct match.
+
+Everything was added with searching off and imported with importMode
+`copy`, which hard links because copyUsingHardlinks is on. 1058 files in
+the library, none of them a real copy, and the disk stayed at 1.9 TB.
+Fifty-eight torrents, no errors: the release keeps its own name, and only
+the library's second name is the one Sonarr renames.
+
+Two folders needed more than the API's own guesses, and both are in
+`docs/traps.yaml`: a scan given a seriesId reads the series' library
+folder rather than the folder asked for, and a release numbered straight
+through the series is read as though numbered within each season. The
+second had already produced 47 wrong titles for Chip 'n Dale Rescue
+Rangers, caught by comparing inodes; those links were deleted and the files
+imported again matched by episode title. The Angry Beavers, whose source
+splits five seasons where the database has four and pairs two segments per
+file, only worked by title as well.
+
+One title was added from a tvdbId written from memory rather than taken
+from the lookup, and 76079 is The Care Bears. It was deleted; the lesson is
+that a hand-written id deserves the same check as a matched one.
+
 ## Handoff
 
 `prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
