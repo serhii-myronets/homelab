@@ -32,10 +32,16 @@ spec:
               mkdir -p /apps/config/qBittorrent /apps/flood &&
               cp /git/qBittorrent.conf /apps/config/qBittorrent/qBittorrent.conf &&
               rm -f /apps/config/qBittorrent/qBittorrent_new.conf &&
-              chown -R 1000:1000 /apps/config/qBittorrent/qBittorrent.conf /apps/flood
+              chown -R 1000:1000 /apps/config/qBittorrent/qBittorrent.conf /apps/flood &&
+              chown 1000:1000 /incomplete
           volumeMounts:
             - {name: data, mountPath: /apps}
             - {name: config, mountPath: /git, readOnly: true}
+            # A fresh claim belongs to root, and qBittorrent runs as 1000. It
+            # makes a directory per category in here, so the volume's own root
+            # has to be writable; chowning it here rather than through fsGroup
+            # keeps the kubelet away from the 9 TB disk this pod also mounts.
+            - {name: cache, mountPath: /incomplete}
         # A native sidecar: qBittorrent and Flood start only once the tunnel
         # is healthy, so nothing leaves the pod outside the VPN.
         - name: gluetun
