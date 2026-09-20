@@ -68,3 +68,25 @@ gaps:
   - Package list is not captured; core/bootstrap.sh installs Docker if missing.
   - proxmox has no vzdump schedule; its guests are Terraform-rebuildable.
   - The router's config is not backed up, only documented in hosts/router.yaml.
+
+# Added 2026-09-20. The hourly VolSync copies to Cloudflare R2 are a second
+# system, separate from the restic job above, and cover the Beelink only.
+volsync_to_r2:
+  covers: >-
+    One claim per service, named data, under volsync/<service> in the
+    homelab-backups bucket: jellyfin, torrent, library and immich. Hourly, at
+    :15, by VolumeSnapshot so the application keeps running.
+  not_covered:
+    - >-
+      immich's photographs. The only irreplaceable data in the house, on one
+      disk with no mirror and no second copy, pending a decision once the
+      library has a size. This is the largest open gap in this file.
+    - hdd-a's films and series, treated as re-downloadable.
+    - The model cache and every transcode or thumbnail cache; all rebuildable.
+  restore: >-
+    Each service's ReplicationDestination fills its claim from R2 before the
+    service starts, so an empty cluster restores itself. Verified for library
+    on 2026-09-20 after its snapshot was recreated.
+  watch: >-
+    A ReplicationSource with an empty lastSyncTime has never run, and looks
+    identical to a healthy one at a glance. See traps.yaml.
