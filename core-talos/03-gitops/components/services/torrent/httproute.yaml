@@ -1,14 +1,13 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: flood
+  name: torrent
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  # A name under serhii.link is published through the Beelink tunnel by
-  # external-dns, behind Cloudflare Access.
-  # torrent.serhii.link was Flood's address through the former core tunnel.
-  hostnames: [flood.serhii.link, torrent.serhii.link]
+  # external-dns publishes the public name through the Beelink tunnel behind
+  # Cloudflare Access.
+  hostnames: [torrent.home, torrent.serhii.link]
   rules:
     - backendRefs:
         - {name: torrent, port: 3000}
@@ -26,16 +25,3 @@ spec:
   rules:
     - backendRefs:
         - {name: torrent, port: 8080}
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: flood-home
-spec:
-  parentRefs:
-    - {name: main-gateway, namespace: gateway-system}
-  hostnames:
-    - torrent.home
-  rules:
-    - backendRefs:
-        - {name: torrent, port: 3000}
