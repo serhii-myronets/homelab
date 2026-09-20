@@ -1,0 +1,30 @@
+# Immich needs no hard links, so it sees only what it owns: the pod mounts
+# this with subPath photos. The volume is the whole disk because that is how
+# a local PV is declared here, not because the server should see all of it.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: immich-hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  capacity:
+    storage: 9000Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  volumeMode: Filesystem
+  claimRef:
+    namespace: immich
+    name: hdd-a
+  local:
+    path: /var/mnt/hdd-a
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: homelab/media-hdd
+              operator: In
+              values:
+                - "true"

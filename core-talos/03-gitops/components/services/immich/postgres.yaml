@@ -1,0 +1,78 @@
+# Immich will not run on a stock Postgres: it stores image and face
+# embeddings as vectors, and the searches over them need VectorChord. This is
+# the image Immich pins for this release rather than a general one with an
+# extension added, because the pair is what upstream tests.
+#
+# Its data is the `data` claim the VolSync component declares, so it goes to
+# R2 hourly. A snapshot of a running database is crash-consistent, which is
+# what a power cut looks like: Postgres replays its write-ahead log and comes
+# up. The photos themselves have no second copy yet - a decision taken
+# knowingly on 2026-09-20, to be revisited once the library has a size.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        # The image runs Postgres as uid 999; the volume arrives owned by
+        # root, and this is what makes it writable without an init container.
+        fsGroup: 999
+      containers:
+        - name: postgres
+          image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+          env:
+            - {name: POSTGRES_USER, value: postgres}
+            - {name: POSTGRES_DB, value: immich}
+            - {name: POSTGRES_INITDB_ARGS, value: --data-checksums}
+            # initdb refuses a directory that is not empty, and a fresh
+            # filesystem is not: it has lost+found. So the cluster lives one
+            # level down, in a directory it creates itself.
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: immich-db, key: DB_PASSWORD}
+          ports:
+            - {name: postgres, containerPort: 5432}
+          startupProbe:
+            exec: {command: [pg_isready, -U, postgres, -d, immich]}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec: {command: [pg_isready, -U, postgres, -d, immich]}
+          livenessProbe:
+            exec: {command: [pg_isready, -U, postgres, -d, immich]}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 256Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data}
+            # Postgres wants more shared memory than the 64 MiB a container
+            # gets by default; upstream's compose asks for 128 MiB.
+            - {name: shm, mountPath: /dev/shm}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+        - name: shm
+          emptyDir: {medium: Memory, sizeLimit: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - {name: postgres, port: 5432, targetPort: postgres}
