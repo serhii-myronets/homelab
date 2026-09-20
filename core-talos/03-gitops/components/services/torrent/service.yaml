@@ -13,4 +13,3 @@ spec:
     app: torrent
   ports:
     - {name: qbittorrent, port: 8080, targetPort: qbittorrent}
-    - {name: flood, port: 3000, targetPort: flood}
