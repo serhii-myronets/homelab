@@ -65,7 +65,9 @@ spec:
             # one value here.
             - {name: VPN_TYPE, value: wireguard}
             # NordVPN's key is read from the nordvpn secret through envFrom
-            # below, as WIREGUARD_PRIVATE_KEY.
+            # below, as WIREGUARD_PRIVATE_KEY. The interface stays tun0:
+            # gluetun names it from VPN_INTERFACE, not from the protocol,
+            # and qBittorrent.conf binds to that name.
             #
             # The server list built into the image goes stale; gluetun
             # refreshes it, and for WireGuard it is also where each server's
