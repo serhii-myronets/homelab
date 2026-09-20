@@ -124,14 +124,20 @@ it compared only quality, and RuTracker's 1080p WEB-DL beat EZTV's 720p
 WEBRip. Radarr had the opposite problem: its profile language was
 `Original`, a hard filter that silently threw away every Ukrainian dub.
 
-Both now work the same way, through custom formats scoring English 100,
-Ukrainian 50 and Russian 10, and Radarr's profile language set to `Any`.
-Nothing is rejected: a release in the wrong language is worse than one in
-the right language, but better than nothing. A second profile,
-`HD - Ukrainian`, scores Ukrainian 500 and sets a minimum score of 200, so
-it takes only releases that carry a Ukrainian track and waits when none
-exists - which is the point, for anything the owner watches rather than
-their son. The profile is chosen when the series or film is added.
+Both now work the same way. Language is a custom format, Radarr's profile
+language is `Any`, and the six default profiles are gone: each application
+keeps exactly two, `English` and `Ukrainian`. Each scores its own language
+500 and the others 0, with a minimum score of 200, so the language is a
+requirement rather than a preference - the profile takes nothing at all
+rather than the wrong language, and waits for a translation to be posted.
+The profile is chosen when a series or film is added, which is the whole
+point: the owner's own watching is Ukrainian, their son's is not.
+
+Both allow every quality from SDTV up to Bluray-1080p, since the best
+allowed is what gets grabbed and nothing above 1080p is wanted on an N95.
+Radarr's template had allowed everything, so a 60 GB BR-DISK outranked
+1080p, and a film filmed in a cinema counted as a fallback; both ends are
+switched off.
 
 Toloka and Mazepa label their releases `Ukr/Eng` or `2xUkr/Eng`, and
 Sonarr's parser reads both as Ukrainian and English, so the scores land
