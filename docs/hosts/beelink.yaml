@@ -134,6 +134,7 @@ platform:
       - {name: flood, image: "jesec/flood:4.16.2"}
     downloads: /var/mnt/hdd-a/media, mounted as /downloads like core
     config: claim data on the lvm class, backed up hourly
+    cache: 50Gi lvm claim for incomplete downloads, never backed up
     vpn_secret: Infisical /nordvpn (OPENVPN_USER, OPENVPN_PASSWORD)
     webui_auth: none from 192.168.8.0/24 and the pod network
     migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
