@@ -9,8 +9,10 @@ one child Application for each component, which Argo then reconciles from Git.
   their `services` AppProject.
 - `components/system/` holds cluster-wide configuration such as network policy, secret
   stores, gateways and storage, grouped by purpose: `network/`, `storage/`,
-  `database/`, `security/` and `platform/`. `applications/system/` mirrors the
-  same groups, one Application per component.
+  `security/` and `platform/`. `applications/system/` mirrors the same groups,
+  one Application per component.
+- `archive/` holds setups that worked and are switched off; Argo does not read
+  it. Its own README says what each one was and how to bring it back.
 - `components/services/` holds application workloads, one directory per service,
   each with its own namespace.
 
