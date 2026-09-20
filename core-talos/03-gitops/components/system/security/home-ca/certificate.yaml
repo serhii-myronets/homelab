@@ -21,7 +21,6 @@ spec:
     - immich.home
     - jellyseerr.home
     - prowlarr.home
-    - qbittorrent.home
     - radarr.home
     - sonarr.home
     - torrent.home

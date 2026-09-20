@@ -29,10 +29,10 @@ spec:
             # falls back to qBittorrent.conf, so Git's copy is installed here
             # and the rewritten one removed; otherwise changes never apply.
             - >-
-              mkdir -p /apps/config/qBittorrent /apps/flood &&
+              mkdir -p /apps/config/qBittorrent &&
               cp /git/qBittorrent.conf /apps/config/qBittorrent/qBittorrent.conf &&
               rm -f /apps/config/qBittorrent/qBittorrent_new.conf &&
-              chown -R 1000:1000 /apps/config/qBittorrent/qBittorrent.conf /apps/flood &&
+              chown 1000:1000 /apps/config/qBittorrent/qBittorrent.conf &&
               chown 1000:1000 /incomplete
           volumeMounts:
             - {name: data, mountPath: /apps}
@@ -42,8 +42,8 @@ spec:
             # has to be writable; chowning it here rather than through fsGroup
             # keeps the kubelet away from the 9 TB disk this pod also mounts.
             - {name: cache, mountPath: /incomplete}
-        # A native sidecar: qBittorrent and Flood start only once the tunnel
-        # is healthy, so nothing leaves the pod outside the VPN.
+        # A native sidecar: qBittorrent starts only once the tunnel is
+        # healthy, so nothing leaves the pod outside the VPN.
         - name: gluetun
           image: qmcgaw/gluetun:v3.41.3
           restartPolicy: Always
@@ -74,7 +74,7 @@ spec:
             # public key comes from.
             - {name: UPDATER_PERIOD, value: 24h}
             - {name: SERVER_COUNTRIES, value: Netherlands}
-            - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
+            - {name: FIREWALL_INPUT_PORTS, value: "8080"}
             # Replies to LAN clients and kubelet probes must bypass the tunnel.
             - {name: FIREWALL_OUTBOUND_SUBNETS, value: "192.168.8.0/24,10.244.0.0/16"}
           envFrom:
@@ -92,6 +92,13 @@ spec:
           livenessProbe:
             exec: {command: [/gluetun-entrypoint, healthcheck]}
             periodSeconds: 60
+            # Ten minutes, not three. Some NordVPN WireGuard endpoints accept
+            # the connection and carry nothing - the protocol has no
+            # handshake to fail - and gluetun finds out from its own
+            # healthcheck and moves to the next server. Restarting it during
+            # that hunt throws the progress away and takes qBittorrent's
+            # network with it, turning a recovery into an outage.
+            failureThreshold: 10
           # It builds DNS block lists in memory as soon as the tunnel is up,
           # which 256Mi could not hold: the container was OOMKilled a few
           # seconds after every successful connection. Invisible until the
@@ -126,30 +133,6 @@ spec:
             # Drop /downloads once the old torrents have been re-imported.
             - {name: hdd-a, mountPath: /downloads, subPath: torrents}
             - {name: hdd-a, mountPath: /data}
-        - name: flood
-          image: jesec/flood:4.16.2
-          env:
-            # FLOOD_OPTION_<flag> maps to Flood's CLI flags, so each name must
-            # match its flag exactly. auth=none also makes Flood take the
-            # client settings below instead of asking in the UI.
-            - {name: FLOOD_OPTION_AUTH, value: none}
-            - {name: FLOOD_OPTION_RUNDIR, value: /data}
-            - {name: FLOOD_OPTION_QBURL, value: "http://localhost:8080"}
-            # Ignored by qBittorrent, which trusts localhost, but required.
-            - {name: FLOOD_OPTION_QBUSER, value: admin}
-            - {name: FLOOD_OPTION_QBPASS, value: adminadmin}
-          securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
-          ports:
-            - {name: flood, containerPort: 3000}
-          readinessProbe:
-            tcpSocket: {port: flood}
-          resources:
-            requests: {cpu: 20m, memory: 64Mi}
-            limits: {memory: 256Mi}
-          volumeMounts:
-            - {name: data, mountPath: /data, subPath: flood}
       volumes:
         - name: gluetun
           persistentVolumeClaim: {claimName: gluetun}
