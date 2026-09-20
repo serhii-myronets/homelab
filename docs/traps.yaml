@@ -3,7 +3,7 @@
 # that "should work".
 
 meta:
-  updated: 2026-09-18
+  updated: 2026-09-19
   tags: [traps, gotchas, debugging, portainer, caddy, docker, networking, tailscale, wireguard, helmfile, kubernetes, samba]
 
 traps:
@@ -90,6 +90,23 @@ traps:
       qBittorrent_new.conf there, rather than mounting the configuration
       read-only. To fix a running instance, delete the file and kill the pod
       without a graceful stop, which would write it back.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: external-secret-does-not-validate-vpn-credentials
+    applies_to: [external-secrets, gluetun, nordvpn, kubernetes]
+    symptom: >-
+      Gluetun repeatedly reports `AUTH_FAILED` after a pod restart even though
+      the `nordvpn` ExternalSecret reports `SecretSynced` and contains both
+      expected keys.
+    cause: >-
+      External Secrets validates that Infisical returned values; it cannot
+      validate those values with NordVPN. The stored manual-connection
+      credentials can be expired, revoked, or otherwise rejected by NordVPN.
+    fix: >-
+      Replace the two `/nordvpn` values in Infisical with working NordVPN
+      manual-connection credentials, then let External Secrets refresh the
+      Kubernetes Secret and restart the torrent pod. Do not expose the values
+      in a shell command or Kubernetes output.
     diagnosed: 2026-09-19, on the Beelink
 
   - id: gluetun-ships-dead-vpn-servers
