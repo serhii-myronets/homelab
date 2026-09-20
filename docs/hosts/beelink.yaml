@@ -82,7 +82,7 @@ platform:
   gitops_components:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
-    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, jellyfin-hdd-a], status: deployed}
+    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, jellyfin-hdd-a, library-hdd-a], status: deployed}
     - {name: cert-manager, namespace: cert-manager, chart: v1.21.2, status: deployed}
     - {name: snapshot-controller, namespace: kube-system, chart: 5.3.0, app: v8.6.0, status: deployed}
     - {name: volsync, namespace: volsync-system, chart: 0.16.0, status: deployed}
@@ -90,14 +90,16 @@ platform:
     - {name: torrent, namespace: torrent, status: deployed}
     - {name: intel-gpu, namespace: kube-system, plugin: "intel-gpu-plugin 0.37.0", resource: "gpu.intel.com/i915", shared_by: 3, status: deployed}
     - {name: jellyfin, namespace: jellyfin, status: deployed}
+    - {name: library, namespace: library, status: deployed}
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, qbittorrent.home, torrent.home, argocd.home, ca.home]
+    names: [jellyfin.home, qbittorrent.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
     gateway: 192.168.8.15, HTTP and HTTPS
     certificate: >-
       One certificate lists home, argocd.home, ca.home, jellyfin.home,
-      qbittorrent.home and torrent.home. cert-manager creates and renews it
+      prowlarr.home, qbittorrent.home, radarr.home, sonarr.home and
+      torrent.home. cert-manager creates and renews it
       from the cluster's own authority; devices trust its root from
       ca.home/root.crt.
     note: >-
@@ -120,7 +122,11 @@ platform:
     gpu: Quick Sync through the Intel iHD driver 26.2.4
     config: claim data on the lvm class, backed up hourly
     cache: claim cache on the lvm class, never backed up
-    media: /var/mnt/hdd-a/media read-only, mounted as /media like core
+    media: >-
+      Two read-only mounts during the changeover: /var/mnt/hdd-a/torrents as
+      /media, which is where the migrated library still points, and
+      /var/mnt/hdd-a/media as /library, which Sonarr and Radarr fill. The
+      first goes once everything is imported.
     migrated: core's 12.0 library and watch history on 2026-09-19, upgraded to 12.1
   torrent:
     address: 192.168.8.16 (LoadBalancer)
@@ -129,16 +135,35 @@ platform:
       - {name: gluetun, image: "qmcgaw/gluetun:v3.41.3", role: "NordVPN OpenVPN, Netherlands, native sidecar", endpoint: 186.247.163.10}
       - {name: qbittorrent, image: "ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475", interface: tun0}
       - {name: flood, image: "jesec/flood:4.16.2"}
-    downloads: /var/mnt/hdd-a/media, mounted as /downloads like core
+    downloads: >-
+      /var/mnt/hdd-a/torrents, mounted both as /downloads, the path the
+      migrated torrents carry in their resume data, and inside /data, the
+      path Sonarr and Radarr also use.
     config: claim data on the lvm class, backed up hourly
     cache: 50Gi lvm claim for incomplete downloads, never backed up
     vpn_secret: Infisical /nordvpn (OPENVPN_USER, OPENVPN_PASSWORD)
     webui_auth: none from 192.168.8.0/24 and the pod network
     migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
+  library:
+    role: finds and organises what Jellyfin plays; one pod, three programs
+    containers:
+      - {name: prowlarr, image: "ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161", port: 9696, role: indexers}
+      - {name: sonarr, image: "ghcr.io/linuxserver/sonarr:4.0.20.3014-ls325", port: 8989, role: series}
+      - {name: radarr, image: "ghcr.io/linuxserver/radarr:6.4.4.10685-ls317", port: 7878, role: films}
+    config: one claim data on the lvm class, a directory each, backed up hourly
+    disk: >-
+      /var/mnt/hdd-a whole, mounted as /data. Downloads stay in
+      /data/torrents and the library in /data/media is hard links into them,
+      so organising a release cannot break its torrent and costs no space.
+    names: [prowlarr.home, sonarr.home, radarr.home]   # local only
+    one_pod: >-
+      The OpenEBS LVM driver mounts a volume into one pod only, so the three
+      cannot be separate Deployments sharing the configuration claim.
   samba:
     auth: guest
     shares:
-      - {name: media, path: /var/mnt/hdd-a/media}
+      - {name: media, path: /var/mnt/hdd-a/media}        # the library
+      - {name: torrents, path: /var/mnt/hdd-a/torrents}  # what is seeding
       - {name: scan, path: /var/mnt/hdd-b/scan}
       - {name: hdd-b, path: /var/mnt/hdd-b}
     migrated: 89 document files from core on 2026-09-19

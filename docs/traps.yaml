@@ -186,6 +186,58 @@ traps:
       way have to be safe to run twice.
     diagnosed: 2026-09-19, on the Beelink
 
+  - id: openebs-lvm-mounts-a-volume-into-one-pod-only
+    applies_to: [openebs, lvm, kubernetes]
+    symptom: >-
+      Several pods share one ReadWriteOnce claim on a single-node cluster.
+      The first starts; the rest stay in ContainerCreating with
+      `verifyMount: device already mounted at /var/lib/kubelet/pods/<the
+      first pod>/...`.
+    cause: >-
+      ReadWriteOnce allows many pods on one node, but the LVM driver checks
+      whether the logical volume is already mounted and refuses the second
+      mount. For this driver the claim belongs to one pod, not one node.
+    fix: >-
+      Put the containers that share the volume in one pod, each under its
+      own subPath, as the torrent and library stacks do, or give each its
+      own claim.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: volsync-populator-races-csi-leak-protection
+    applies_to: [volsync, openebs, kubernetes]
+    symptom: >-
+      A claim with a VolSync dataSourceRef binds, but every pod fails to
+      mount it with `lvmvolumes.local.openebs.io "pvc-..." not found`. The
+      PV exists and is Bound; the logical volume behind it does not.
+    cause: >-
+      The populator provisions a temporary `vs-prime-...` claim, rebinds its
+      PV to the real claim and deletes the temporary one. csi-provisioner's
+      leak protection sees a claim vanish while it was provisioning and
+      deletes the volume it just made. The CSI log names it outright -
+      `leak_protection.go: deleted volume via csi driver if exists`. It is a
+      race, so the same manifest can work one time and fail the next.
+    fix: >-
+      Delete the claim and let it be recreated; the second attempt usually
+      wins. Pods holding the broken claim must go first, or its
+      pvc-protection finalizer keeps it.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: csistoragecapacity-keeps-a-dead-owner
+    applies_to: [openebs, kubernetes, csi]
+    symptom: >-
+      After a CSI controller is rolled, its provisioner logs
+      `CSIStorageCapacity ... is invalid: Only one reference can have
+      Controller set to true` every few seconds, naming both the old and the
+      new ReplicaSet.
+    cause: >-
+      The object is owned by the ReplicaSet that created it. A new ReplicaSet
+      cannot add itself as a second controlling owner, and nothing removes
+      the old one, so capacity is never updated again.
+    fix: >-
+      Delete the CSIStorageCapacity object. The running provisioner recreates
+      it, owned by the live ReplicaSet.
+    diagnosed: 2026-09-19, on the Beelink, after rolling OpenEBS
+
   - id: openebs-hostpath-needs-privileged-namespace
     applies_to: [openebs, kubernetes, talos]
     symptom: >-
