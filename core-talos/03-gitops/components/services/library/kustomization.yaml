@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - pvc.yaml
   - deployment.yaml
+  - flaresolverr.yaml
   - service.yaml
   - httproute.yaml
 components:
