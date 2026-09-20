@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homelab Local Authority</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 34rem; margin: 3rem auto; padding: 0 1.25rem; }
+  h1 { font-size: 1.4rem; }
+  a.download { display: inline-block; margin: 1rem 0 2rem; padding: .7rem 1.2rem; border-radius: .5rem;
+               background: #2563eb; color: #fff; text-decoration: none; font-weight: 600; }
+  code { background: rgba(127,127,127,.18); padding: .1rem .35rem; border-radius: .25rem; }
+  pre { background: rgba(127,127,127,.12); padding: .75rem; border-radius: .5rem; overflow-x: auto; }
+  h2 { font-size: 1rem; margin-top: 1.6rem; }
+</style>
+<h1>Homelab Local Authority</h1>
+<p>Certificates for <code>*.home</code> are issued here. Trust this root once and
+   the local sites stop warning.</p>
+<a class="download" href="/root.crt">Download root.crt</a>
+
+<h2>macOS</h2>
+<pre>curl -O http://ca.home/root.crt
+sudo security add-trusted-cert -d -r trustRoot \
+  -k /Library/Keychains/System.keychain root.crt</pre>
+
+<h2>iPhone, iPad</h2>
+<p>Open this page in Safari and download the file; install the profile in
+   Settings, then turn the root on under General → About → Certificate Trust
+   Settings.</p>
+
+<h2>Android</h2>
+<p>Settings → Security → Encryption &amp; credentials → Install a certificate →
+   CA certificate. Some apps ignore user-installed roots.</p>
+
+<h2>Windows</h2>
+<pre>certutil -addstore -f Root root.crt</pre>
