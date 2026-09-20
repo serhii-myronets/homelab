@@ -1,0 +1,52 @@
+# Some trackers sit behind a Cloudflare bot challenge, which answers
+# Prowlarr's login with "Just a moment..." and a 403. This runs a headless
+# browser that passes the challenge and hands back the cookies, which
+# Prowlarr then uses. It is a separate pod because it keeps nothing: no
+# claim, so nothing to share and nothing to restore.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaresolverr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flaresolverr
+  template:
+    metadata:
+      labels:
+        app: flaresolverr
+    spec:
+      containers:
+        - name: flaresolverr
+          image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: LOG_LEVEL, value: info}
+          ports:
+            - {name: http, containerPort: 8191}
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 256Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            # Chromium crashes against the default 64 MB of shared memory.
+            - {name: shm, mountPath: /dev/shm}
+      volumes:
+        - name: shm
+          emptyDir: {medium: Memory, sizeLimit: 256Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flaresolverr
+spec:
+  selector:
+    app: flaresolverr
+  ports:
+    - {name: http, port: 8191, targetPort: http}
