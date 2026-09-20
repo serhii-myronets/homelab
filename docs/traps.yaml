@@ -49,6 +49,33 @@ traps:
       `fruit:nfs_aces = no`. World-writable modes also work.
     diagnosed: 2026-09-18, on the Beelink
 
+  - id: no-wildcard-under-a-top-level-name
+    applies_to: [cert-manager, tls, macos]
+    symptom: >-
+      macOS reports "Host name mismatch" for a certificate whose SAN is
+      "*.home", and browsers keep warning even with its root installed.
+    cause: >-
+      Apple and Chrome refuse a wildcard directly under a top-level name,
+      because it would cover every name under it. Caddy never served one: its
+      `*.home` block matched hostnames, while `tls internal on_demand` minted
+      a separate certificate for each name as it was first requested.
+    fix: >-
+      List each local name in the certificate, and add a name there in the
+      same change that adds its route. A wildcard works one level deeper, on
+      a real domain such as *.lan.example.com.
+    diagnosed: 2026-09-19, on the Beelink
+
+  - id: apple-needs-serverauth
+    applies_to: [cert-manager, tls, macos]
+    symptom: >-
+      A certificate from a trusted local authority is still rejected, and
+      curl reports verification failure.
+    cause: >-
+      cert-manager issues without an extendedKeyUsage unless asked, and Apple
+      platforms require serverAuth on a TLS server certificate.
+    fix: 'Set usages: [server auth, digital signature, key encipherment].'
+    diagnosed: 2026-09-19, on the Beelink
+
   - id: qbittorrent-prefers-its-own-config
     applies_to: [qbittorrent, kubernetes]
     symptom: >-
