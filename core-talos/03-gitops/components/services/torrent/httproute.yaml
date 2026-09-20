@@ -5,8 +5,6 @@ metadata:
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  # external-dns publishes the public name through the Beelink tunnel behind
-  # Cloudflare Access.
   hostnames: [torrent.home, torrent.serhii.link]
   rules:
     - backendRefs:
