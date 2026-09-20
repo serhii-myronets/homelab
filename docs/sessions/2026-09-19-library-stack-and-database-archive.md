@@ -325,6 +325,39 @@ no ending, and a better release is worth more than the repair.
 
 Jellyfin's Shows library was renamed TV, after the directory it reads.
 
+## A backup that had never run
+
+Preparing a version upgrade turned up something worse than the version.
+The library's ReplicationSource had read "Synchronization in-progress"
+since 03:22 with no mover job, no pod and no lastSyncTime - fourteen hours
+of looking scheduled while having never once run. The snapshot it waited
+on named a volume that no longer existed: it had been taken while the
+claim was still bound to the broken PV from the morning's provisioner
+race, and the claim was rebuilt underneath it. VolSync waits for a
+snapshot to become ready rather than giving up, so nothing ever reported a
+failure. Deleting the snapshot was enough - the next one was ready in
+fifteen seconds - and everything four applications had been configured
+with that day finally reached R2.
+
+The lesson is narrower than "check backups": check `lastSyncTime` on every
+ReplicationSource after any claim is recreated, because an in-progress
+sync is indistinguishable from a healthy one at a glance.
+
+## The version that was not the newest
+
+Jellyseerr was pinned at 2.7.3, the highest tag its repository offers, and
+reported an update available. Both were true: the project renamed itself
+Seerr and moved to seerr-team/seerr, and the old repository has served the
+same last build since 2025-08-14. Picking the newest tag is not the same
+as picking the newest release, and nothing in a registry says a repository
+has been abandoned.
+
+3.4.1 migrated its settings and database on first start and kept every
+connection. It also asks Jellyfin's API with the Authorization header, so
+Jellyfin 12 no longer refuses it - but its sign-in route still sends
+X-Emby-Authorization, so EnableLegacyAuthorization has to stay on a while
+longer.
+
 ## Handoff
 
 Everything answers over HTTPS and is in the certificate: `prowlarr.home`,

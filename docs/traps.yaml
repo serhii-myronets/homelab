@@ -676,8 +676,9 @@ traps:
     fix: >-
       Jellyfin keeps a switch for the old header, EnableLegacyAuthorization
       in /config/config/system.xml, off by default. Set it to true and
-      restart. It is a deprecated path, so revisit it when Jellyseerr starts
-      sending Authorization.
+      restart. Seerr 3.4.1 asks the API with Authorization but its sign-in
+      route still sends the old header, so the switch has to stay on until
+      that route follows.
     diagnosed: 2026-09-20
 
   - id: sonarr-manual-import-ignores-the-folder-when-given-a-series
@@ -791,4 +792,25 @@ traps:
       volume on its next pass. Worth checking lastSyncTime on every
       ReplicationSource after any claim is recreated, because nothing else
       reports this as a failure.
+    diagnosed: 2026-09-20
+
+  - id: an-image-repositorys-newest-tag-is-not-the-newest-release
+    applies_to: [renovate, containers, jellyseerr]
+    symptom: >-
+      A pinned image is the highest tag its repository offers and the
+      application still reports an update available, a year of releases
+      behind.
+    cause: >-
+      The project renamed itself and moved - Jellyseerr to Seerr, at
+      seerr-team/seerr - and the old repository keeps serving its last
+      build for ever. Nothing in the registry says a repository is
+      abandoned, and Renovate cannot follow a move it was not told about.
+    tell: >-
+      The GitHub repository answers 301 to a new full_name, and the
+      application's own /status reports updateAvailable with commitsBehind
+      0 because the image ships no commit tag to compare.
+    fix: >-
+      Point the Deployment at the new repository. Worth asking, whenever an
+      application claims an update that the registry does not have, whether
+      the registry is still the right one.
     diagnosed: 2026-09-20
