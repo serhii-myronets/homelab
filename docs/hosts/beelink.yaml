@@ -94,15 +94,15 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, jellyseerr.home, qbittorrent.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
+    names: [jellyfin.home, jellyseerr.home, immich.home, qbittorrent.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home on 80 in the clear so the
       root certificate can be fetched, and *.home on 443 with home-tls.
     certificate: >-
-      One certificate lists home, argocd.home, ca.home, jellyfin.home,
-      jellyseerr.home, prowlarr.home, qbittorrent.home, radarr.home,
-      sonarr.home and torrent.home. cert-manager creates and renews it
+      One certificate lists home, argocd.home, ca.home, immich.home,
+      jellyfin.home, jellyseerr.home, prowlarr.home, qbittorrent.home,
+      radarr.home, sonarr.home and torrent.home. cert-manager creates and renews it
       from the cluster's own authority; devices trust its root from
       ca.home/root.crt.
     note: >-
@@ -211,6 +211,43 @@ platform:
     flaresolverr: >-
       Its own pod, stateless. Passes the Cloudflare challenge for the
       indexers tagged with it, currently RuTracker and EZTV.
+  immich:
+    role: the household's photographs - upload, search, faces
+    added: 2026-09-20
+    names: [immich.home]          # local only; not published
+    pods:
+      - {name: server, image: "ghcr.io/immich-app/immich-server:v3.2.2", port: 2283}
+      - {name: machine-learning, image: "ghcr.io/immich-app/immich-machine-learning:v3.2.2-openvino", port: 3003, gpu: "gpu.intel.com/i915: 1"}
+      - {name: postgres, image: "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0", port: 5432}
+      - {name: valkey, image: "docker.io/valkey/valkey:9", port: 6379}
+    four_pods: >-
+      Not one: each of the three with a volume needs its own, because the
+      OpenEBS LVM driver mounts a volume into a single pod. Valkey has none
+      and could share, but keeping it apart costs nothing.
+    database: >-
+      Not a stock Postgres. Immich stores image and face embeddings as
+      vectors and searches over them, which needs VectorChord; the image is
+      the pair Immich pins and tests for this release. Crossing a Postgres
+      major means a dump and restore, so the tag's 14 is deliberate.
+    storage: >-
+      Photographs in /var/mnt/hdd-a/photos, mounted as /data. Postgres on the
+      lvm class as the claim `data`, so it goes to R2 hourly - the half that
+      cannot be rebuilt from the originals. The model cache is its own claim
+      and is never backed up.
+    originals_not_backed_up: >-
+      Decided on 2026-09-20: the photographs have no second copy, on one disk
+      with no mirror, until the library has a size worth pricing against R2 at
+      about $0.015 per GB per month. They are the only irreplaceable data in
+      the house, so this is the open risk, not an oversight.
+    gpu: >-
+      Face detection and search run on the Intel iGPU through OpenVINO. The
+      device plugin advertises three; Jellyfin holds one and this holds
+      another, so they never queue for a slot - but they do share the
+      silicon, and a transcode during an import slows both.
+    secret: >-
+      /immich/DB_PASSWORD in Infisical, read by the ExternalSecret immich-db.
+      Postgres initialises its data directory once with whatever password it
+      first sees, so changing it later means changing it inside the database.
   samba:
     auth: guest
     shares:
