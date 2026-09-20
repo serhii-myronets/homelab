@@ -1,11 +1,12 @@
-# core — the OpenMediaVault box. Everything that has to stay up runs here,
-# which is what the name means: not a role as a file server, but the one
-# machine nothing else is allowed to depend on.
-# Verified 2026-09-19 after its Docker services were stopped.
+# core — the OpenMediaVault box. The name was a promise rather than a role:
+# the one machine nothing else is allowed to depend on. The Beelink has been
+# taking that job over since 2026-09-19, and core now serves nothing - all
+# nine of its containers are stopped, its disks and shares still mounted.
+# Verified 2026-09-20.
 
 meta:
   host: core
-  updated: 2026-09-19
+  updated: 2026-09-20
   tags: [core, nas, omv, debian, docker, storage]
 
 identity:

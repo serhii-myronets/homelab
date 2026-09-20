@@ -1,33 +1,30 @@
 ---
 title: Services to consider next
-date: 2026-09-06
+date: 2026-09-20
 tags: [ideas, services, backlog, homelab]
 ---
 
 # Services to consider next
 
-Saved from the service shortlist discussed on 2026-09-06. These are ideas,
-not deployment commitments. Placement is tentative; check current resources
-and upstream requirements before installing. Deployed services are tracked in
-[services.yaml](services.yaml).
+Ideas, not commitments. What is deployed is in
+[hosts/beelink.yaml](hosts/beelink.yaml).
 
-| Service | Why try it | Tentative placement |
+| Service | Why try it | Where |
 |---|---|---|
-| [Paperless-ngx](https://docs.paperless-ngx.com/) | Searchable archive for scans, receipts, warranties and contracts. A useful extension of the existing scanning workflow. | core |
-| [Immich](https://immich.app/features) | Personal photo library with mobile uploads, face recognition and search. | Trial on Proxmox; choose permanent storage and host afterwards |
-| [Home Assistant](https://www.home-assistant.io/installation/) | Automate lights, sockets and sensors; experiment with presence and event-driven routines. | Dedicated Proxmox VM for a trial |
-| [Actual Budget](https://actualbudget.org/) | Personal budgeting and expense planning with local-first data. | core |
-| [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Service availability checks, outage history and notifications. | Proxmox, so it can observe core outages |
-| [NetBird](https://docs.netbird.io/about-netbird/how-netbird-works) | Experiment with a private WireGuard mesh connecting laptops, phones, servers and a VPS. | Proxmox lab project |
-| [Homepage](https://gethomepage.dev/) | One start page for service links and status widgets. Already chosen; configuration is in [core/homepage](../core/homepage/). | core |
+| [Immich](https://immich.app/features) | Photo library with mobile uploads, face recognition and search. The idea with the biggest visible payoff. | Beelink, once storage for it is decided |
+| [Home Assistant](https://www.home-assistant.io/installation/) | Lights, sockets, sensors; presence and event-driven routines. | A Proxmox VM, for a trial |
+| [Actual Budget](https://actualbudget.org/) | Budgeting with local-first data. | Beelink |
+| [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Availability checks, outage history, notifications. | Not the Beelink - something that watches it has to outlive it |
+| [NetBird](https://docs.netbird.io/about-netbird/how-netbird-works) | A private WireGuard mesh across laptops, phones, servers and a VPS. | Proxmox lab project |
 
-Paperless-ngx was the suggested first practical addition; Immich the photo
-project with the biggest visible payoff; Home Assistant the hands-on
-experimentation option. No next service has been selected yet.
+Immich needs backups of both the originals and its database planned before
+any photo worth keeping goes in; see its
+[backup guide](https://docs.immich.app/administration/backup-and-restore/).
 
-For Immich, plan backups of both originals and the database before importing
-important photos; see its [backup guide](https://docs.immich.app/administration/backup-and-restore/).
-A service that becomes essential at home should have a stable home independent
-of disposable lab experiments. Uptime Kuma on Proxmox would not detect a
-whole-home power or internet outage from outside; the existing alerting work
-is described in [decision 0008](decisions/0008-nothing-tells-anyone-when-something-breaks.md).
+Nothing hosted on the Beelink can report that the Beelink is down, which is
+the open half of
+[decision 0008](decisions/0008-nothing-tells-anyone-when-something-breaks.md).
+
+Settled since this list was written: Paperless-ngx is postponed and its
+database archived; the *arr stack was chosen and built; Homepage and Pulse
+stopped with the rest of core's Docker services.

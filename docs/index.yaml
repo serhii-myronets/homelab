@@ -1,48 +1,54 @@
 # Entry point. Read this first, then open only the file that answers the
-# question — every fact below lives in exactly one place.
+# question - every fact below lives in exactly one place.
 #
 # Facts are YAML and verified against the live hosts. Reasoning is Markdown
 # with YAML front matter under decisions/ and sessions/.
 #
 # The machines are named for what they are for, not for what they run:
+#   beelink  gradual replacement for core        192.168.8.10   Talos Linux
 #   core     the one nothing else may depend on  192.168.8.100  OpenMediaVault
 #   proxmox  built and destroyed on purpose      10.1.1.100     Proxmox VE
 #   router   the boundary with the internet      192.168.8.1    GL.iNet
-#   beelink  gradual future replacement for core 192.168.8.10  Talos Linux
-# Only core is deployed from this repository, out of core/. tools/ is the one
-# exception to that: installers run by hand on a host, reconciled by nobody.
+#
+# Two halves are deployed from here: core-talos/ onto the Beelink through Argo
+# CD, and core/ onto core through Portainer - though every one of core's
+# containers has been stopped since 2026-09-19 and is kept only as a way back.
+# tools/ is neither: installers run by hand, reconciled by nobody.
 
 meta:
-  updated: 2026-09-18
+  updated: 2026-09-20
   tags: [index, entrypoint, homelab]
 
 files:
+  - path: docs/hosts/beelink.yaml
+    holds: >-
+      Beelink ME Pro at 192.168.8.10 - the Talos node, its disks, and every
+      service now running in the homelab. The busiest file here.
+    tags: [beelink, talos, kubernetes, bare-metal, storage, services]
   - path: docs/hosts/core.yaml
-    holds: OpenMediaVault box at 192.168.8.100 — hardware, disks, shares, cruft
+    holds: OpenMediaVault box at 192.168.8.100 - hardware, disks, shares, cruft
     tags: [core, nas, omv, hardware, storage]
   - path: docs/hosts/proxmox.yaml
-    holds: hypervisor at 10.1.1.100 — hardware, guests, spare capacity
+    holds: hypervisor at 10.1.1.100 - hardware, guests, spare capacity
     tags: [proxmox, hypervisor, lab]
-  - path: docs/hosts/beelink.yaml
-    holds: Beelink ME Pro at 192.168.8.10 — Talos node, disks and platform
-    tags: [beelink, talos, kubernetes, bare-metal, storage]
   - path: docs/hosts/router.yaml
-    holds: GL.iNet GL-MT6000 — VLANs, zones, DNS, DHCP, WireGuard, Tailscale, risks
+    holds: GL.iNet GL-MT6000 - VLANs, zones, DNS, DHCP, WireGuard, Tailscale, risks
     tags: [router, openwrt, glinet, firewall, vpn, tailscale]
   - path: docs/network.yaml
-    holds: subnets, gateways, DNS, TLS and VPN routes — the parts that span hosts
+    holds: subnets, gateways, DNS, TLS and VPN routes - the parts that span hosts
     tags: [network, dns, tls, vpn, tailscale]
-  - path: docs/services.yaml
-    holds: the Docker stacks and every hostname Caddy or Cloudflare serves
-    tags: [stacks, docker, caddy, routes]
   - path: docs/backups.yaml
     holds: restic repositories, schedule, what is and is not covered
     tags: [backup, restic, disaster-recovery]
+  - path: docs/services.yaml
+    holds: core's stopped Docker stacks and their secrets - rollback material only
+    tags: [core, docker, rollback, secrets]
+    read_when: something has to be started on core again
   - path: docs/service-ideas.md
-    holds: saved service shortlist, possible uses and tentative placement
+    holds: the shortlist of services not yet built, and where each might go
     tags: [ideas, services, backlog]
   - path: docs/traps.yaml
-    holds: failures already paid for once — symptom, cause, fix
+    holds: failures already paid for once - symptom, cause, tell, fix
     tags: [traps, gotchas, debugging]
     read_when: anything that should work does not
   - path: docs/decisions/
@@ -51,22 +57,22 @@ files:
   - path: docs/sessions/
     holds: what happened in past working sessions, newest last
     tags: [sessions, handoff, history]
-    read_when: starting work — the newest one only
+    read_when: starting work - the newest one only
 
 answers:                     # question -> file, so a lookup costs one read
+  what is running right now: docs/hosts/beelink.yaml
   what hardware do I have: docs/hosts/
   what is the IP of X: docs/hosts/ or docs/network.yaml
-  what does this repository deploy: core/ — and only onto core
-  what is installed by hand: tools/ — see decisions/0011
-  where does infrastructure monitoring come from: docs/services.yaml, infrastructure_monitoring
+  what does this repository deploy: core-talos/ onto the Beelink, core/ onto core
+  what is installed by hand: tools/ - see decisions/0011
   why is it built this way: docs/decisions/
-  what could I install next: docs/service-ideas.md
   what did we do last time: docs/sessions/
   what breaks if a disk dies: docs/backups.yaml
-  which hostname serves what: docs/services.yaml
+  what could I install next: docs/service-ideas.md
+  which hostname serves what: docs/hosts/beelink.yaml, local_access and public_access
   what can reach what: docs/network.yaml, then hosts/router.yaml
-  why is this deploy failing: docs/traps.yaml
-  what options does this Portainer stack need: docs/services.yaml, docs/traps.yaml
+  why is this failing: docs/traps.yaml
+  how do I start core's old stack again: docs/services.yaml
 
 rules:                       # the full set is in AGENTS.md
   - Verify against the live host before writing a fact down. Two documentation

@@ -1,154 +1,69 @@
-# Retained core Docker stacks, their former routes, and their secrets. Every
-# container below was stopped on 2026-09-19 after its replacement moved to the
-# Beelink or the service became unnecessary. The Beelink's active services are
-# in hosts/beelink.yaml.
+# core's Docker stacks. Every container below was stopped on 2026-09-19 once
+# its replacement reached the Beelink; the compose files stay as a way back.
+# What is actually running is in hosts/beelink.yaml.
+#
+# This file is rollback material. Read it when something has to be started on
+# core again - not otherwise.
 
 meta:
-  updated: 2026-09-19
-  tags: [stacks, docker, portainer, caddy, routes, secrets]
+  updated: 2026-09-20
+  tags: [core, docker, portainer, rollback, secrets]
 
-portainer_stack_settings:      # Stacks -> Add stack -> Repository
+status: every stack stopped 2026-09-19; 0 of 9 containers running, verified 2026-09-20
+
+stacks:                     # name: compose path, how it was deployed
+  homepage:    {path: core/homepage/docker-compose.yaml,    by: portainer-gitops, rpv: true}
+  caddy:       {path: core/caddy/docker-compose.yaml,       by: portainer-gitops, rpv: true}
+  torrent:     {path: core/torrent/docker-compose.yaml,     by: portainer-gitops, rpv: true,
+                note: "vpn, qbittorrent and flood; the last two share vpn's network namespace"}
+  pulse:       {path: core/pulse/docker-compose.yaml,       by: docker-compose-manual, rpv: false}
+  cloudflared: {path: core/cloudflared/docker-compose.yaml, by: portainer-gitops, rpv: false}
+  jellyfin:    {path: core/jellyfin/docker-compose.yaml,    by: portainer-gitops, rpv: false}
+  portainer:   {path: core/portainer/docker-compose.yaml,   by: core/bootstrap.sh, rpv: false,
+                edition: EE, note: "not a Portainer stack - see decisions/0001"}
+
+portainer_stack_settings:   # Stacks -> Add stack -> Repository
   reference: refs/heads/main
-  additional_paths: empty          # it takes compose files — see traps.yaml
+  additional_paths: >-
+    Leave empty. It takes further compose files to merge, not a working
+    directory, so a path here makes the deploy fail on a file it cannot find.
   relative_path_volumes: >-
-    Required by any stack bind-mounting a file out of this repo, and offered
-    only at creation time. See traps.yaml.
-
-stacks:
-  - name: homepage
-    status: stopped
-    host: core
-    deployed_by: portainer-gitops
-    compose_path: core/homepage/docker-compose.yaml
-    relative_path_volumes: true
-    filesystem_path: /srv/ssd/docker/gitops/homepage
-    role: home dashboard
-    note: Config is in git; logs are ephemeral. No API credentials or Docker socket.
-  - name: caddy
-    status: stopped
-    host: core
-    deployed_by: portainer-gitops
-    compose_path: core/caddy/docker-compose.yaml
-    relative_path_volumes: true
-    filesystem_path: /srv/ssd/docker/gitops/caddy
-    role: reverse proxy, internal TLS
-  - name: pulse
-    status: stopped
-    host: core
-    deployed_by: docker-compose-manual
-    compose_path: core/pulse/docker-compose.yaml
-    relative_path_volumes: false
-    filesystem_path: /srv/ssd/docker/homelab/core/pulse
-    role: infrastructure monitoring
-    note: >-
-      Started from the host checkout with project name pulse. Host and Docker
-      telemetry arrives through native Pulse agents; no Docker socket is mounted.
-  - name: torrent
-    status: stopped
-    host: core
-    deployed_by: portainer-gitops
-    compose_path: core/torrent/docker-compose.yaml
-    relative_path_volumes: true
-    filesystem_path: /srv/ssd/docker/gitops/torrent
-    services: [vpn, qbittorrent, flood]
-    note: qbittorrent and flood share vpn's network namespace
-  - name: cloudflared
-    status: stopped
-    host: core
-    deployed_by: portainer-gitops
-    compose_path: core/cloudflared/docker-compose.yaml
-    relative_path_volumes: false
-  - name: jellyfin
-    status: stopped
-    host: core
-    deployed_by: portainer-gitops
-    compose_path: core/jellyfin/docker-compose.yaml
-    relative_path_volumes: false
-  - name: portainer
-    status: stopped
-    host: core
-    deployed_by: core/bootstrap.sh       # see decisions/0001
-    compose_path: core/portainer/docker-compose.yaml
-    edition: EE
-    note: >-
-      Not a Portainer stack. Deploy with ./core/bootstrap.sh or
-      docker compose -f core/portainer/docker-compose.yaml up -d
+    Required by any stack bind-mounting a file out of this repo (rpv: true
+    above), and offered only when the stack is created. An existing stack
+    cannot be given it later - delete and recreate instead.
+  gitops_paths: /srv/ssd/docker/gitops/<stack>; the manual one is /srv/ssd/docker/homelab/core/pulse
 
 routes:
-  status: inactive                  # Caddy and the core tunnel are stopped.
-  internal:                         # Formerly served by Caddy and its own CA.
-    - {host: omv.home, target: "host.docker.internal:81"}
-    - {host: jellyfin.home, target: "jellyfin:8096"}
-    - {host: torrent.home, target: "vpn:3000", ui: flood}
-    - {host: qbittorrent.home, target: "vpn:8080", ui: qBittorrent's own}
-    - {host: proxmenux.home, target: "10.1.1.100:8008"}
-    - {host: proxmox.home, target: "https://10.1.1.100:8006", tls_skip_verify: true}
-    - {host: portainer.home, target: "portainer:9000"}
-    - {host: homepage.home, target: "homepage:3000"}
-    - {host: pulse.home, target: "pulse:7655"}
-    - {host: ca.home, target: Caddy's internal root certificate}
-  external:                         # Formerly via Cloudflare Tunnel, each behind
-                                    # Cloudflare Access. Read from the running
-                                    # connector's configuration update log on
-                                    # 2026-09-07; the dashboard is the source.
-    - {host: jellyfin.serhii.link, target: "jellyfin:8096"}
-    - {host: omv.serhii.link, target: "host.docker.internal:81"}
-    - {host: torrent.serhii.link, target: "vpn:3000", ui: flood}
-    - {host: qbittorrent.serhii.link, target: "vpn:8080", ui: qBittorrent's own}
-    - {host: portainer.serhii.link, target: "portainer:9000"}
-    - {host: proxmox.serhii.link, target: "https://10.1.1.100:8006"}
-    - {host: proxmenux.serhii.link, target: "10.1.1.100:8008"}
-    - {host: homepage.serhii.link, target: "homepage:3000"}
-                                    # anything else the tunnel is asked for
-                                    # gets 404 from its catch-all rule.
+  status: inactive          # Caddy and core's tunnel are both stopped
+  names_still_pointing_here: >-
+    omv, portainer, homepage, pulse, proxmox and proxmenux under .home. The
+    router sends every *.home to the Beelink since 2026-09-19, so all six
+    answer 404 until they move or get a router entry of their own.
+  former_targets: >-
+    omv and proxmox went to their own web interfaces, proxmenux to
+    10.1.1.100:8008, the rest to the container of the same name. The same set
+    was published under serhii.link through core's tunnel, each behind
+    Cloudflare Access, with a catch-all 404 for anything else.
 
 secrets:
-  location: /srv/ssd/docker/secrets
-  in_git: false
+  location: /srv/ssd/docker/secrets     # on core, never in git
   files:
-    - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY, used_by: portainer}
-    - {path: cloudflared/auth.env, holds: Cloudflare tunnel token, used_by: cloudflared}
-    - {path: pulse/credentials, holds: Pulse admin password and API token, used_by: pulse administration}
-    - {path: pulse/proxmox-api.json, holds: Proxmox PVE API token secret, used_by: pulse}
-    - {path: nordvpn/user, holds: OpenVPN username, used_by: vpn}
-    - {path: nordvpn/pass, holds: OpenVPN password, used_by: vpn}
-  unused:                           # present on disk, referenced by nothing
-    - {path: nordvpn/token, note: for gluetun's wireguard mode; VPN_TYPE is openvpn}
-    - {path: cloudflared/credentials.json, note: superseded by --token-file}
-    - {path: cloudflared/tunnel_token.txt, note: superseded by auth.env}
-  note: >-
-    The whole nordvpn/ directory is bind-mounted into gluetun, so anything left
-    in it is visible to that container whether it is referenced or not.
+    - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY}
+    - {path: cloudflared/auth.env, holds: Cloudflare tunnel token}
+    - {path: pulse/credentials, holds: Pulse admin password and API token}
+    - {path: pulse/proxmox-api.json, holds: Proxmox PVE API token secret}
+    - {path: nordvpn/user, holds: OpenVPN username}
+    - {path: nordvpn/pass, holds: OpenVPN password}
+  unused: >-
+    nordvpn/token (wireguard mode, unused), cloudflared/credentials.json and
+    cloudflared/tunnel_token.txt (both superseded by auth.env). The whole
+    nordvpn directory is bind-mounted into gluetun, so anything left in it is
+    visible to that container whether referenced or not.
 
-homepage_publication:
-  status: inactive
-  hostname: homepage.serhii.link
-  tunnel_origin: http://homepage:3000
-  allowed_hosts: [homepage.home, serhii.link, homepage.serhii.link]
-  tabs: [Local, Public]
-  verified: 2026-09-07
-  verification: >-
-    homepage.serhii.link redirects to the Cloudflare Access login, so the
-    tunnel route exists and the dashboard is behind authentication.
-    homepage.home returns HTTP 200 from core with the certificate validated
-    against the local CA.
-  apex: >-
-    serhii.link itself has no DNS record and is not a route. It stays in
-    HOMEPAGE_ALLOWED_HOSTS as an unused leftover; publishing the apex would
-    need both a tunnel hostname and a DNS record.
-  note: Tabs select links, not access permissions; both sets are available to any dashboard visitor.
-
-infrastructure_monitoring:
-  tool: Pulse 6.4.1 Community
-  server: {host: core, stack: pulse, url: "https://pulse.home"}
-  agents:
-    installer: tools/pulse-agent/install.sh
-    unit: pulse-agent.service
-    hosts: [core, proxmox]
-  proxmox_api:
-    endpoint: "https://10.1.1.100:8006"
-    principal: "pulse@pve!monitor"
-    role: PVEAuditor
-    resources_verified: 8
-  exposure: LAN and Tailscale through the internal-only pulse.home route; no Cloudflare tunnel route.
-  homepage: A single Pulse card replaces the twelve live Glances metric cards.
+pulse:
+  server: stopped with the rest
+  agents: >-
+    tools/pulse-agent/install.sh put pulse-agent.service on core and proxmox,
+    and core's is still enabled - it logs connection refused against the
+    stopped server every few seconds. Stopping it is an open cleanup item.
+  proxmox_api: "pulse@pve!monitor, role PVEAuditor, against https://10.1.1.100:8006"
