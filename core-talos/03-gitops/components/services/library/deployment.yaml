@@ -4,6 +4,11 @@
 # pod even on the same node. They are also started and stopped together in
 # practice, so the shared restart costs little.
 #
+# None of the three is published, so each is open on the LAN exactly as
+# qBittorrent is; the AUTH variables say so rather than leaving the first
+# visitor to answer the setup dialog, which a configuration restored from R2
+# would ask again.
+#
 # Sonarr and Radarr see the whole disk at /data, the same path qBittorrent
 # sees, so a finished download needs no translation between them. The
 # library under /data/media is hard links to the files still seeding in
@@ -34,6 +39,8 @@ spec:
             - {name: PUID, value: "1000"}
             - {name: PGID, value: "1000"}
             - {name: UMASK, value: "002"}
+            - {name: PROWLARR__AUTH__METHOD, value: External}
+            - {name: PROWLARR__AUTH__REQUIRED, value: DisabledForLocalAddresses}
           ports:
             - {name: prowlarr, containerPort: 9696}
           startupProbe:
@@ -57,6 +64,8 @@ spec:
             - {name: PUID, value: "1000"}
             - {name: PGID, value: "1000"}
             - {name: UMASK, value: "002"}
+            - {name: SONARR__AUTH__METHOD, value: External}
+            - {name: SONARR__AUTH__REQUIRED, value: DisabledForLocalAddresses}
           ports:
             - {name: sonarr, containerPort: 8989}
           startupProbe:
@@ -81,6 +90,8 @@ spec:
             - {name: PUID, value: "1000"}
             - {name: PGID, value: "1000"}
             - {name: UMASK, value: "002"}
+            - {name: RADARR__AUTH__METHOD, value: External}
+            - {name: RADARR__AUTH__REQUIRED, value: DisabledForLocalAddresses}
           ports:
             - {name: radarr, containerPort: 7878}
           startupProbe:
