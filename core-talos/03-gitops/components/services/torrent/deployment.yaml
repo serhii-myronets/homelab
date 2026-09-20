@@ -50,22 +50,27 @@ spec:
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: VPN_SERVICE_PROVIDER, value: nordvpn}
-            - {name: VPN_TYPE, value: openvpn}
-            # The list built into the image holds addresses NordVPN no
-            # longer answers on, so gluetun refreshes it; until it does, it
-            # may spend a few minutes picking dead servers at startup.
-            - {name: UPDATER_PERIOD, value: 24h}
-            # Each dead address otherwise costs about a minute before the
-            # next one is tried.
+            # WireGuard, not OpenVPN, since 2026-09-20. The cost of this
+            # tunnel is per packet rather than per byte, and torrent traffic
+            # is mostly tiny packets: 8 million outbound of about 73 bytes
+            # each - peer acknowledgements - against 14 million inbound.
+            # OpenVPN encrypted every one of them in user space and spent
+            # 1.5 of four cores to move 1.7 MiB/s. WireGuard is built into
+            # the Talos kernel, so the packets never leave it.
             #
-            # `auth-retry none` is the one that matters. Gluetun writes a
-            # single `remote` into the configuration and sets `auth-retry
-            # nointeract`, so a server answering AUTH_FAILED is retried for
-            # ever: OpenVPN soft-restarts into the same address, and gluetun
-            # only picks another when the process dies. With `none` it dies,
-            # and the next server is tried. The flags come after --config on
-            # the command line, so this overrides what gluetun wrote.
-            - {name: OPENVPN_FLAGS, value: "--connect-timeout 10 --hand-window 20 --auth-retry none"}
+            # It also ends the startup trouble the two gluetun traps
+            # describe: there is no authentication step to fail, so no loop
+            # on a server that refuses, and no minute lost per dead address.
+            # The OpenVPN credentials stay in the secret, so going back is
+            # one value here.
+            - {name: VPN_TYPE, value: wireguard}
+            # NordVPN's key is read from the nordvpn secret through envFrom
+            # below, as WIREGUARD_PRIVATE_KEY.
+            #
+            # The server list built into the image goes stale; gluetun
+            # refreshes it, and for WireGuard it is also where each server's
+            # public key comes from.
+            - {name: UPDATER_PERIOD, value: 24h}
             - {name: SERVER_COUNTRIES, value: Netherlands}
             - {name: FIREWALL_INPUT_PORTS, value: "8080,3000"}
             # Replies to LAN clients and kubelet probes must bypass the tunnel.
