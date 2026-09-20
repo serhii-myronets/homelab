@@ -18,6 +18,7 @@ spec:
     - argocd.home
     - ca.home
     - jellyfin.home
+    - jellyseerr.home
     - prowlarr.home
     - qbittorrent.home
     - radarr.home

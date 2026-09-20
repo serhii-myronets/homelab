@@ -1,13 +1,15 @@
-# All three in one pod, the way the torrent stack holds qBittorrent and
+# All four in one pod, the way the torrent stack holds qBittorrent and
 # Flood: they share one backed-up claim, each under its own directory, and
 # the OpenEBS LVM driver refuses to mount one logical volume into a second
 # pod even on the same node. They are also started and stopped together in
 # practice, so the shared restart costs little.
 #
-# None of the three is published, so each is open on the LAN exactly as
+# None of the four is published, so each is open on the LAN exactly as
 # qBittorrent is; the AUTH variables say so rather than leaving the first
 # visitor to answer the setup dialog, which a configuration restored from R2
-# would ask again.
+# would ask again. Jellyseerr is the exception: it signs people in with
+# their Jellyfin account, because it is the one meant to be handed to
+# someone other than the owner.
 #
 # Sonarr and Radarr see the whole disk at /data, the same path qBittorrent
 # sees, so a finished download needs no translation between them. The
@@ -45,9 +47,15 @@ spec:
               set -e;
               for d in /data/media/movies /data/media/tv
               /data/torrents/radarr /data/torrents/sonarr;
-              do mkdir -p "$d"; chown 1000:1000 "$d"; chmod 0775 "$d"; done
+              do mkdir -p "$d"; chown 1000:1000 "$d"; chmod 0775 "$d"; done;
+              chown 1000:1000 /config
           volumeMounts:
             - {name: hdd-a, mountPath: /data}
+            # Kubelet creates a missing subPath directory owned by root. The
+            # three below are linuxserver images, which chown their own
+            # /config before dropping to PUID; Jellyseerr does not, so its
+            # directory is handed over here.
+            - {name: data, mountPath: /config, subPath: jellyseerr}
       containers:
         # The indexer manager: it holds the tracker definitions and pushes
         # them to the two below, which then store none of their own.
@@ -128,6 +136,38 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /config, subPath: radarr}
             - {name: hdd-a, mountPath: /data}
+        # One search box in front of the two above: it works out whether a
+        # title is a film or a series and hands it to Radarr or Sonarr, so
+        # neither has to be opened to ask for something. Viewers sign in
+        # with their Jellyfin account and each carries its own default
+        # quality profile, which is how one household asks in two languages.
+        - name: jellyseerr
+          image: ghcr.io/fallenbagel/jellyseerr:2.7.3
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            # The image names no user, so Node would look for a home
+            # directory that uid 1000 cannot write. Its caches go beside the
+            # configuration instead.
+            - {name: HOME, value: /app/config}
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - {name: jellyseerr, containerPort: 5055}
+          startupProbe:
+            httpGet: {path: /api/v1/status, port: jellyseerr}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /api/v1/status, port: jellyseerr}
+          livenessProbe:
+            httpGet: {path: /api/v1/status, port: jellyseerr}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 20m, memory: 128Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: data, mountPath: /app/config, subPath: jellyseerr}
       volumes:
         - name: data
           persistentVolumeClaim: {claimName: data}

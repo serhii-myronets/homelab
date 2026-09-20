@@ -1,4 +1,4 @@
-# One pod, three programs: each gets its own Service so its route has a
+# One pod, four programs: each gets its own Service so its route has a
 # backend of its own.
 apiVersion: v1
 kind: Service
@@ -29,3 +29,13 @@ spec:
     app: library
   ports:
     - {name: http, port: 7878, targetPort: radarr}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyseerr
+spec:
+  selector:
+    app: library
+  ports:
+    - {name: http, port: 5055, targetPort: jellyseerr}
