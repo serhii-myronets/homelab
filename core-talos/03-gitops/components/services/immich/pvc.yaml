@@ -1,0 +1,30 @@
+# The photo library, on the one disk with room for it. A subdirectory of the
+# media disk rather than a volume of its own: the originals are files, and
+# keeping them beside the rest means one disk to watch, not two.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: immich-hdd-a
+  resources:
+    requests:
+      storage: 9000Gi
+---
+# Downloaded models for face detection and search: a gigabyte or two that
+# comes back on its own, so it is never backed up.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-cache
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: lvm
+  resources:
+    requests:
+      storage: 10Gi

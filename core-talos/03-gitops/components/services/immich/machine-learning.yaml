@@ -1,0 +1,64 @@
+# Face detection and the model behind "search for a photo of a dog". Optional
+# in Immich, and the whole reason for choosing it over a folder of files.
+#
+# The OpenVINO build runs on the Intel iGPU. The device plugin advertises
+# three of them and Jellyfin holds one, so this takes a second rather than
+# competing for the same slot - though they do share the silicon, and a
+# transcode during an import will slow both.
+#
+# Its own pod: the model cache is an LVM volume, and that driver mounts a
+# volume into one pod only.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: machine-learning
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: machine-learning
+  template:
+    metadata:
+      labels:
+        app: machine-learning
+    spec:
+      containers:
+        - name: machine-learning
+          image: ghcr.io/immich-app/immich-machine-learning:v3.2.2-openvino
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: MACHINE_LEARNING_WORKERS, value: "1"}
+          ports:
+            - {name: http, containerPort: 3003}
+          startupProbe:
+            httpGet: {path: /ping, port: http}
+            periodSeconds: 10
+            # Downloading a model on first run takes minutes, not seconds.
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /ping, port: http}
+          livenessProbe:
+            httpGet: {path: /ping, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 100m, memory: 1Gi}
+            limits:
+              memory: 4Gi
+              gpu.intel.com/i915: "1"
+          volumeMounts:
+            - {name: model-cache, mountPath: /cache}
+      volumes:
+        - name: model-cache
+          persistentVolumeClaim: {claimName: model-cache}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: machine-learning
+spec:
+  selector:
+    app: machine-learning
+  ports:
+    - {name: http, port: 3003, targetPort: http}

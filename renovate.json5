@@ -84,6 +84,20 @@
       versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d{8})-(?<build>\\d{6})$",
     },
     {
+      // Tags such as v3.2.2-openvino: the release, then the accelerator the
+      // image is built for. The suffix is not a version and must not move.
+      matchPackageNames: ["ghcr.io/immich-app/immich-machine-learning"],
+      versioning: "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-openvino$",
+    },
+    {
+      // Tags such as 14-vectorchord0.4.3-pgvectors0.2.0: the major Postgres
+      // version, then the two extensions. Immich pins this per release and a
+      // Postgres major is never crossed by an update, so the extension
+      // versions are what move.
+      matchPackageNames: ["ghcr.io/immich-app/postgres"],
+      versioning: "regex:^14-vectorchord(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-pgvectors[\\d.]+$",
+    },
+    {
       // Tags such as a3.24.2-s4.23.8-r0: Alpine, then Samba, then the image
       // revision. Samba's version decides.
       matchPackageNames: ["ghcr.io/servercontainers/samba"],

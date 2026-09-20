@@ -1,0 +1,71 @@
+# The API and the web interface. Everything it keeps that matters is either
+# in Postgres or under /data on the media disk, so this pod holds no state of
+# its own.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      initContainers:
+        # Kubelet creates a missing subPath directory owned by root, and the
+        # server writes as the user the image runs as.
+        - name: prepare
+          image: busybox:1.37
+          command: [sh, -c, "mkdir -p /data && chown 1000:1000 /data"]
+          volumeMounts:
+            - {name: hdd-a, mountPath: /data, subPath: photos}
+      containers:
+        - name: server
+          image: ghcr.io/immich-app/immich-server:v3.2.2
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: DB_HOSTNAME, value: postgres}
+            - {name: DB_USERNAME, value: postgres}
+            - {name: DB_DATABASE_NAME, value: immich}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: immich-db, key: DB_PASSWORD}
+            - {name: REDIS_HOSTNAME, value: valkey}
+            - {name: IMMICH_MACHINE_LEARNING_URL, value: "http://machine-learning:3003"}
+          ports:
+            - {name: http, containerPort: 2283}
+          startupProbe:
+            httpGet: {path: /api/server/ping, port: http}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /api/server/ping, port: http}
+          livenessProbe:
+            httpGet: {path: /api/server/ping, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 100m, memory: 512Mi}
+            limits: {memory: 2Gi}
+          volumeMounts:
+            # Upstream calls this UPLOAD_LOCATION and mounts it at /data:
+            # originals, thumbnails and encoded video all live under it.
+            - {name: hdd-a, mountPath: /data, subPath: photos}
+      volumes:
+        - name: hdd-a
+          persistentVolumeClaim: {claimName: hdd-a}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+spec:
+  selector:
+    app: server
+  ports:
+    - {name: http, port: 2283, targetPort: http}
