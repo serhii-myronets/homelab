@@ -88,21 +88,53 @@ wildcard and any service route sharing that listener would take its own
 name back. `ca.home` keeps a plain listener, since a device fetching the
 root certificate does not trust it yet.
 
+## Wiring the three together
+
+The applications refuse to start unconfigured and ask the first visitor to
+invent a password. They answer on local names only, so they were set to the
+same posture as qBittorrent through `<APP>__AUTH__METHOD=External` in the
+Deployment rather than through the dialog: a configuration restored from R2
+would otherwise ask again. Those variables layer over `config.xml` at run
+time and do not rewrite it, so the file still reads `None`.
+
+The rest was done through each application's API, which is where that state
+belongs - it lives in their SQLite databases and goes to R2 hourly:
+
+- root folders `/data/media/movies` and `/data/media/tv`, made by an init
+  container in the pod, because both applications reject a path that is not
+  there and the library started empty;
+- qBittorrent as the download client at
+  `torrent.torrent.svc.cluster.local:8080`, which answers the pod network
+  without a password; the connection test passes;
+- its categories `radarr` and `sonarr` pointed at `/data/torrents/radarr`
+  and `/data/torrents/sonarr`. The applications create the categories
+  themselves but leave the path empty, which would drop everything in the
+  root;
+- Radarr and Sonarr registered in Prowlarr at full sync. All three share a
+  pod, so they reach each other on localhost.
+
+`copyUsingHardlinks` was already true in both, which is the setting that
+matters most here.
+
 ## Handoff
 
-`prowlarr.home`, `sonarr.home` and `radarr.home` answer 200 over HTTPS and
-are in the certificate. The programs are running and unconfigured. What is
-left is in their own interfaces: indexers in Prowlarr and the two
-applications to push them to, qBittorrent as the download client at
-`torrent.torrent.svc.cluster.local:8080`, which needs no password from the
-pod network, root folders `/data/media/movies` and `/data/media/tv`, and then
-importing what is already on the disk out of `/data/torrents`.
+`prowlarr.home`, `sonarr.home` and `radarr.home` answer over HTTPS, are in
+the certificate, and are wired to each other and to qBittorrent. Two things
+are left, and both need a person.
 
-That import is the one dangerous step. Media Management must have "Use
-Hardlinks instead of Copy" on before anything is imported, or the files will
-be moved out from under the torrents seeding them. `Kids` needs no sorting:
-each item is identified on its own and lands in films or series. Releases
-named in Ukrainian or Russian will need identifying by hand.
+Prowlarr has no indexers: which trackers, and any credentials they need, are
+the owner's to choose. Everything else is already pointed at Prowlarr, so
+adding one there puts it in both applications.
+
+Then the import, out of `/data/torrents` into the two root folders. `Kids`
+needs no sorting: each item is identified on its own and lands in films or
+series. Releases named in Ukrainian or Russian will need identifying by
+hand, and anything imported keeps seeding, because the library is hard
+links.
+
+All 56 torrents are complete and stopped, with no missing files - they were
+already stopped before the rename. Jellyfin's `/media` mount and
+qBittorrent's `/downloads` mount both exist only until the import is done.
 
 All 56 torrents are complete and stopped, with no missing files - they were
 already stopped before the rename. Jellyfin's `/media` mount and
