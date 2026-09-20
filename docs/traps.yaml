@@ -635,3 +635,24 @@ traps:
       Renumber the WireGuard server and every peer to a less common subnet,
       for example 10.66.66.0/24.
     diagnosed: 2026-09-08
+
+  - id: jellyseerr-api-key-has-no-owner-before-setup
+    applies_to: [jellyseerr, library, kubernetes]
+    symptom: >-
+      Every write to /api/v1/settings/* answers
+      {"status":403,"error":"You do not have permission to access this
+      endpoint"} while the same key reaches the API, so the request is
+      authenticated and refused rather than rejected.
+    cause: >-
+      The API key grants whatever the first administrator account has, and a
+      fresh instance has no account at all: the wizard creates one from a
+      Jellyfin sign-in. Until then the key resolves to nobody.
+    tell: >-
+      `curl localhost:5055/api/v1/settings/public` reports
+      `"initialized": false`. A body sent to the same endpoints is still
+      validated, so a malformed field answers with a field error instead of
+      the 403 - which reads as if authentication had passed.
+    fix: >-
+      Finish the wizard once by hand; it needs a Jellyfin password, so no key
+      can stand in for it. Configure the rest through the API afterwards.
+    diagnosed: 2026-09-20
