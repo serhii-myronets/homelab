@@ -52,7 +52,8 @@ other_networks:
 
 dns:
   resolver: AdGuard Home on the router, port 3053
-  rewrite: "*.home -> 192.168.8.100"   # this is where the wildcard comes from
+  rewrite: "*.home -> 192.168.8.15"    # the Beelink Gateway since 2026-09-19;
+                                       # it was core until then
   note: >-
     Explains why the adguard docker stack was redundant and got removed.
 
