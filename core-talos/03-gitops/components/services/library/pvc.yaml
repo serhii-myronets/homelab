@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hdd-a
+  annotations:
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: library-hdd-a
+  resources:
+    requests:
+      storage: 9000Gi

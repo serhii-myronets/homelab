@@ -52,7 +52,13 @@ spec:
             - {name: data, mountPath: /config}
             - {name: cache, mountPath: /cache}
             # The same /media path as on core, so its library can move over.
-            - {name: hdd-a, mountPath: /media, subPath: media, readOnly: true}
+            # The files themselves, which the existing library points at:
+            # renaming the directory on the disk left these paths untouched.
+            - {name: hdd-a, mountPath: /media, subPath: torrents, readOnly: true}
+            # The library Radarr and Sonarr build out of hard links to those
+            # same files, added as new libraries here. Once everything is
+            # imported, the mount above goes and this one stays.
+            - {name: hdd-a, mountPath: /library, subPath: media, readOnly: true}
       volumes:
         - name: data
           persistentVolumeClaim: {claimName: data}

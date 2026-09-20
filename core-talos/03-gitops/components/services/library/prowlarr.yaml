@@ -1,0 +1,64 @@
+# The indexer manager: it holds the tracker definitions and pushes them to
+# Sonarr and Radarr, so those two never store an indexer of their own. It
+# needs no media volume.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: prowlarr
+  template:
+    metadata:
+      labels:
+        app: prowlarr
+    spec:
+      containers:
+        - name: prowlarr
+          image: ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: PUID, value: "1000"}
+            - {name: PGID, value: "1000"}
+            - {name: UMASK, value: "002"}
+          ports:
+            - {name: http, containerPort: 9696}
+          readinessProbe:
+            httpGet: {path: /ping, port: http}
+          livenessProbe:
+            httpGet: {path: /ping, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 20m, memory: 128Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: data, mountPath: /config, subPath: prowlarr}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+spec:
+  selector:
+    app: prowlarr
+  ports:
+    - {name: http, port: 9696, targetPort: http}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: prowlarr
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [prowlarr.home]
+  rules:
+    - backendRefs:
+        - {name: prowlarr, port: 9696}

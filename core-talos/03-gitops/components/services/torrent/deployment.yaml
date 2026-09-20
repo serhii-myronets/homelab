@@ -93,8 +93,14 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /config, subPath: config}
             - {name: cache, mountPath: /incomplete}
-            # The same /downloads path as on core, so its torrents can move over.
-            - {name: hdd-a, mountPath: /downloads, subPath: media}
+            # The torrents carried over from core hold /downloads in their
+            # own resume data, so that mount stays; it now covers the same
+            # files under their new name. Everything Sonarr and Radarr hand
+            # over arrives through /data instead, the identical path in
+            # every container, so no download client mapping is needed.
+            # Drop /downloads once the old torrents have been re-imported.
+            - {name: hdd-a, mountPath: /downloads, subPath: torrents}
+            - {name: hdd-a, mountPath: /data}
         - name: flood
           image: jesec/flood:4.16.2
           env:

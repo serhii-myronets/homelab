@@ -68,6 +68,17 @@
       versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)_v[\\d.]+-ls(?<build>\\d+)$",
     },
     {
+      // Tags such as 4.0.20.3014-ls325: the application's four-part version,
+      // then the linuxserver build. The fourth part is its build number, so
+      // it is the patch that decides, not a separate level Renovate knows.
+      matchPackageNames: [
+        "ghcr.io/linuxserver/prowlarr",
+        "ghcr.io/linuxserver/radarr",
+        "ghcr.io/linuxserver/sonarr",
+      ],
+      versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.\\d+-ls(?<build>\\d+)$",
+    },
+    {
       // Tags such as 12.1.20260915-010956: the release, then the build date.
       matchPackageNames: ["jellyfin/jellyfin"],
       versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d{8})-(?<build>\\d{6})$",
