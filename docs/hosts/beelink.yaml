@@ -170,7 +170,7 @@ platform:
       - {name: prowlarr, image: "ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161", port: 9696, role: indexers}
       - {name: sonarr, image: "ghcr.io/linuxserver/sonarr:4.0.20.3014-ls325", port: 8989, role: series}
       - {name: radarr, image: "ghcr.io/linuxserver/radarr:6.4.4.10685-ls317", port: 7878, role: films}
-      - {name: jellyseerr, image: "ghcr.io/fallenbagel/jellyseerr:2.7.3", port: 5055, role: requests}
+      - {name: jellyseerr, image: "ghcr.io/seerr-team/seerr:v3.4.1", port: 5055, role: requests}
     config: one claim data on the lvm class, a directory each, backed up hourly
     disk: >-
       /var/mnt/hdd-a whole, mounted as /data. A download lands in
@@ -200,10 +200,14 @@ platform:
       title, works out whether Radarr or Sonarr owns it, and asks on the
       viewer's behalf. Sign-in is a Jellyfin account, and a per-account
       override sets which quality profile that person's requests use, so
-      one household asks in two languages without switching anything. It
-      signs in only because Jellyfin's EnableLegacyAuthorization is on:
-      Jellyseerr still sends X-Emby-Authorization, which Jellyfin 12 answers
-      with 400.
+      one household asks in two languages without switching anything. The
+      project renamed itself Seerr and moved to seerr-team/seerr;
+      ghcr.io/fallenbagel/jellyseerr took its last release, 2.7.3, on
+      2025-08-14, so its newest tag reads current and is not. The local name
+      stays jellyseerr.home. Signing in still needs Jellyfin's
+      EnableLegacyAuthorization: 3.4.1 asks the API with the Authorization
+      header but its sign-in route still sends X-Emby-Authorization, which
+      Jellyfin 12 answers with 400.
     flaresolverr: >-
       Its own pod, stateless. Passes the Cloudflare challenge for the
       indexers tagged with it, currently RuTracker and EZTV.
