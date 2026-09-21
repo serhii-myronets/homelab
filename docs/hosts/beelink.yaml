@@ -94,15 +94,15 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
+    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, pulse.home, argocd.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
       clear, and *.home on 443 with home-tls.
     certificate: >-
       One certificate lists home, argocd.home, ca.home, immich.home,
-      jellyfin.home, jellyseerr.home, prowlarr.home, radarr.home,
-      sonarr.home and torrent.home. cert-manager creates and renews it
+      jellyfin.home, jellyseerr.home, prowlarr.home, pulse.home,
+      radarr.home, sonarr.home and torrent.home. tv.home is not on it. cert-manager creates and renews it
       from the cluster's own authority; devices trust its root from
       ca.home/root.crt.
     note: >-
@@ -295,6 +295,38 @@ platform:
     address: 192.168.8.10 (host network), Beelink.local
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: the samba namespace alone enforces privileged, for the host network
+  pulse:
+    role: watches this cluster, and can be pointed at Proxmox and Docker too
+    added: 2026-09-20
+    names: [pulse.home]           # local only; not published
+    chart: pulse/pulse 6.4.1, from rcourtman.github.io/Pulse
+    pods:
+      - {name: pulse, role: "server and interface", claim: 10Gi lvm}
+      - {name: pulse-agent, role: "reads the cluster through the chart's collector role", kind: DaemonSet}
+    replaces: >-
+      The VictoriaMetrics stack, whole under 03-gitops/archive. Breadth and
+      its own alerting against a month of history and arbitrary queries -
+      see that README.
+    agent: >-
+      Kubernetes mode, not the chart's default: that one watches Docker
+      through a socket Talos does not have. Its health server is bound to
+      0.0.0.0 because the chart probes a port the agent otherwise keeps to
+      itself - see traps.yaml.
+    agent_secret: >-
+      Infisical /pulse/AGENT_TOKEN, scoped kubernetes:report. Minted inside
+      Pulse by hand after the administrator account exists, so it cannot be
+      created before the server runs.
+    telemetry: >-
+      Off through PULSE_TELEMETRY. It is on by default and sends a startup
+      ping and a daily heartbeat; the interface can stop it too, but only
+      the variable arrives before the first one is sent.
+    edition: >-
+      Community, MIT. Seven days of history, unlimited systems, and alerts
+      by webhook, mail or Apprise - which is what decision 0008 wants. Paid
+      tiers add remote access, the mobile app and longer history.
+    alerting: >-
+      Not wired yet. Nothing here can report that the Beelink is down,
+      which still needs the off-box watcher decision 0008 describes.
   node_labels: {homelab/media-hdd: "true"}
   storage:
     classes:
