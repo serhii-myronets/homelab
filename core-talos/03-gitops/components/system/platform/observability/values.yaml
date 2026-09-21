@@ -94,9 +94,12 @@ grafana:
   # Recreate strategy, since a volume on the lvm class mounts into one pod.
   persistence:
     enabled: false
+  # Steady state is about 150Mi. The ceiling is for the other moment: the
+  # sidecar imports every dashboard at once on each start, and that spike
+  # came within six megabytes of a 384Mi limit.
   resources:
     requests: {cpu: 50m, memory: 128Mi}
-    limits: {memory: 384Mi}
+    limits: {memory: 768Mi}
   sidecar:
     resources:
       requests: {cpu: 10m, memory: 48Mi}
@@ -117,3 +120,39 @@ vlsingle:
   enabled: false
 vlagent:
   enabled: false
+
+# Talos binds the controller manager and the scheduler to localhost, and
+# serves etcd only to clients holding its certificate, so none of the three
+# can be reached from a pod. Left on, they are targets that can only ever be
+# down, and an alert that can only ever be firing. Exposing them is a Talos
+# machine config change, not a change here.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+kubeApiServer:
+  vmScrape:
+    spec:
+      # The whole endpoint is restated because Helm replaces lists rather
+      # than merging them; everything but the last two keys is the chart's
+      # own default.
+      endpoints:
+        - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          port: https
+          scheme: https
+          tlsConfig:
+            caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            serverName: kubernetes
+          # This cluster's apiserver answers /metrics with more than the
+          # 16MB a scrape may read by default, and the scrape failed whole.
+          # Raising the ceiling only lets it be read - the drop below is
+          # what keeps it from being kept, because almost all of that size
+          # is histogram buckets nobody here will open.
+          max_scrape_size: "64MB"
+          metricRelabelConfigs:
+            - action: drop
+              sourceLabels: [__name__]
+              regex: "apiserver_request_duration_seconds_bucket|apiserver_request_body_size_bytes_bucket|apiserver_response_sizes_bucket|apiserver_watch_events_sizes_bucket|apiserver_request_slo_duration_seconds_bucket|apiserver_request_sli_duration_seconds_bucket|etcd_request_duration_seconds_bucket|workqueue_queue_duration_seconds_bucket|workqueue_work_duration_seconds_bucket"
