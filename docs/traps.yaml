@@ -372,25 +372,6 @@ traps:
     cause: A partial on_destroy object leaves boolean fields null in the provider.
     fix: Set reset, graceful and reboot explicitly.
     diagnosed: 2026-09-17
-  - id: flood-ignores-puid-pgid
-    applies_to: [torrent]
-    symptom: Flood cannot write its database.
-    cause: Flood runs as uid 1001 and ignores PUID/PGID.
-    fix: Its data directory must be owned by 1001:1001. core/bootstrap.sh handles it.
-  - id: flood-options-are-yargs-flags
-    applies_to: [torrent]
-    symptom: >-
-      Flood asks to create an account, or exits 1 with Zod
-      "expected string, received undefined".
-    cause: >-
-      FLOOD_OPTION_<name> maps onto Flood's CLI flags through yargs, so each
-      name has to match a real flag exactly. Anything unrecognised is ignored
-      in silence — FLOOD_DISABLE_AUTH is not a flag, and the URL variable is
-      QBURL, not QBIT_URL.
-    fix: >-
-      AUTH=none, RUNDIR, QBURL, QBUSER, QBPASS. The last two look redundant
-      because qBittorrent trusts 127.0.0.1 through its AuthSubnetWhitelist, but
-      Flood will not start without them.
   - id: cilium-vip-conflicts-with-proxmox-guest
     applies_to: [kubernetes, proxmox, caddy]
     symptom: Gateway VIP port 80 refuses connections while its NodePort serves Grafana successfully.
@@ -689,4 +670,35 @@ traps:
       Give the liveness probe room for the hunt - ten failures of sixty
       seconds rather than three. gluetun repairs this on its own; the probe
       is there for gluetun being wedged, not for gluetun working.
+    diagnosed: 2026-09-20
+
+  - id: a-dropped-dns-query-is-answered-by-asking-again
+    applies_to: [gluetun, torrent, dns, kubernetes]
+    symptom: >-
+      gluetun burns one and a half of the node's four cores while nothing is
+      downloading. qBittorrent is idle, the tunnel is kernelspace WireGuard,
+      so gluetun's process never touches a packet. It subsides after a few
+      minutes and returns on its own.
+    cause: >-
+      Torrents from Toloka announce to http://retracker.local/announce, the
+      convention for an ISP's own retracker. gluetun's resolver drops a
+      .local query without replying - not even NXDOMAIN - and libtorrent
+      reads silence as a lost packet, so it asks again immediately, from a
+      new source port, for as long as the announce lasts. Three torrents
+      produced 28,000 queries a second. The cores go on gluetun reading them.
+    tell: >-
+      Count loopback packets in the pod's namespace rather than guessing:
+      `awk '/lo:/{print $3}' /proc/net/dev` twice, twenty seconds apart. A
+      quiet stack moves single digits. Then `tcpdump -i lo -nn udp port 53`
+      names the offender - and note whether anything at all comes back from
+      port 53, because two transaction IDs across thousands of packets mean
+      one question, not thousands. Reproduce on demand with
+      `POST /api/v2/torrents/reannounce?hashes=all`, which costs nothing.
+    fix: >-
+      Answer the name before a query is sent: a hostAliases entry pinning
+      retracker.local to 127.0.0.1. The announce then fails on a refused
+      connection, which is instant and which libtorrent treats as a tracker
+      error and backs off from. Measured with the same reannounce either
+      side of the change: 704,829 loopback packets in twenty-five seconds
+      at 1489 millicores, against 10 packets at 11.
     diagnosed: 2026-09-20
