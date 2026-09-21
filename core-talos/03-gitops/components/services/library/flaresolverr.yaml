@@ -31,9 +31,14 @@ spec:
           livenessProbe:
             httpGet: {path: /health, port: http}
             periodSeconds: 30
+          # One Chromium per request in flight, and no concurrency limit of
+          # its own. It was OOMKilled on 2026-09-20 solving two Cloudflare
+          # challenges at once - EZTV and RuTracker, which Prowlarr searches
+          # together - at 1Gi. Idle it holds about 110Mi, so the request
+          # stays where it is; only the ceiling moves.
           resources:
             requests: {cpu: 50m, memory: 256Mi}
-            limits: {memory: 1Gi}
+            limits: {memory: 2Gi}
           volumeMounts:
             # Chromium crashes against the default 64 MB of shared memory.
             - {name: shm, mountPath: /dev/shm}
