@@ -46,6 +46,15 @@ agent:
   env:
     - {name: PULSE_URL, value: "http://pulse:7655"}
     - {name: TZ, value: America/Los_Angeles}
+    # A stable identity, so the cluster does not arrive as a new one every
+    # time the pod is replaced.
+    - {name: PULSE_AGENT_ID, value: beelink}
+  # PULSE_TOKEN comes from Infisical through the ExternalSecret beside this
+  # file; the chart only wires an existing secret into the pod.
+  secretEnv:
+    create: false
+    name: pulse-agent
+    keys: [PULSE_TOKEN]
   resources:
     requests: {cpu: 25m, memory: 96Mi}
     limits: {memory: 384Mi}
