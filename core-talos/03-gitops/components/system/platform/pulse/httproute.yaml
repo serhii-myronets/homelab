@@ -1,5 +1,7 @@
-# Local only. It describes every machine in the house, and the alerting it
-# carries is not something to reach through a tunnel.
+# Published as well as local. Cloudflare Access stands in front of every
+# serhii.link name, and Pulse asks for its own account behind that, so the
+# two gates are independent. What is on the other side is a description of
+# every machine in the house, which is why one gate would not be enough.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -7,7 +9,10 @@ metadata:
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  hostnames: [pulse.home]
+  hostnames:
+    - pulse.home
+    # external-dns publishes this through the Beelink tunnel.
+    - pulse.serhii.link
   rules:
     - backendRefs:
         - {name: pulse, port: 7655}

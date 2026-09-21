@@ -114,7 +114,7 @@ platform:
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones
-    published: [argocd.serhii.link, jellyfin.serhii.link, torrent.serhii.link]
+    published: [argocd.serhii.link, jellyfin.serhii.link, pulse.serhii.link, torrent.serhii.link]
     other_tunnels:
       - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
       - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
@@ -298,7 +298,7 @@ platform:
   pulse:
     role: watches this cluster, and can be pointed at Proxmox and Docker too
     added: 2026-09-20
-    names: [pulse.home]           # local only; not published
+    names: [pulse.home, pulse.serhii.link]
     chart: pulse/pulse 6.4.1, from rcourtman.github.io/Pulse
     pods:
       - {name: pulse, role: "server and interface", claim: 10Gi lvm}
