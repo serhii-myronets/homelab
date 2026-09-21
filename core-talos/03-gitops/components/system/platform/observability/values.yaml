@@ -152,6 +152,11 @@ kubeApiServer:
           # what keeps it from being kept, because almost all of that size
           # is histogram buckets nobody here will open.
           max_scrape_size: "64MB"
+          # Five minutes, not thirty seconds. The apiserver has to build
+          # that whole answer every time it is asked, whatever is dropped
+          # afterwards, and asking twice a minute cost it a full core of
+          # the node's four. Nothing read from here needs finer resolution.
+          scrape_interval: 5m
           metricRelabelConfigs:
             - action: drop
               sourceLabels: [__name__]
