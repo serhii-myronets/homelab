@@ -46,6 +46,12 @@ agent:
   args:
     - --enable-kubernetes
     - --enable-host=false
+    # The chart gives this container liveness and readiness probes on port
+    # 9191, and the agent binds that port to 127.0.0.1 by default. kubelet
+    # probes the pod's address, so neither can ever succeed: the agent was
+    # killed thirty seconds after every start, which is exactly when three
+    # failures of the liveness probe land.
+    - --health-addr=0.0.0.0:9191
   dockerSocket:
     enabled: false
   env:
