@@ -13,3 +13,18 @@ spec:
   rules:
     - backendRefs:
         - {name: jellyfin, port: 8096}
+---
+# The television's way in, over plain HTTP. It names the http-tv listener
+# rather than attaching wherever it fits, so tv.home answers on port 80 and
+# nowhere else - jellyfin.home keeps both its redirect and its certificate.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: jellyfin-tv
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system, sectionName: http-tv}
+  hostnames: [tv.home]
+  rules:
+    - backendRefs:
+        - {name: jellyfin, port: 8096}

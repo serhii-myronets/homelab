@@ -1,0 +1,51 @@
+# Pulse watches this cluster, and can be pointed at Proxmox and Docker hosts
+# from its own settings afterwards - which is why it replaced the
+# VictoriaMetrics stack now under 03-gitops/archive. It sends its own alerts,
+# through webhooks, mail or Apprise, all of which the free edition carries;
+# what is paid for is remote access and the mobile app.
+#
+# The free edition keeps seven days of history. That answers "what broke last
+# night" and not "is this disk filling up".
+
+# A volume on the lvm class mounts into one pod, so the default rolling update
+# would wait for a pod that cannot start until the old one lets go.
+strategy:
+  type: Recreate
+
+persistence:
+  enabled: true
+  storageClass: lvm
+  size: 10Gi
+
+service:
+  port: 7655
+
+server:
+  env:
+    - {name: TZ, value: America/Los_Angeles}
+  # The chart ships no resources at all, as the last one did.
+  resources:
+    requests: {cpu: 50m, memory: 192Mi}
+    limits: {memory: 768Mi}
+
+agent:
+  enabled: true
+  kind: DaemonSet
+  rbac:
+    # The read-only collector role: without it the agent sees nothing.
+    create: true
+  serviceAccount:
+    create: true
+  # The chart's default is container monitoring against a Docker socket.
+  # Talos runs containerd and has no such socket, so both go.
+  args:
+    - --enable-kubernetes
+    - --enable-host=false
+  dockerSocket:
+    enabled: false
+  env:
+    - {name: PULSE_URL, value: "http://pulse:7655"}
+    - {name: TZ, value: America/Los_Angeles}
+  resources:
+    requests: {cpu: 25m, memory: 96Mi}
+    limits: {memory: 384Mi}

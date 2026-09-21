@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pulse
+  labels:
+    # The collector runs as uid 0, which restricted forbids. It mounts
+    # nothing from the host and holds no capabilities, so baseline is the
+    # honest level rather than privileged.
+    pod-security.kubernetes.io/enforce: baseline
