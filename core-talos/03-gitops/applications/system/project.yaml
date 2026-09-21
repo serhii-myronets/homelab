@@ -17,6 +17,7 @@ spec:
     - https://piraeus.io/helm-charts/
     - https://cloudnative-pg.github.io/charts
     - https://backube.github.io/helm-charts/
+    - https://victoriametrics.github.io/helm-charts/
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
