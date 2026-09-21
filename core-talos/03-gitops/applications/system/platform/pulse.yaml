@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pulse
+  namespace: argocd
+spec:
+  project: system
+  sources:
+    - repoURL: https://rcourtman.github.io/Pulse
+      chart: pulse
+      targetRevision: 6.4.1
+      helm:
+        valueFiles:
+          - $values/core-talos/03-gitops/components/system/platform/pulse/values.yaml
+    # Supplies the values file and, as manifests, the namespace and the route.
+    - repoURL: https://github.com/serhii-myronets/homelab.git
+      targetRevision: main
+      ref: values
+      path: core-talos/03-gitops/components/system/platform/pulse
+      directory:
+        include: "{namespace.yaml,httproute.yaml}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pulse
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
