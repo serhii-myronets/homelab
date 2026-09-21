@@ -94,15 +94,15 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, grafana.home, argocd.home, ca.home]
+    names: [jellyfin.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home on 80 in the clear so the
       root certificate can be fetched, and *.home on 443 with home-tls.
     certificate: >-
-      One certificate lists home, argocd.home, ca.home, grafana.home,
-      immich.home, jellyfin.home, jellyseerr.home, prowlarr.home,
-      radarr.home, sonarr.home and torrent.home. cert-manager creates and renews it
+      One certificate lists home, argocd.home, ca.home, immich.home,
+      jellyfin.home, jellyseerr.home, prowlarr.home, radarr.home,
+      sonarr.home and torrent.home. cert-manager creates and renews it
       from the cluster's own authority; devices trust its root from
       ca.home/root.crt.
     note: >-
@@ -287,41 +287,6 @@ platform:
     address: 192.168.8.10 (host network), Beelink.local
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: the samba namespace alone enforces privileged, for the host network
-  observability:
-    role: metrics, dashboards and the alerting rules that come with them
-    added: 2026-09-20
-    names: [grafana.home]         # local only; not published
-    chart: victoria-metrics-k8s-stack 0.93.0, one release for all of it
-    pods:
-      - {name: vmsingle, role: "storage and queries", retention: 1 month, claim: 20Gi lvm}
-      - {name: vmagent, role: "scrapes 19 targets every 30s"}
-      - {name: vmalert + vmalertmanager, role: "the chart's prebuilt rules"}
-      - {name: grafana, role: "dashboards; no volume, nothing to keep"}
-      - {name: kube-state-metrics, role: "object state - restarts, OOMKills"}
-      - {name: node-exporter, role: "the host itself"}
-      - {name: operator, role: "builds the four above from their CRs"}
-    auth: >-
-      None. The login form is off and anonymous visitors get Admin, which
-      includes editing alert rules - the same trade qBittorrent makes, and
-      a statement about the network rather than about Grafana.
-    dashboards: >-
-      Fetched at sync time by a Job from raw.githubusercontent.com on
-      master, not from this repository. It is how the prebuilt alert
-      library arrives; vendoring them here is the alternative.
-    not_scraped: >-
-      The controller manager, the scheduler and etcd. Talos binds the first
-      two to localhost and serves etcd only to a client with its
-      certificate, so from a pod they can only ever be down. Reaching them
-      is a machine config change, and worth making - the collector loop
-      found on 2026-09-20 lived in the controller manager, and nothing here
-      would have shown it.
-    not_backed_up: >-
-      Deliberately. Losing it costs history, not state, so no VolSync
-      source points at the claim.
-    webhook: >-
-      The operator's admission webhook is off; see traps.yaml. It validated
-      nothing while broken, and its certificate could not hold still under
-      Argo.
   node_labels: {homelab/media-hdd: "true"}
   storage:
     classes:
@@ -348,6 +313,9 @@ platform:
       claim restores itself from R2 on an empty cluster.
     not_backed_up: [media on the HDDs, caches]
   deferred: [strimzi, hubble-ui]
+  archived: >-
+    The VictoriaMetrics stack ran here on 2026-09-20 and was replaced by
+    Pulse the same evening; it is whole under 03-gitops/archive.
 
 config:
   talos: core-talos/01-talos/
