@@ -16,6 +16,19 @@ fullnameOverride: vm
 # expected to hold; limits leave room to spike without taking the node.
 
 victoria-metrics-operator:
+  # Off, and the reason is worth keeping. The chart mints the webhook's
+  # certificate authority while it renders; keepTLSSecret, which is meant
+  # to reuse the existing one, works through Helm's lookup, and lookup
+  # needs a live cluster. Argo renders without one, so every sync pushed a
+  # fresh authority while the running operator went on serving the old
+  # certificate - the apiserver filled with x509 errors at a core of CPU,
+  # and the webhook failed open, validating nothing while it did so.
+  #
+  # What it buys is server-side checking of VictoriaMetrics resources,
+  # which are rendered from this file and reviewed before they are pushed.
+  # That is not worth a certificate that cannot hold still.
+  admissionWebhooks:
+    enabled: false
   resources:
     requests: {cpu: 25m, memory: 96Mi}
     limits: {memory: 256Mi}
