@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability
+  namespace: argocd
+spec:
+  project: system
+  sources:
+    - repoURL: https://victoriametrics.github.io/helm-charts/
+      chart: victoria-metrics-k8s-stack
+      targetRevision: 0.93.0
+      helm:
+        valueFiles:
+          - $values/core-talos/03-gitops/components/system/platform/observability/values.yaml
+    # Supplies the values file and, as manifests, the namespace, Grafana's
+    # admin secret and its route.
+    - repoURL: https://github.com/serhii-myronets/homelab.git
+      targetRevision: main
+      ref: values
+      path: core-talos/03-gitops/components/system/platform/observability
+      directory:
+        include: "{namespace.yaml,externalsecret.yaml,httproute.yaml}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # Not optional here: the operator's CRDs carry 2.9 MB of schema, and a
+      # client-side apply would try to write that into an annotation the
+      # apiserver caps at 256 KB.
+      - ServerSideApply=true

@@ -1,0 +1,98 @@
+# One release carries the whole stack: the operator, VMSingle, vmagent,
+# vmalert, Alertmanager, Grafana, kube-state-metrics and node-exporter.
+#
+# Metrics only to begin with. VictoriaLogs lives in this same chart, as
+# vlsingle and vlagent at the bottom of this file, so adding logs later is
+# a change here rather than a second application.
+#
+# The chart ships no resources block for any of its eight workloads - every
+# one renders with neither request nor limit. This node's limits already
+# exceed its memory, so all eight are set below. Requests are what each is
+# expected to hold; limits leave room to spike without taking the node.
+
+victoria-metrics-operator:
+  resources:
+    requests: {cpu: 25m, memory: 96Mi}
+    limits: {memory: 256Mi}
+
+vmsingle:
+  spec:
+    # Months, not days, and one is the chart's own default.
+    retentionPeriod: "1"
+    storage:
+      storageClassName: lvm
+      resources:
+        requests: {storage: 20Gi}
+    # Observational data with a one-month life: no VolSync source points
+    # here on purpose. Losing it costs history, not state.
+    resources:
+      requests: {cpu: 100m, memory: 320Mi}
+      limits: {memory: 1Gi}
+
+# Load-bearing, despite VMSingle being able to scrape on its own. Turn
+# vmagent off and the chart still renders VMSingle without scrape
+# selectors, leaving its thirteen scrape objects with nobody to read them.
+# Removing it means also setting selectAllByDefault on VMSingle's spec,
+# which is a step off the chart's path - worth doing only if a measurement
+# says this pod is expensive.
+vmagent:
+  spec:
+    # Thirty seconds rather than fifteen. Scrape interval is the largest
+    # lever on both memory and disk here, and nothing in this cluster
+    # changes fast enough to need the other half.
+    scrapeInterval: 30s
+    resources:
+      requests: {cpu: 50m, memory: 128Mi}
+      limits: {memory: 384Mi}
+
+# vmalert and Alertmanager are what the chart's prebuilt alert rules run
+# on. Grafana's own alerting could replace the pair, but not the rules -
+# those would then have to be written by hand, and they are most of what
+# this stack is worth on the first day.
+vmalert:
+  spec:
+    resources:
+      requests: {cpu: 25m, memory: 64Mi}
+      limits: {memory: 192Mi}
+
+alertmanager:
+  spec:
+    resources:
+      requests: {cpu: 10m, memory: 48Mi}
+      limits: {memory: 128Mi}
+
+grafana:
+  # Fixed, so the HTTPRoute beside this file does not depend on what the
+  # Argo application happens to be called.
+  fullnameOverride: grafana
+  admin:
+    existingSecret: grafana-admin
+  # No claim, deliberately. Every dashboard is provisioned by the sidecar
+  # from ConfigMaps and the datasource by the chart, so Grafana's database
+  # holds only sessions and preferences. A claim would also need the
+  # Recreate strategy, since a volume on the lvm class mounts into one pod.
+  persistence:
+    enabled: false
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {memory: 384Mi}
+  sidecar:
+    resources:
+      requests: {cpu: 10m, memory: 48Mi}
+      limits: {memory: 128Mi}
+
+kube-state-metrics:
+  resources:
+    requests: {cpu: 25m, memory: 48Mi}
+    limits: {memory: 192Mi}
+
+prometheus-node-exporter:
+  resources:
+    requests: {cpu: 25m, memory: 32Mi}
+    limits: {memory: 96Mi}
+
+# Logs. Both off until the metrics half has been measured on this node.
+vlsingle:
+  enabled: false
+vlagent:
+  enabled: false
