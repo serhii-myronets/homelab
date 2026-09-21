@@ -62,3 +62,31 @@ it renders, a release name that overflows a label, the apiserver paying for
 its own metrics, and Talos keeping the controller manager and the scheduler
 to itself.
 
+## pulse — the Pulse hub and its Kubernetes agent
+
+Ran on 2026-09-20 for about an hour: pulse/pulse 6.4.1, the server on a
+10Gi `lvm` claim behind `pulse.home` and `pulse.serhii.link`, with an agent
+reading the cluster in Kubernetes mode. It settled at 81Mi, an order of
+magnitude under the stack it replaced, and its CPU sat higher than that
+suggests - 150 to 400 millicores on the server.
+
+It went for what it is rather than what it did: open core. The Community
+edition is MIT and carries everything this house needed, alerts included,
+but remote access, the mobile application, longer history and the
+investigation features are a separate commercial product built from
+private sources, and that boundary is not ours to rely on.
+
+To bring it back:
+
+```sh
+git mv core-talos/03-gitops/archive/pulse/applications/pulse.yaml core-talos/03-gitops/applications/system/platform/
+git mv core-talos/03-gitops/archive/pulse/components/pulse core-talos/03-gitops/components/system/platform/
+```
+
+Then add `pulse.home` back to the `home-ca` certificate. Its agent token
+is still in Infisical at `/pulse/AGENT_TOKEN`, and a new server will not
+accept it - mint another after the administrator account exists. Two of
+its lessons stayed in [`traps.yaml`](../../../docs/traps.yaml): a probe
+that cannot reach what it probes, and what happens when an operator and
+its work are deleted in one move.
+

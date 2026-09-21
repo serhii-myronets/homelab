@@ -1,0 +1,17 @@
+# Both names. Cloudflare Access stands in front of the published one, and
+# Headlamp asks for a Kubernetes token behind either - two gates that do
+# not depend on each other, which is the least this one deserves.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: headlamp
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - headlamp.home
+    # external-dns publishes this through the Beelink tunnel.
+    - headlamp.serhii.link
+  rules:
+    - backendRefs:
+        - {name: headlamp, port: 80}

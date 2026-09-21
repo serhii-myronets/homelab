@@ -94,14 +94,14 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, pulse.home, argocd.home, ca.home]
+    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, argocd.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
       clear, and *.home on 443 with home-tls.
     certificate: >-
-      One certificate lists home, argocd.home, ca.home, immich.home,
-      jellyfin.home, jellyseerr.home, prowlarr.home, pulse.home,
+      One certificate lists home, argocd.home, ca.home, headlamp.home,
+      immich.home, jellyfin.home, jellyseerr.home, prowlarr.home,
       radarr.home, sonarr.home and torrent.home. tv.home is not on it. cert-manager creates and renews it
       from the cluster's own authority; devices trust its root from
       ca.home/root.crt.
@@ -114,7 +114,7 @@ platform:
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones
-    published: [argocd.serhii.link, jellyfin.serhii.link, pulse.serhii.link, torrent.serhii.link]
+    published: [argocd.serhii.link, headlamp.serhii.link, jellyfin.serhii.link, torrent.serhii.link]
     other_tunnels:
       - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
       - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
@@ -295,38 +295,29 @@ platform:
     address: 192.168.8.10 (host network), Beelink.local
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: the samba namespace alone enforces privileged, for the host network
-  pulse:
-    role: watches this cluster, and can be pointed at Proxmox and Docker too
+  headlamp:
+    role: a console for this cluster - browse objects, read logs
     added: 2026-09-20
-    names: [pulse.home, pulse.serhii.link]
-    chart: pulse/pulse 6.4.1, from rcourtman.github.io/Pulse
-    pods:
-      - {name: pulse, role: "server and interface", claim: 10Gi lvm}
-      - {name: pulse-agent, role: "reads the cluster through the chart's collector role", kind: DaemonSet}
-    replaces: >-
-      The VictoriaMetrics stack, whole under 03-gitops/archive. Breadth and
-      its own alerting against a month of history and arbitrary queries -
-      see that README.
-    agent: >-
-      Kubernetes mode, not the chart's default: that one watches Docker
-      through a socket Talos does not have. Its health server is bound to
-      0.0.0.0 because the chart probes a port the agent otherwise keeps to
-      itself - see traps.yaml.
-    agent_secret: >-
-      Infisical /pulse/AGENT_TOKEN, scoped kubernetes:report. Minted inside
-      Pulse by hand after the administrator account exists, so it cannot be
-      created before the server runs.
-    telemetry: >-
-      Off through PULSE_TELEMETRY. It is on by default and sends a startup
-      ping and a daily heartbeat; the interface can stop it too, but only
-      the variable arrives before the first one is sent.
-    edition: >-
-      Community, MIT. Seven days of history, unlimited systems, and alerts
-      by webhook, mail or Apprise - which is what decision 0008 wants. Paid
-      tiers add remote access, the mobile app and longer history.
-    alerting: >-
-      Not wired yet. Nothing here can report that the Beelink is down,
-      which still needs the off-box watcher decision 0008 describes.
+    names: [headlamp.home, headlamp.serhii.link]
+    chart: headlamp/headlamp 0.45.0, from kubernetes-sigs
+    auth: >-
+      None, deliberately. unsafeUseServiceAccountToken is on, so every
+      visitor is handed the service account - and that account is bound to
+      view rather than the chart's cluster-admin, which is the only thing
+      that makes the trade sound. It reads every object and every log,
+      changes nothing, and cannot read Secrets: the built-in role excludes
+      them, and half of these came out of Infisical.
+    published: >-
+      headlamp.serhii.link sits behind Cloudflare Access. headlamp.home has
+      no gate at all, which is why the role matters more than the tunnel.
+    editing: >-
+      Not possible from here by design. It needs either the sign-in back
+      (unsafeUseServiceAccountToken false) or a wider role. One line either
+      way, and a decision rather than a default.
+    state: none - no claim, no database, no CRDs
+    watches: >-
+      Nothing. It reports no failure and sends no alert, so decision 0008
+      is still open and no tool here closes it.
   node_labels: {homelab/media-hdd: "true"}
   storage:
     classes:
@@ -354,8 +345,9 @@ platform:
     not_backed_up: [media on the HDDs, caches]
   deferred: [strimzi, hubble-ui]
   archived: >-
-    The VictoriaMetrics stack ran here on 2026-09-20 and was replaced by
-    Pulse the same evening; it is whole under 03-gitops/archive.
+    Two monitors ran here on 2026-09-20 and neither stayed: the
+    VictoriaMetrics stack, then Pulse. Both are whole under
+    03-gitops/archive, with why each went written beside it.
 
 config:
   talos: core-talos/01-talos/
