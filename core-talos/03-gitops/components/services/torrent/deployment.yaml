@@ -19,6 +19,17 @@ spec:
       dnsPolicy: None
       dnsConfig:
         nameservers: [127.0.0.1]
+      # Torrents from Toloka carry http://retracker.local/announce, the
+      # convention for an ISP's own retracker. Gluetun's resolver answers a
+      # .local name with nothing at all - not even NXDOMAIN - so libtorrent
+      # repeats the same two queries, A and AAAA, as fast as the socket takes
+      # them: 28,000 packets a second on loopback, and 1.5 of four cores
+      # inside Gluetun reading them. Three torrents were enough. Answering
+      # the name here means the query is never sent; the announce then fails
+      # on a refused connection, which libtorrent backs off from properly.
+      hostAliases:
+        - ip: 127.0.0.1
+          hostnames: [retracker.local]
       initContainers:
         - name: prepare
           image: busybox:1.37
