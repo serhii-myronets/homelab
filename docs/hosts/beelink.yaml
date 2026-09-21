@@ -301,19 +301,20 @@ platform:
     names: [headlamp.home, headlamp.serhii.link]
     chart: headlamp/headlamp 0.45.0, from kubernetes-sigs
     auth: >-
-      None, deliberately. unsafeUseServiceAccountToken is on, so every
-      visitor is handed the service account - and that account is bound to
-      view rather than the chart's cluster-admin, which is the only thing
-      that makes the trade sound. It reads every object and every log,
-      changes nothing, and cannot read Secrets: the built-in role excludes
-      them, and half of these came out of Infisical.
-    published: >-
-      headlamp.serhii.link sits behind Cloudflare Access. headlamp.home has
-      no gate at all, which is why the role matters more than the tunnel.
-    editing: >-
-      Not possible from here by design. It needs either the sign-in back
-      (unsafeUseServiceAccountToken false) or a wider role. One line either
-      way, and a decision rather than a default.
+      None, and with cluster-admin behind it - chosen knowingly by the
+      owner on 2026-09-20. unsafeUseServiceAccountToken hands every visitor
+      the service account, and that account is bound to cluster-admin, so
+      opening the page is full control of the cluster.
+    exposure: >-
+      headlamp.serhii.link is behind Cloudflare Access. headlamp.home has
+      no gate at all, so anyone on the LAN - including the television and
+      anything else that joins the wifi - has that control by opening a
+      page, including reading every Secret: the NordVPN keys, the
+      Cloudflare tunnel credentials, the R2 backup keys and the database
+      passwords. The published name is the better defended of the two.
+    narrowing: >-
+      clusterRoleName: view is one word and gives a console that reads
+      every object and log, changes nothing, and cannot see Secrets at all.
     state: none - no claim, no database, no CRDs
     watches: >-
       Nothing. It reports no failure and sends no alert, so decision 0008

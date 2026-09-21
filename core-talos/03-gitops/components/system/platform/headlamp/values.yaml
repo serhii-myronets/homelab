@@ -21,18 +21,22 @@ config:
   unsafeUseServiceAccountToken: true
   sessionTTL: 86400
 
-# view, not cluster-admin. With no sign-in in front of it, this role is the
-# only thing standing between a visitor and the cluster, and headlamp.home
-# answers anyone on the LAN with no gate at all - the same network where a
-# television reaches Jellyfin over plain HTTP.
+# cluster-admin, and with no sign-in in front of it, which is the owner's
+# decision taken knowingly on 2026-09-20 rather than a default left alone.
 #
-# view reads every object and every log, and cannot change one. It also
-# cannot read Secrets, which the built-in role excludes on purpose: half
-# the secrets here came out of Infisical.
+# What it means, written down so it is never a surprise: headlamp.home has
+# no gate whatsoever, so anyone on the LAN - a laptop, the television, a
+# device that joins the wifi - gets full control of this cluster by opening
+# a page. That includes reading every Secret in it: the NordVPN keys, the
+# Cloudflare tunnel credentials, the R2 backup keys and the database
+# passwords, all of which came from Infisical and none of which the `view`
+# role would have shown.
 #
-# Editing from this page means either putting the sign-in back or widening
-# this to edit or cluster-admin. Both are one line, and both should be a
-# decision rather than a default.
+# headlamp.serhii.link is additionally behind Cloudflare Access, so the
+# published name is the better protected of the two.
+#
+# Narrowing it is one word - `view` reads everything, changes nothing and
+# cannot see Secrets at all.
 clusterRoleBinding:
   create: true
-  clusterRoleName: view
+  clusterRoleName: cluster-admin
