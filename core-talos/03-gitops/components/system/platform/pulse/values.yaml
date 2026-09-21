@@ -23,6 +23,11 @@ service:
 server:
   env:
     - {name: TZ, value: America/Los_Angeles}
+    # Outbound telemetry is on by default: a delayed startup ping and a
+    # daily heartbeat carrying a rotating install id, versions, aggregate
+    # counts and feature flags. It can also be turned off in the interface,
+    # but only this reaches the server before the first ping is sent.
+    - {name: PULSE_TELEMETRY, value: "false"}
   # The chart ships no resources at all, as the last one did.
   resources:
     requests: {cpu: 50m, memory: 192Mi}
