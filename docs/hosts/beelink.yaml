@@ -232,7 +232,11 @@ platform:
       Jellyfin 12 answers with 400.
     flaresolverr: >-
       Its own pod, stateless. Passes the Cloudflare challenge for the
-      indexers tagged with it, currently RuTracker and EZTV.
+      indexers tagged with it, currently RuTracker and EZTV. It starts a
+      Chromium per request in flight and limits nothing itself, so its
+      ceiling is set by how many tagged indexers Prowlarr can search at
+      once - both of them, which is what OOMKilled it at 1Gi. 2Gi since
+      2026-09-20; it idles at about 110Mi.
   immich:
     role: the household's photographs - upload, search, faces
     added: 2026-09-20

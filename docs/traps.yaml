@@ -702,3 +702,24 @@ traps:
       side of the change: 704,829 loopback packets in twenty-five seconds
       at 1489 millicores, against 10 packets at 11.
     diagnosed: 2026-09-20
+
+  - id: a-headless-browser-is-sized-by-what-asks-it
+    applies_to: [flaresolverr, prowlarr, library, kubernetes]
+    symptom: >-
+      A Prowlarr search returns nothing from the indexers behind Cloudflare,
+      and FlareSolverr shows a restart. It had been up for days.
+    cause: >-
+      FlareSolverr starts one Chromium per request in flight and caps
+      nothing itself, so its peak is however many tagged indexers Prowlarr
+      searches at once. Two challenges together did not fit in 1Gi. It
+      reads as a leak and is not one: idle it holds about 110Mi.
+    tell: >-
+      lastState.terminated.reason is OOMKilled, not Error, and the previous
+      container's log ends on two "Challenge detected" lines a second apart
+      for different indexers. `kubectl get pods` alone shows only a restart
+      count, so the reason has to be read from the pod object.
+    fix: >-
+      Size the ceiling for concurrent challenges rather than for idle - 2Gi
+      here, with the request left at 256Mi so the scheduler reserves what
+      it actually uses. Tagging fewer indexers would work too.
+    diagnosed: 2026-09-20
