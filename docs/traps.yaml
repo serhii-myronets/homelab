@@ -837,3 +837,54 @@ traps:
       response has been built and sent, so they save storage and not one
       millicore. Five minutes here, against thirty seconds.
     diagnosed: 2026-09-20
+
+  - id: a-probe-that-cannot-reach-what-it-probes
+    applies_to: [kubernetes, helm, pulse]
+    symptom: >-
+      A container starts, logs that it is running, and stops about thirty
+      seconds later. It repeats for ever. The last state reads exit code 0
+      and reason Completed, so it looks like the process deciding to end
+      rather than anything failing.
+    cause: >-
+      Its liveness probe could never succeed. Pulse's chart probes port
+      9191 and Pulse's agent binds that port to 127.0.0.1 by default, which
+      is its own default too - kubelet probes the pod's address, and
+      nothing answers there. The clean exit is the giveaway pointing the
+      wrong way: the agent handles SIGTERM properly, so being killed looks
+      like leaving.
+    tell: >-
+      Read the probe and the bind address together, and check the clock.
+      Five seconds of initialDelay plus three failures of a ten-second
+      period is thirty-five, and the container died at thirty. A lifetime
+      that matches the probe's arithmetic is the probe, whatever the exit
+      code says.
+    fix: >-
+      Bind the health server to 0.0.0.0 - here `--health-addr=0.0.0.0:9191`
+      - rather than removing the probe. A listener on the pod network is
+      reachable only inside the cluster and the endpoint carries nothing.
+    diagnosed: 2026-09-20
+
+  - id: deleting-an-operator-and-its-work-in-one-move-strands-both
+    applies_to: [argocd, kubernetes, helm, observability]
+    symptom: >-
+      Removing an Application from git leaves two deadlocks. Argo will not
+      finish deleting it, retrying for ever with nothing in its way, and
+      the namespace sits in Terminating with no pods left in it.
+    cause: >-
+      Two different halves of the same mistake. Argo's pre-delete finalizer
+      runs a hook that is defined in the chart, and the files that render
+      it were the ones just moved away - there is nothing left to render.
+      Separately, the operator's custom resources carry its own finalizer,
+      and the operator that would clear them went out with the namespace.
+    tell: >-
+      `kubectl get ns <name> -o jsonpath='{.status.conditions}'` names both
+      the resources remaining and the finalizer holding them. For the
+      Application, a deletionTimestamp that is minutes old next to a sync
+      that keeps reporting success.
+    fix: >-
+      Remove the finalizers by hand - `kubectl patch ... --type json -p
+      '[{"op":"remove","path":"/metadata/finalizers"}]'` - on the
+      Application first and then on each stranded custom resource. Deleting
+      the CRDs afterwards restarts the collector loop in traps above, so
+      the controller manager wants a restart when the dust settles.
+    diagnosed: 2026-09-20
