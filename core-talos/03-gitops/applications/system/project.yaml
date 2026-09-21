@@ -15,9 +15,12 @@ spec:
     - https://kubernetes-sigs.github.io/external-dns/
     - https://charts.jetstack.io
     - https://piraeus.io/helm-charts/
-    - https://cloudnative-pg.github.io/charts
     - https://backube.github.io/helm-charts/
+    # Kept for what sits in archive/: the entry has to exist before the
+    # Application that needs it can sync again.
     - https://victoriametrics.github.io/helm-charts/
+    - https://cloudnative-pg.github.io/charts
+    - https://rcourtman.github.io/Pulse
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
