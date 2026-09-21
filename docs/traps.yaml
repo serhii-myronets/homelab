@@ -666,3 +666,27 @@ traps:
       Binding to a missing interface is silent by design: qBittorrent treats
       it as "no interface available" rather than an error.
     diagnosed: 2026-09-20
+
+  - id: a-wireguard-server-can-accept-and-carry-nothing
+    applies_to: [gluetun, wireguard, nordvpn, torrent]
+    symptom: >-
+      The torrent stack goes down for minutes at a time after moving to
+      WireGuard. gluetun logs "Wireguard setup is complete" and then, seconds
+      later, restarts the VPN over a DNS lookup that timed out.
+    cause: >-
+      Some of NordVPN's WireGuard endpoints accept the connection and carry
+      no traffic. WireGuard has no handshake to fail, so nothing reports it;
+      gluetun finds out from its own healthcheck and moves to the next
+      server. That part works. What does not is a liveness probe short
+      enough to kill gluetun while it is still hunting - a native sidecar
+      restart takes qBittorrent's network with it and throws away every
+      server already ruled out.
+    tell: >-
+      "restarting VPN because it failed to pass the healthcheck ... i/o
+      timeout" in gluetun's log, followed by a different server address.
+      A healthy rotation is over in seconds; the outage is kubelet's.
+    fix: >-
+      Give the liveness probe room for the hunt - ten failures of sixty
+      seconds rather than three. gluetun repairs this on its own; the probe
+      is there for gluetun being wedged, not for gluetun working.
+    diagnosed: 2026-09-20
