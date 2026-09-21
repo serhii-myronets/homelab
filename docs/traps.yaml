@@ -723,3 +723,51 @@ traps:
       here, with the request left at 256Mi so the scheduler reserves what
       it actually uses. Tagging fewer indexers would work too.
     diagnosed: 2026-09-20
+
+  - id: removing-an-operator-leaves-the-collector-asking-for-it
+    applies_to: [kubernetes, talos, argocd, crds]
+    symptom: >-
+      kube-controller-manager logs "failed to list *v1.PartialObjectMetadata:
+      the server could not find the requested resource" about forty times a
+      minute, for ever. Nothing is broken: every resource lists by hand, no
+      namespace is terminating, no CRD is unestablished.
+    cause: >-
+      An operator's CRDs were removed - CloudNativePG, here, now under
+      03-gitops/archive - and the garbage collector's monitors for its types
+      were not. It rebuilds that set from discovery only at startup, so it
+      keeps retrying types that no longer resolve. The retry never reaches
+      the apiserver: the RESTMapper fails locally.
+    tell: >-
+      Zero failing LIST or WATCH in the apiserver's own metrics while the
+      controller logs the error steadily - that gap means client-side, not
+      server-side. Then look for a group that appears in
+      apiserver_request_total with successful calls but has no CRD left:
+      `kubectl get --raw /metrics | grep apiserver_request_total | grep <group>`.
+      Check it is only noise before touching anything - scan owned objects
+      for owner uids that no longer exist, and load the owner kinds too, or
+      every Deployment-owned ReplicaSet reads as an orphan.
+    fix: >-
+      Restart kube-controller-manager; it rebuilds the set from current
+      discovery. It costs nothing to leave - the collector itself keeps
+      working, and the next node reboot clears it anyway.
+    diagnosed: 2026-09-20
+
+  - id: deleting-a-static-pod-does-not-restart-it
+    applies_to: [kubernetes, talos]
+    symptom: >-
+      `kubectl delete pod` on kube-apiserver, kube-controller-manager or
+      kube-scheduler appears to work, but whatever it was meant to fix is
+      unchanged.
+    cause: >-
+      Those are static pods. The API object is a mirror kubelet keeps for
+      visibility; deleting it makes kubelet write a new mirror and leave the
+      container alone.
+    tell: >-
+      metadata.creationTimestamp is seconds old while
+      status.containerStatuses[0].state.running.startedAt and restartCount
+      are unchanged. The restart count is the honest field.
+    fix: >-
+      Restart the container itself - `talosctl -n <node> restart --namespace
+      cri kube-system/<pod>:<container>`, with the id from
+      `talosctl -n <node> containers --namespace cri`.
+    diagnosed: 2026-09-20
