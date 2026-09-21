@@ -12,14 +12,13 @@ spec:
       helm:
         valueFiles:
           - $values/core-talos/03-gitops/components/system/platform/observability/values.yaml
-    # Supplies the values file and, as manifests, the namespace, Grafana's
-    # admin secret and its route.
+    # Supplies the values file and, as manifests, the namespace and the route.
     - repoURL: https://github.com/serhii-myronets/homelab.git
       targetRevision: main
       ref: values
       path: core-talos/03-gitops/components/system/platform/observability
       directory:
-        include: "{namespace.yaml,externalsecret.yaml,httproute.yaml}"
+        include: "{namespace.yaml,httproute.yaml}"
   destination:
     server: https://kubernetes.default.svc
     namespace: observability
@@ -32,3 +31,13 @@ spec:
       # client-side apply would try to write that into an annotation the
       # apiserver caps at 256 KB.
       - ServerSideApply=true
+  # Grafana's chart mints a new admin password every time it renders, so
+  # without this Argo would rewrite the secret on each sync, for ever.
+  # Nothing reads it: the login form is off and access is anonymous.
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: grafana
+      namespace: observability
+      jsonPointers:
+        - /data
