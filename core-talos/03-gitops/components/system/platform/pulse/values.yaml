@@ -52,6 +52,12 @@ agent:
     # killed thirty seconds after every start, which is exactly when three
     # failures of the liveness probe land.
     - --health-addr=0.0.0.0:9191
+    # Left alone, Pulse reports only what looks wrong - it is a watchman
+    # rather than an inventory, and an empty screen is its way of saying
+    # nothing is broken. These two make it list everything as well, which
+    # costs nothing at this size: 38 pods against a default cap of 200.
+    - --kube-include-all-pods
+    - --kube-include-all-deployments
   dockerSocket:
     enabled: false
   env:
