@@ -94,11 +94,11 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
+    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, argocd.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
-      *.home on 80 redirecting to HTTPS, ca.home on 80 in the clear so the
-      root certificate can be fetched, and *.home on 443 with home-tls.
+      *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
+      clear, and *.home on 443 with home-tls.
     certificate: >-
       One certificate lists home, argocd.home, ca.home, immich.home,
       jellyfin.home, jellyseerr.home, prowlarr.home, radarr.home,
@@ -120,6 +120,14 @@ platform:
       - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
   jellyfin:
     address: 192.168.8.17:8096 (LoadBalancer)
+    television: >-
+      tv.home, on port 80 without TLS, added 2026-09-20. A television's
+      trust store is not ours to write to, so it can neither follow the
+      redirect on jellyfin.home nor accept the home authority behind it.
+      A second name rather than an exemption for the first, so every device
+      that can do TLS still does; tv.home is deliberately not on the
+      certificate. The password crosses the LAN in the clear either way -
+      the alternative was the address above, typed with its port.
     image: "jellyfin/jellyfin:12.1.20260915-010956"
     user: "1000:1000"
     gpu: Quick Sync through the Intel iHD driver 26.2.4

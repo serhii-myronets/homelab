@@ -39,6 +39,20 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    # The second exception, and a different kind. A television cannot be
+    # taught to trust the home authority - its trust store is not ours to
+    # write to - so it can neither follow the redirect above nor accept
+    # what waits at the other end. This is a separate name rather than an
+    # exemption for jellyfin.home, so every device that can do TLS still
+    # does. It is deliberately absent from the certificate: tv.home is
+    # plain HTTP and nothing else.
+    - name: http-tv
+      protocol: HTTP
+      port: 80
+      hostname: tv.home
+      allowedRoutes:
+        namespaces:
+          from: All
     # Local names, with a certificate from cert-manager's home-ca authority.
     - name: https
       protocol: HTTPS
