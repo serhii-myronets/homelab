@@ -146,17 +146,16 @@ platform:
       X-Emby-Authorization, which Jellyfin 12 answers with 400.
   torrent:
     address: 192.168.8.16 (LoadBalancer)
-    ports: {qbittorrent: 8080, flood: 3000}
+    ports: {qbittorrent: 8080}
     containers:
-      - {name: gluetun, image: "qmcgaw/gluetun:v3.41.3", role: "NordVPN OpenVPN, Netherlands, native sidecar", endpoint: 186.247.163.10}
+      - {name: gluetun, image: "qmcgaw/gluetun:v3.41.3", role: "NordVPN WireGuard, Netherlands, native sidecar"}
       - {name: qbittorrent, image: "ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475", interface: tun0}
-      - {name: flood, image: "jesec/flood:4.16.2"}
     downloads: >-
       /var/mnt/hdd-a/torrents, mounted both as /downloads, the path the
       migrated torrents carry in their resume data, and inside /data, the
       path Sonarr and Radarr also use.
     config: claim data on the lvm class, backed up hourly
-    cache: 50Gi lvm claim for incomplete downloads, never backed up
+    cache: 200Gi lvm claim for incomplete downloads, never backed up
     ui: >-
       qBittorrent's own, at torrent.home and torrent.serhii.link since
       2026-09-20. Flood held those names and was removed: a second interface
@@ -177,7 +176,14 @@ platform:
       Stops at ratio 2 or 14 days, whichever comes first. Stopping rather
       than deleting is deliberate: it is what tells Sonarr and Radarr the
       seeding is finished, and they then remove the torrent with its file.
-    vpn_secret: Infisical /nordvpn (OPENVPN_USER, OPENVPN_PASSWORD)
+    resolver: >-
+      Every container resolves through gluetun, inside the tunnel. One name
+      is answered before that: retracker.local, which Toloka's torrents
+      announce to and which gluetun's resolver drops in silence - see
+      traps.yaml. A hostAliases entry pins it to 127.0.0.1.
+    vpn_secret: >-
+      Infisical /nordvpn - WIREGUARD_PRIVATE_KEY in use, OPENVPN_USER and
+      OPENVPN_PASSWORD kept so one value here reverts the protocol.
     webui_auth: none from 192.168.8.0/24 and the pod network
     migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
   library:
