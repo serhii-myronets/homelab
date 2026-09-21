@@ -83,6 +83,11 @@ grafana:
   # Fixed, so the HTTPRoute beside this file does not depend on what the
   # Argo application happens to be called.
   fullnameOverride: grafana
+  # Grafana's own metrics were 24,616 series, a fifth of everything stored,
+  # and their largest family was which feature flags are switched on.
+  # Whether Grafana is alive is already answered by kube-state-metrics.
+  vmScrape:
+    enabled: false
   # No sign-in. The dashboards are reachable only from the house - there is
   # no serhii.link route - and this matches how qBittorrent is already
   # reached here. Anyone on the LAN gets Admin, which includes editing the
@@ -170,7 +175,13 @@ kubeApiServer:
           # afterwards, and asking twice a minute cost it a full core of
           # the node's four. Nothing read from here needs finer resolution.
           scrape_interval: 5m
+          # Every histogram bucket, not a list of them. Naming families one
+          # by one missed the largest - the watch and storage histograms -
+          # and this job alone still held 39,749 of the database's 110,669
+          # series. The _sum and _count of each survive, which is what an
+          # average or a rate is built from; the buckets only answer
+          # questions about percentiles that nothing here asks.
           metricRelabelConfigs:
             - action: drop
               sourceLabels: [__name__]
-              regex: "apiserver_request_duration_seconds_bucket|apiserver_request_body_size_bytes_bucket|apiserver_response_sizes_bucket|apiserver_watch_events_sizes_bucket|apiserver_request_slo_duration_seconds_bucket|apiserver_request_sli_duration_seconds_bucket|etcd_request_duration_seconds_bucket|workqueue_queue_duration_seconds_bucket|workqueue_work_duration_seconds_bucket"
+              regex: ".*_bucket"
