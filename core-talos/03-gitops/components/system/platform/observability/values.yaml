@@ -1,3 +1,8 @@
+# Every name the operator builds starts from this. Left at the release
+# name, "observability", Alertmanager's pod label came to 64 bytes and the
+# StatefulSet could not create it at all - Kubernetes caps a label at 63.
+fullnameOverride: vm
+
 # One release carries the whole stack: the operator, VMSingle, vmagent,
 # vmalert, Alertmanager, Grafana, kube-state-metrics and node-exporter.
 #
@@ -65,8 +70,24 @@ grafana:
   # Fixed, so the HTTPRoute beside this file does not depend on what the
   # Argo application happens to be called.
   fullnameOverride: grafana
-  admin:
-    existingSecret: grafana-admin
+  # No sign-in. The dashboards are reachable only from the house - there is
+  # no serhii.link route - and this matches how qBittorrent is already
+  # reached here. Anyone on the LAN gets Admin, which includes editing the
+  # alerting rules, so this is a statement about the network, not about
+  # Grafana.
+  #
+  # An admin account still exists underneath, because the chart insists on
+  # one. Its password is minted fresh on every render, which is why the
+  # application ignores that secret rather than rewriting it each sync.
+  grafana.ini:
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_name: Main Org.
+      org_role: Admin
+    users:
+      allow_sign_up: false
   # No claim, deliberately. Every dashboard is provisioned by the sidecar
   # from ConfigMaps and the datasource by the chart, so Grafana's database
   # holds only sessions and preferences. A claim would also need the
