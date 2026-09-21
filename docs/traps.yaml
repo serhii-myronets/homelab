@@ -771,3 +771,69 @@ traps:
       cri kube-system/<pod>:<container>`, with the id from
       `talosctl -n <node> containers --namespace cri`.
     diagnosed: 2026-09-20
+
+  - id: a-chart-that-mints-a-secret-while-it-renders-will-fight-argo
+    applies_to: [argocd, helm, kubernetes, observability]
+    symptom: >-
+      A value that should hold still does not. Grafana's admin password
+      changes under you; the apiserver fills with x509 errors against a
+      certificate authority it cannot verify, at a core of CPU, while the
+      webhook that authority serves fails open and validates nothing.
+    cause: >-
+      The chart generates the value at render time. The setting that is
+      meant to reuse the existing one - keepTLSSecret, or any default that
+      reads the cluster - works through Helm's lookup, and lookup needs a
+      live cluster. Argo renders without one, so it finds nothing and mints
+      again on every sync, while the running pod serves what it already had.
+    tell: >-
+      Render the chart twice and compare the field: `helm template ... |
+      grep <field>`. Two different values means it can never be stable
+      under Argo, and no amount of syncing will settle it. In the cluster,
+      compare what is deployed against what the chart renders now - if they
+      differ, Argo is the one changing it.
+    fix: >-
+      Turn the feature off if it is not earning its keep, or pin the field
+      with ignoreDifferences so Argo stops rewriting what the operator
+      owns. Both were used here: the webhook went, and Grafana's secret is
+      ignored.
+    diagnosed: 2026-09-20
+
+  - id: a-long-release-name-becomes-a-label-that-does-not-fit
+    applies_to: [kubernetes, helm, argocd]
+    symptom: >-
+      A StatefulSet never creates its pod - not pending, not crashing,
+      absent - and a sync fails on a Service that was rendered correctly.
+    cause: >-
+      Generated names are the release name plus the chart name plus a
+      suffix. Kubernetes caps a label at 63 bytes and a Service name at 63
+      characters, and "observability" plus
+      "victoria-metrics-k8s-stack" passed both by a single byte.
+    tell: >-
+      The StatefulSet's events, not the pod's - there is no pod. It says
+      "metadata.labels: Invalid value ... must be no more than 63 bytes"
+      and names the controller-revision-hash. A failing sync says the same
+      about metadata.name.
+    fix: >-
+      fullnameOverride in the chart's values, short. Renaming the Argo
+      application would work too and costs more.
+    diagnosed: 2026-09-20
+
+  - id: scraping-the-apiserver-is-paid-for-by-the-apiserver
+    applies_to: [kubernetes, observability, victoriametrics]
+    symptom: >-
+      Turning on metrics collection takes the apiserver from about 70
+      millicores to over 1200, a core of four, and its memory keeps
+      climbing.
+    cause: >-
+      With 95 CRDs its /metrics runs past the 16MB a scrape reads by
+      default, and it is built from scratch on every request. Raising the
+      scrape's ceiling makes the scrape succeed and makes the cost real.
+    tell: >-
+      The scrape fails whole with "exceeds -promscrape.maxScrapeSize"
+      before the ceiling is raised, and afterwards the cost appears on the
+      apiserver rather than on the collector.
+    fix: >-
+      Scrape interval, not relabeling. metricRelabelConfigs drop after the
+      response has been built and sent, so they save storage and not one
+      millicore. Five minutes here, against thirty seconds.
+    diagnosed: 2026-09-20
