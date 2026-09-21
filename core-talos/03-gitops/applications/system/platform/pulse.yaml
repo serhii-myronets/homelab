@@ -12,13 +12,14 @@ spec:
       helm:
         valueFiles:
           - $values/core-talos/03-gitops/components/system/platform/pulse/values.yaml
-    # Supplies the values file and, as manifests, the namespace and the route.
+    # Supplies the values file and, as manifests, the namespace, the agent's
+    # token and the route.
     - repoURL: https://github.com/serhii-myronets/homelab.git
       targetRevision: main
       ref: values
       path: core-talos/03-gitops/components/system/platform/pulse
       directory:
-        include: "{namespace.yaml,httproute.yaml}"
+        include: "{namespace.yaml,externalsecret.yaml,httproute.yaml}"
   destination:
     server: https://kubernetes.default.svc
     namespace: pulse
