@@ -1,0 +1,14 @@
+# Local only. Nothing here is offered under serhii.link: the dashboards
+# describe the cluster's insides, and the alerting they carry is not
+# something to expose behind a tunnel.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [grafana.home]
+  rules:
+    - backendRefs:
+        - {name: grafana, port: 80}
