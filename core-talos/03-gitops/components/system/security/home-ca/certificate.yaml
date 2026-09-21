@@ -17,11 +17,11 @@ spec:
     - home
     - argocd.home
     - ca.home
+    - headlamp.home
     - jellyfin.home
     - immich.home
     - jellyseerr.home
     - prowlarr.home
-    - pulse.home
     - radarr.home
     - sonarr.home
     - torrent.home

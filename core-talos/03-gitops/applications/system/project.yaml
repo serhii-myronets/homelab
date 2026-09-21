@@ -21,6 +21,7 @@ spec:
     - https://victoriametrics.github.io/helm-charts/
     - https://cloudnative-pg.github.io/charts
     - https://rcourtman.github.io/Pulse
+    - https://kubernetes-sigs.github.io/headlamp/
   destinations:
     - namespace: '*'
       server: https://kubernetes.default.svc
