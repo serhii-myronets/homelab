@@ -23,8 +23,9 @@ under `components/`.
 
 A component owns its namespace where needed. Dependencies are explicit in
 Flux `spec.dependsOn`; Argo sync-wave annotations do not order Flux applies.
-OpenEBS is installed before the `openebs-pool` Job is checked, and
-`openebs-classes` publishes the storage classes only after the pool is ready.
+The `openebs` Kustomization installs the chart and runs the thin-pool Job
+together, waiting for both. `openebs-classes` publishes the storage classes
+only after they are ready.
 The standalone snapshot controller owns the snapshot CRDs. VolSync waits for
 the storage classes, and the local CA waits for cert-manager.
 
