@@ -30,6 +30,39 @@ spec:
       requests: {cpu: 25m, memory: 96Mi}
       limits: {memory: 256Mi}
 
+    # The Flux plugin: Kustomizations, HelmReleases and sources as first-class
+    # views rather than raw custom resources. The chart has no plugin
+    # installer, so the plugin arrives as a tarball unpacked into an emptyDir
+    # that the container reads as its pluginsDir. Pinned and checksummed - it
+    # is third-party JavaScript served to a browser that holds cluster-admin
+    # on this name, so an unverified download would be the weakest link here.
+    # Renovate watches the release tag; the checksum has to be updated with it.
+    initContainers:
+      - name: flux-plugin
+        image: alpine:3.22.2
+        command:
+          - sh
+          - -ec
+          - |
+            url=https://github.com/headlamp-k8s/plugins/releases/download/flux-0.7.0/headlamp-k8s-flux-0.7.0.tar.gz
+            sum=837dc962a4ca485b86b010e5a3463d3ffc71c51778125394f006a210921b7c65
+            wget -qO /tmp/plugin.tar.gz "$url"
+            echo "$sum  /tmp/plugin.tar.gz" | sha256sum -c -
+            tar xzf /tmp/plugin.tar.gz -C /headlamp/plugins
+            ls -la /headlamp/plugins/flux
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 100
+          runAsGroup: 101
+        volumeMounts:
+          - {name: plugins, mountPath: /headlamp/plugins}
+
+    volumes:
+      - name: plugins
+        emptyDir: {}
+    volumeMounts:
+      - {name: plugins, mountPath: /headlamp/plugins}
+
     config:
       inCluster: true
       inClusterContextName: main

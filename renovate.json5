@@ -38,6 +38,18 @@
       extractVersionTemplate: "^v(?<version>.+)$",
     },
     {
+      // The Headlamp Flux plugin, pinned as a release tarball because the
+      // chart has no plugin installer. The checksum beside the URL is not
+      // tracked here and has to be updated by hand with the version - the
+      // release page publishes it.
+      customType: "regex",
+      managerFilePatterns: ["/^core-talos/03-gitops/components/system/platform/headlamp/helmrelease\\.yaml$/"],
+      matchStrings: ["releases/download/flux-(?<currentValue>[\\d.]+)/"],
+      depNameTemplate: "headlamp-k8s/plugins",
+      datasourceTemplate: "github-releases",
+      extractVersionTemplate: "^flux-(?<version>.+)$",
+    },
+    {
       customType: "regex",
       managerFilePatterns: ["/^core-talos/02-platform/prepare-hook/kustomization\\.yaml$/"],
       matchStrings: ["gateway-api/releases/download/(?<currentValue>v[\\d.]+)/"],
