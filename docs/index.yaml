@@ -10,13 +10,13 @@
 #   proxmox  built and destroyed on purpose      10.1.1.100     Proxmox VE
 #   router   the boundary with the internet      192.168.8.1    GL.iNet
 #
-# Two halves are deployed from here: core-talos/ onto the Beelink through Argo
-# CD, and core/ onto core through Portainer - though every one of core's
+# Two halves are deployed from here: core-talos/ onto the Beelink through Flux,
+# and core/ onto core through Portainer - though every one of core's
 # containers has been stopped since 2026-09-19 and is kept only as a way back.
 # tools/ is neither: installers run by hand, reconciled by nobody.
 
 meta:
-  updated: 2026-09-20
+  updated: 2026-09-21
   tags: [index, entrypoint, homelab]
 
 files:

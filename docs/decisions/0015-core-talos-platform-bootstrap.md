@@ -8,6 +8,9 @@ tags: [talos, kubernetes, helmfile, argocd, cilium, external-secrets, infisical]
 
 # Bootstrap the Beelink platform with Helmfile and External Secrets
 
+The GitOps controller choice below is superseded by
+[0020](0020-flux-for-gitops.md). The Helmfile bootstrap boundary remains.
+
 `01-talos/` owns Talos machine configuration and the one-time Kubernetes
 bootstrap. `02-platform/` owns the in-cluster foundation: Cilium, External
 Secrets and Argo CD, installed in that order by Helmfile.
