@@ -1,0 +1,59 @@
+# A console for this cluster: browse objects and read logs. It watches
+# nothing and alerts on nothing - that gap is still open, and neither Pulse
+# nor the VictoriaMetrics stack closed it either, both now under
+# 03-gitops/archive.
+#
+# Nothing is stored: no claim, no database, no CRDs. Losing the pod loses a
+# session and nothing else.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: headlamp
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: headlamp
+      version: "0.45.0"
+      sourceRef:
+        kind: HelmRepository
+        name: headlamp
+  # helm-controller leaves a release alone once installed. This is what Argo
+  # CD's selfHeal did: an edit made by hand is reverted at the next interval.
+  driftDetection:
+    mode: enabled
+  values:
+    # The chart ships no resources. It is a Go binary serving a static
+    # frontend, so this is generous rather than tight.
+    resources:
+      requests: {cpu: 25m, memory: 96Mi}
+      limits: {memory: 256Mi}
+
+    config:
+      inCluster: true
+      inClusterContextName: main
+      # No sign-in: every visitor is handed the service account below. What
+      # that is worth is decided entirely by the role it is bound to, which
+      # is why the binding underneath is not the chart's default.
+      unsafeUseServiceAccountToken: true
+      sessionTTL: 86400
+
+    # cluster-admin, and with no sign-in in front of it, which is the owner's
+    # decision taken knowingly on 2026-09-20 rather than a default left alone.
+    #
+    # What it means, written down so it is never a surprise: headlamp.home has
+    # no gate whatsoever, so anyone on the LAN - a laptop, the television, a
+    # device that joins the wifi - gets full control of this cluster by
+    # opening a page. That includes reading every Secret in it: the NordVPN
+    # keys, the Cloudflare tunnel credentials, the R2 backup keys and the
+    # database passwords, all of which came from Infisical and none of which
+    # the `view` role would have shown.
+    #
+    # headlamp.serhii.link is additionally behind Cloudflare Access, so the
+    # published name is the better protected of the two.
+    #
+    # Narrowing it is one word - `view` reads everything, changes nothing and
+    # cannot see Secrets at all.
+    clusterRoleBinding:
+      create: true
+      clusterRoleName: cluster-admin

@@ -1,0 +1,28 @@
+# Applied once, by hand, the way root.yaml was for Argo CD. Everything else
+# arrives through it.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: homelab
+  namespace: flux-system
+spec:
+  # The repository is public, so no secretRef. Polling, because nothing
+  # forwards a GitHub webhook into this cluster.
+  interval: 1m
+  url: https://github.com/serhii-myronets/homelab.git
+  ref:
+    branch: main
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: root
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: homelab
+  path: ./core-talos/03-gitops/apps
+  prune: true
