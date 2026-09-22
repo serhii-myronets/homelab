@@ -68,3 +68,54 @@ Validation after the cutover:
 Implementation commits: `3dfe141` and `4bf51eb`. The decision is recorded in
 [0020](../decisions/0020-flux-for-gitops.md); current inventory remains in
 [beelink.yaml](../hosts/beelink.yaml).
+
+## What the validation above missed
+
+Reviewed afterwards against the live cluster, and three things had been
+reported as finished while they were not.
+
+The root Kustomization was left **suspended**. It had been paused to stage the
+cutover and never resumed, so the claim that all Kustomizations were Ready was
+true only of the objects as they stood: the last commit, which moved the
+thin-pool Job back into the `openebs` Kustomization and dropped
+`openebs-pool`, never reached the cluster. `openebs-classes` sat waiting on a
+dependency that no longer existed in Git, and `volsync` waited behind it.
+`kubectl -n flux-system get kustomization root -o jsonpath='{.spec.suspend}'`
+is the one-line check; the controller says so too, in a log line that reads
+`Reconciliation is suspended for this object` and is easy to scroll past
+because it is `info`, not `error`. Resuming it settled both within a minute,
+with no restart to any workload.
+
+`argocd.home` was left in the certificate. Nothing routed to it any more, and
+the same name had been removed from `beelink.yaml`, so the certificate was the
+only place still claiming it existed - the same oversight as `pulse.home`
+earlier in the week. Removed; cert-manager reissued, and the name now fails
+strict TLS, which is the intended outcome for a name that is gone.
+
+144 objects still carried `argocd.argoproj.io/tracking-id`, and twelve of them
+also carried the old `sync-options` prune protection. Flux does not read
+either, and both name an Application that no longer exists. Verified first
+that `kustomize.toolkit.fluxcd.io/prune: disabled` was present on all twelve
+PVs and claims, and that no Deployment carried an Argo annotation inside its
+pod template - it would have rolled the pods, the way a stale `restartedAt`
+did to Jellyfin. None did. Stripped all 161 annotations with no restarts.
+
+## Two error loops that predated the cutover
+
+Neither came from the migration; both had been running for days and were found
+while looking for something else.
+
+The LVM provisioner had been retrying the deletion of three `Released` PVs
+every few minutes since 20 September - 766, 766 and 510 attempts. Each was a
+`volsync-data-restore-dest` volume from earlier restore testing, and each was
+blocked by a VolumeSnapshot still holding it: `failed to handle delete volume
+request ... with 1 active snapshots`. Deleting the three snapshots let the
+reclaim finish and closed the loop.
+
+kube-controller-manager was logging the CRD-deletion garbage-collector error
+for the third time, now for Argo CD's own CRDs. Worth recording how it hid:
+`talosctl logs` addressed by pod and container name returned the *previous*,
+crashed container's log, which ended 23 hours earlier and read as though the
+problem were historical. Only addressing the running container by its id
+showed it was firing several times a second. The trap has the shape of the
+command.
