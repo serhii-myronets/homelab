@@ -15,7 +15,6 @@ spec:
   commonName: home
   dnsNames:
     - home
-    - argocd.home
     - ca.home
     - headlamp.home
     - jellyfin.home
