@@ -2,6 +2,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: volsync
+  namespace: volsync-system
 spec:
   interval: 24h
   url: https://backube.github.io/helm-charts/

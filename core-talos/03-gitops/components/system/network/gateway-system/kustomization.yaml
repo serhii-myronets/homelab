@@ -6,4 +6,3 @@ resources:
   - l2-announcement-policy.yaml
   - gateway.yaml
   - home-redirect.yaml
-  - argocd-route.yaml
