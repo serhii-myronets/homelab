@@ -1,0 +1,32 @@
+# The operator exists here for its web interface, which is served by this same
+# pod on port 9080 - not a second deployment. Everything else it offers
+# (fleets, sharding, preview environments, multitenancy) has no use on one
+# node, so none of it is turned on.
+resources:
+  requests: {cpu: 25m, memory: 128Mi}
+  limits: {memory: 512Mi}
+
+web:
+  enabled: true
+  # The chart's own policy has the same problem as the lockdown in
+  # flux-instance.yaml, and for the same reason: it allows port 9080 from any
+  # namespace, and the Gateway's Envoy is not in one. Any policy selecting the
+  # pod makes everything else default-deny, so this one alone still answered
+  # 503. Nothing else on this cluster carries a NetworkPolicy either.
+  networkPolicy:
+    create: false
+  # Anonymous, and that is the documented default: without authentication the
+  # interface is read-only and cannot read Secrets or ConfigMaps. That is a
+  # narrower grant than headlamp.home already has on this LAN, which is full
+  # cluster-admin - see the comment in the Headlamp HelmRelease.
+  #
+  # Both names are served by the chart's own HTTPRoute. flux.serhii.link sits
+  # behind Cloudflare Access like every other published name; flux.home is
+  # local only and needs its entry in the home-ca certificate.
+  httpRoute:
+    enabled: true
+    parentRefs:
+      - {name: main-gateway, namespace: gateway-system}
+    hostnames:
+      - flux.home
+      - flux.serhii.link

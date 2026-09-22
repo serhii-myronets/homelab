@@ -37,4 +37,8 @@ copy under [0006](0006-a-third-copy-on-proxmox.md) — which covers losing the
 machine, not losing the building. The graphs added under
 [0011](0011-host-metrics-run-natively.md) show load, not breakage: they are
 read when someone opens the dashboard, so they do not close
-[0008](0008-nothing-tells-anyone-when-something-breaks.md).
+[0008](0008-nothing-tells-anyone-when-something-breaks.md). Neither does the
+Flux web interface added under
+[0021](0021-flux-operator-for-the-web-interface.md), for the same reason - but
+the controller that could send an alert now runs, which is the first half of
+closing it.

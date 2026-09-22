@@ -987,3 +987,31 @@ traps:
       several times a second.
     diagnosed: 2026-09-21, on the Beelink
 
+  - id: flux-network-policies-hide-the-web-ui
+    applies_to: [flux, cilium, gateway-api, kubernetes]
+    symptom: >-
+      The Flux Operator's web interface answers 200 from inside the cluster and
+      503 through the Gateway, while its HTTPRoute reports Accepted with a
+      valid backend and the Service has a ready endpoint on the right port.
+    cause: >-
+      Two separate policies, and removing one is not enough. The operator's
+      `cluster.networkPolicy: true` writes the multi-tenancy lockdown, whose
+      `allow-egress` denies ingress to everything in flux-system except pods of
+      the same namespace; the chart's own `web.networkPolicy.create: true`
+      then selects the operator pod and admits port 9080 from any namespace.
+      Neither covers the Cilium Gateway, because its Envoy runs on the host and
+      is not a pod in a namespace, and any policy selecting a pod makes
+      everything it does not name default-deny.
+    tell: >-
+      `kubectl run` a curl pod in another namespace against the Service:
+      200 from there next to 503 through the Gateway means a policy, not the
+      application. `kubectl get networkpolicy -n flux-system` then shows what
+      selects the pod.
+    fix: >-
+      Set both `spec.cluster.networkPolicy: false` on the FluxInstance and
+      `web.networkPolicy.create: false` in the operator's values, leaving the
+      namespace with no policy at all - which is what every other namespace on
+      this cluster has. Allowing the Gateway back instead would need an ipBlock
+      for cilium_host, an internal address that is not ours to pin.
+    diagnosed: 2026-09-22, on the Beelink
+
