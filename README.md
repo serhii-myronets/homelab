@@ -11,8 +11,8 @@ restore it.
 
 **[`core-talos/`](core-talos/)** is the future replacement for core on the
 ME Pro. `01-talos/` holds its Terraform-managed Talos configuration,
-`02-platform/` installs the initial Cilium, External Secrets and Argo CD
-releases, and `03-gitops/` holds the Argo-managed cluster and service
+`02-platform/` installs the initial Cilium, External Secrets and Flux
+releases, and `03-gitops/` holds the Flux-managed cluster and service
 configuration.
 
 **[`docs/`](docs/)** is descriptive — what all machines are, how they are

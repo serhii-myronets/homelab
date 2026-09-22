@@ -9,14 +9,14 @@
   gitAuthor: "Serhii Myronets <hardmail88@gmail.com>",
   prFooter: "",
 
-  // This repository itself, which Argo follows on main.
+  // This repository itself, which Flux follows on main.
   ignoreDeps: ["https://github.com/serhii-myronets/homelab.git"],
 
   kubernetes: {
     managerFilePatterns: ["/^core-talos/03-gitops/components/.+\\.ya?ml$/"],
   },
-  argocd: {
-    managerFilePatterns: ["/^core-talos/03-gitops/applications/.+\\.ya?ml$/"],
+  flux: {
+    managerFilePatterns: ["/^core-talos/03-gitops/(apps|components)/.+\\.ya?ml$/"],
   },
 
   customManagers: [
@@ -55,9 +55,9 @@
       enabled: false,
     },
     {
-      // What Argo deploys by itself: one weekly pull request for everything
+      // What Flux deploys by itself: one weekly pull request for everything
       // that is not a major version.
-      matchManagers: ["kubernetes", "argocd", "kustomize"],
+      matchManagers: ["kubernetes", "flux", "kustomize"],
       matchUpdateTypes: ["minor", "patch"],
       groupName: "Beelink GitOps updates",
     },

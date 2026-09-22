@@ -1,52 +1,60 @@
-# Argo-managed desired state
+# Flux-managed desired state
 
-Apply `root.yaml` once to connect Argo CD to the child Applications. It creates
-one child Application for each component, which Argo then reconciles from Git.
+Bootstrap Cilium, External Secrets and Flux from `../02-platform/` with
+Helmfile, then connect Flux to this repository once:
 
-- `applications/system/` holds child Applications for cluster-wide components
-  and their `system` AppProject.
-- `applications/services/` holds child Applications for service workloads and
-  their `services` AppProject.
-- `components/system/` holds cluster-wide configuration such as network policy, secret
-  stores, gateways and storage, grouped by purpose: `network/`, `storage/`,
-  `security/` and `platform/`. `applications/system/` mirrors the same groups,
-  one Application per component.
-- `archive/` holds setups that worked and are switched off; Argo does not read
-  it. Its own README says what each one was and how to bring it back.
-- `components/services/` holds application workloads, one directory per service,
-  each with its own namespace.
+```sh
+kubectl apply -f core-talos/03-gitops/flux.yaml
+```
 
-Every namespace Argo manages is a `namespace.yaml` in its component directory,
-with its Pod Security label when it needs more than the default baseline; no
-Application relies on `CreateNamespace`. A Helm-based component includes that
-file through the repository source that also supplies its values.
+Run that command from the repository root. `flux.yaml` defines the `homelab`
+GitRepository and the root Flux Kustomization. The root reads `apps/` and
+creates one Flux Kustomization per component; each reconciles its directory
+under `components/`.
 
-`components/system/storage/openebs/` configures the `fast-local` OpenEBS LocalPV
-Hostpath class for scratch data such as caches. Its backing XFS volume `cache`
-is provisioned and mounted by Talos; OpenEBS only creates PVC directories
-under `/var/mnt/cache/openebs`, whose generated names do not survive a
-reinstall.
+- `apps/system/` and `components/system/` hold cluster-wide infrastructure,
+  grouped by network, security, storage and platform.
+- `apps/services/` and `components/services/` hold service workloads.
+- Helm components define a pinned `HelmRepository` and `HelmRelease` beside
+  their namespace and other manifests. Chart values are inside the
+  HelmRelease, with drift detection enabled.
+- `archive/` is outside the reconciled tree. Its older Argo Applications need
+  conversion before they can be restored; see its README.
 
-`components/system/storage/volumes/` defines static PVs, one file per consuming
-service, pre-bound to that service's claims. Media use `local` PVs on the HDD
-volumes `/var/mnt/hdd-a` and `/var/mnt/hdd-b`; configurations and databases
-use `hostPath` PVs in a directory named after the service under
-`/var/mnt/apps`, created on first use. Several PVs may point at the same disk,
-and fixed paths let a reinstalled cluster find the same data. Argo neither prunes nor deletes them or the claims:
-a released PV does not rebind to a recreated claim. A new consumer needs a file
-here and matching claims in its own component.
+A component owns its namespace where needed. Dependencies are explicit in
+Flux `spec.dependsOn`; Argo sync-wave annotations do not order Flux applies.
+OpenEBS is installed before the `openebs-pool` Job is checked, and
+`openebs-classes` publishes the storage classes only after the pool is ready.
+The standalone snapshot controller owns the snapshot CRDs. VolSync waits for
+the storage classes, and the local CA waits for cert-manager.
 
-A service is published on the internet by an HTTPRoute on `main-gateway` with
-a name under `serhii.link`. external-dns then creates a proxied CNAME to the
-Beelink tunnel, which `cloudflared` forwards to the Gateway, and Cloudflare
-Access guards every such name. Other names on the Gateway get no public
-record. external-dns owns only records it created (`txtOwnerId: beelink`), so
-names still served by core's tunnel move by deleting them from that tunnel.
+OpenEBS LVM LocalPV provisions thin volumes on the NVMe group. The one-time
+pool job is idempotent. Configuration claims use VolSync's R2 restore source;
+caches are excluded from backups. `components/system/storage/volumes/`
+defines static HDD PVs pre-bound to each service's claims. Their Flux prune
+protection, and the matching protection on the claims, prevents Git removal
+from deleting them. This is separate from a StorageClass's reclaim policy;
+do not delete claims as a way to restart services.
 
-The Cilium, External Secrets and Argo CD releases remain in `../02-platform/`.
-They establish GitOps; GitOps does not manage its own bootstrap layer yet.
+A public HTTPRoute under `serhii.link` is published by external-dns as a proxied
+CNAME to the Beelink tunnel. cloudflared forwards to the Gateway, and Cloudflare
+Access guards those names. Routes under `.home` remain local.
 
-The root Application creates both AppProjects before the Applications in
-them. `system` may manage anything; `services` may create namespaces but no
-other cluster-scoped object, so PVs and cluster configuration stay in system
-components.
+Check reconciliation without installing a separate Flux CLI:
+
+```sh
+kubectl -n flux-system get gitrepositories,kustomizations
+kubectl get helmreleases -A
+kubectl get replicationsources -A
+```
+
+To fetch a pushed commit immediately:
+
+```sh
+kubectl -n flux-system annotate gitrepository homelab \
+  reconcile.fluxcd.io/requestedAt="$(date -u +%Y-%m-%dT%H:%M:%SZ)" --overwrite
+```
+
+Cilium, External Secrets and Flux itself remain Helmfile-managed in
+`../02-platform/`. Renovate proposes updates; merging a Helmfile update does
+not apply it. Merging updates under the Flux-managed tree does.

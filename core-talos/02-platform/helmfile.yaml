@@ -1,6 +1,4 @@
 repositories:
-  - name: argo
-    url: https://argoproj.github.io/argo-helm
   - name: cilium
     url: https://helm.cilium.io
   - name: external-secrets
@@ -31,18 +29,6 @@ releases:
     values:
       - values/external-secrets-values.yaml
 
-  - name: argocd
-    namespace: argocd
-    chart: argo/argo-cd
-    version: 10.9.2
-    needs:
-      - external-secrets/external-secrets
-    values:
-      - values/argocd-values.yaml
-
-  # Installed alongside Argo CD while 03-gitops moves across, one Application
-  # at a time. Only one of the two may own an object; the Argo release goes
-  # once nothing is left pointing at it.
   - name: flux
     namespace: flux-system
     chart: fluxcd-community/flux2

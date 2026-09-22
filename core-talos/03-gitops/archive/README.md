@@ -1,14 +1,14 @@
 # Turned off, kept whole
 
 Setups that ran on the Beelink and were switched off because nothing needed
-them yet. The files are exactly as they were when they worked: no path inside
-them was rewritten, so bringing one back is a move, not an edit.
+them yet. Their historical Argo manifests are retained unchanged as reference.
 
-Argo does not see this directory. The root Application reads only
-`../applications/`, so a setup goes dark the moment it is moved here and
-comes back when it is moved out. Renovate is equally blind to it — its
-managers match `components/` and `applications/` — so an archived setup stops
-receiving version bumps and needs a look at its images before it returns.
+Flux reads `../apps/`, not this directory. Moving an archived Argo Application
+into the active tree does not restore it: convert it to a Flux Kustomization
+and, for charts, a HelmRepository/HelmRelease first. Preserve chart values,
+secret references, storage protection and restore settings during conversion.
+Renovate excludes these archived definitions, so review their versions before
+reactivating them.
 
 ## database — CloudNativePG, the Barman Cloud plugin and a shared Postgres
 
@@ -19,12 +19,9 @@ built for Paperless and switched off before Paperless existed: the database
 held 7.8 MB and no table of its own. See
 [`decisions/0019`](../../../docs/decisions/0019-beelink-backups-to-r2.md).
 
-To bring it back:
-
-```sh
-git mv core-talos/03-gitops/archive/database/applications core-talos/03-gitops/applications/system/database
-git mv core-talos/03-gitops/archive/database/components  core-talos/03-gitops/components/system/database
-```
+To restore it, move its `components/` into the corresponding active
+component directory and convert its archived `applications/` into Flux
+resources under `apps/`. Validate the build before committing.
 
 The Cluster carries `bootstrap.recovery` from R2, so a cluster recreated this
 way restores itself from the archive rather than starting empty, and then
@@ -48,12 +45,9 @@ that this stack never closed - its Alertmanager had rules and no recipient.
 What is given up is a month of history against seven days, and arbitrary
 queries against fixed dashboards.
 
-To bring it back:
-
-```sh
-git mv core-talos/03-gitops/archive/observability/applications/observability.yaml core-talos/03-gitops/applications/system/platform/
-git mv core-talos/03-gitops/archive/observability/components/observability  core-talos/03-gitops/components/system/platform/
-```
+To restore it, move its `components/` into the corresponding active
+component directory and convert its archived `applications/` into Flux
+resources under `apps/`. Validate the build before committing.
 
 Then add `grafana.home` back to the `home-ca` certificate. Four of its
 lessons outlived it and stayed in
@@ -76,12 +70,9 @@ but remote access, the mobile application, longer history and the
 investigation features are a separate commercial product built from
 private sources, and that boundary is not ours to rely on.
 
-To bring it back:
-
-```sh
-git mv core-talos/03-gitops/archive/pulse/applications/pulse.yaml core-talos/03-gitops/applications/system/platform/
-git mv core-talos/03-gitops/archive/pulse/components/pulse core-talos/03-gitops/components/system/platform/
-```
+To restore it, move its `components/` into the corresponding active
+component directory and convert its archived `applications/` into Flux
+resources under `apps/`. Validate the build before committing.
 
 Then add `pulse.home` back to the `home-ca` certificate. Its agent token
 is still in Infisical at `/pulse/AGENT_TOKEN`, and a new server will not
