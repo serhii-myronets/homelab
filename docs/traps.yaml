@@ -1015,3 +1015,31 @@ traps:
       for cilium_host, an internal address that is not ours to pin.
     diagnosed: 2026-09-22, on the Beelink
 
+  - id: argo-field-managers-outlive-argo-and-block-removals
+    applies_to: [flux, argocd, kubernetes]
+    symptom: >-
+      A container renamed in Git ends up present twice: the new name runs and
+      the old one crash-loops beside it, here on a database the new one
+      already held. More generally, anything deleted from a Flux-managed
+      manifest stays in the cluster, while additions and edits apply normally.
+    cause: >-
+      Argo CD applied server-side, and its `argocd-controller` field-manager
+      entries survive it - uninstalling Argo removes the controller, not the
+      ownership records it wrote. Server-side apply removes an entry from a
+      list only when no manager still claims it, so kustomize-controller
+      dropping a container from its own field set is not enough.
+    tell: >-
+      `kubectl get <obj> --show-managed-fields -o json` and read
+      `.metadata.managedFields[].manager`. Two Apply managers on one object,
+      one of them belonging to something no longer installed, is the whole
+      problem. Stripping Argo's annotations does not touch this; they are
+      separate.
+    fix: >-
+      Give both controllers `--override-manager=argocd-controller`, through
+      `.spec.kustomize.patches` on the FluxInstance - kustomize-controller for
+      the plain-manifest components and helm-controller for the charts. One
+      reconciliation each afterwards cleared it from nineteen objects and the
+      stale entries are gone for good. Removing one object's field by hand
+      instead fixes that object and leaves the rest waiting.
+    diagnosed: 2026-09-22, renaming jellyseerr.home to seerr.home
+

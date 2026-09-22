@@ -44,3 +44,31 @@ spec:
     # here, so the lockdown is protecting nothing it needs to.
     networkPolicy: false
     domain: cluster.local
+  kustomize:
+    patches:
+      # Argo CD applied every object in this cluster server-side, and its
+      # field-manager entries outlived it: `argocd-controller` still claims
+      # the fields it last set. Server-side apply drops a list entry only when
+      # no manager claims it, so anything removed from Git stayed in the
+      # cluster - renaming the jellyseerr container to seerr on 2026-09-22 left
+      # the pod running both, the old one crash-looping on a database the new
+      # one already held. This flag tells kustomize-controller to take those
+      # fields over instead of sharing them, which settles it for every object
+      # Argo ever touched rather than one at a time.
+      #
+      # Both controllers need it: kustomize-controller for the components that
+      # are plain manifests, helm-controller for the seven that are charts.
+      - target:
+          kind: Deployment
+          name: kustomize-controller
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --override-manager=argocd-controller
+      - target:
+          kind: Deployment
+          name: helm-controller
+        patch: |
+          - op: add
+            path: /spec/template/spec/containers/0/args/-
+            value: --override-manager=argocd-controller
