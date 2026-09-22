@@ -17,7 +17,7 @@ components:
 # model cache comes back on its own.
 configMapGenerator:
   - name: volsync
-    literals: [APP=immich, CAPACITY=20Gi]
+    literals: [APP=immich, CAPACITY=20Gi, MINUTE=5]
     options:
       disableNameSuffixHash: true
       annotations: {config.kubernetes.io/local-config: "true"}

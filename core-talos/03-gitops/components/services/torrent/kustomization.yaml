@@ -18,7 +18,7 @@ configMapGenerator:
     files:
       - config/qBittorrent.conf
   - name: volsync
-    literals: [APP=torrent, CAPACITY=5Gi]
+    literals: [APP=torrent, CAPACITY=5Gi, MINUTE=50]
     options:
       disableNameSuffixHash: true
       annotations: {config.kubernetes.io/local-config: "true"}

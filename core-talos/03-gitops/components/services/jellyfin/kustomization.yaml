@@ -13,7 +13,7 @@ components:
 # empty cluster, restored from it.
 configMapGenerator:
   - name: volsync
-    literals: [APP=jellyfin, CAPACITY=10Gi]
+    literals: [APP=jellyfin, CAPACITY=10Gi, MINUTE=20]
     options:
       disableNameSuffixHash: true
       annotations: {config.kubernetes.io/local-config: "true"}
