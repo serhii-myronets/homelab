@@ -121,7 +121,8 @@ platform:
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones
-    published: [flux.serhii.link, headlamp.serhii.link, jellyfin.serhii.link, torrent.serhii.link]
+    published: [flux.serhii.link, headlamp.serhii.link, jellyfin.serhii.link, torrent.serhii.link,
+                prowlarr.serhii.link, radarr.serhii.link, seerr.serhii.link, sonarr.serhii.link]
     other_tunnels:
       - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
       - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
@@ -217,7 +218,12 @@ platform:
       library's name: its torrents were deleted once everything was
       imported, leaving /data/torrents holding the two category directories
       and whatever is still seeding.
-    names: [seerr.home, prowlarr.home, sonarr.home, radarr.home]   # local only
+    names: [seerr.home, prowlarr.home, sonarr.home, radarr.home]
+    published: >-
+      All four also answer under serhii.link since 2026-09-22. Seerr has its
+      own sign-in against Jellyfin accounts; the three *arr have none, because
+      AUTH__REQUIRED is DisabledForLocalAddresses and the pod only ever sees
+      the Gateway's address, so Cloudflare Access is their only gate.
     one_pod: >-
       The OpenEBS LVM driver mounts a volume into one pod only, so the four
       cannot be separate Deployments sharing the configuration claim.
