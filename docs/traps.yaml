@@ -7,7 +7,7 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-09-21
+  updated: 2026-09-22
   tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux]
 
 traps:
@@ -750,7 +750,16 @@ traps:
       Restart kube-controller-manager; it rebuilds the set from current
       discovery. It costs nothing to leave - the collector itself keeps
       working, and the next node reboot clears it anyway.
-    diagnosed: 2026-09-20
+    prevent: >-
+      Recurred a third time on 2026-09-21 when Argo CD's own CRDs went with
+      it at the end of the Flux migration. The pattern is always the same:
+      delete a CRD, however deliberately, and this starts. Cheapest fix is to
+      make the restart part of the same step as the deletion, not a separate
+      diagnosis afterwards - `talosctl -n 192.168.8.10 restart --namespace cri
+      kube-system/kube-controller-manager-talos-lqh-j5o:kube-controller-manager`
+      right after any `kubectl delete crd`, whether or not the log has started
+      yet.
+    diagnosed: 2026-09-20, recurred 2026-09-21
 
   - id: deleting-a-static-pod-does-not-restart-it
     applies_to: [kubernetes, talos]
