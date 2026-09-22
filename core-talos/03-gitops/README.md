@@ -1,16 +1,20 @@
 # Flux-managed desired state
 
-Bootstrap Cilium, External Secrets and Flux from `../02-platform/` with
-Helmfile, then connect Flux to this repository once:
+Bootstrap Cilium, External Secrets and the Flux Operator from
+`../02-platform/` with Helmfile, then apply two manifests once, in this order,
+from the repository root:
 
 ```sh
+kubectl apply -f core-talos/02-platform/flux-instance.yaml
 kubectl apply -f core-talos/03-gitops/flux.yaml
 ```
 
-Run that command from the repository root. `flux.yaml` defines the `homelab`
-GitRepository and the root Flux Kustomization. The root reads `apps/` and
-creates one Flux Kustomization per component; each reconciles its directory
-under `components/`.
+The first tells the operator which Flux controllers to install and how to size
+them; the operator upgrades them within its pinned minor range on its own. The
+second defines the `homelab` GitRepository and the root Flux Kustomization -
+deliberately not the operator's `spec.sync`, so the desired state stays
+described here. The root reads `apps/` and creates one Flux Kustomization per
+component; each reconciles its directory under `components/`.
 
 - `apps/system/` and `components/system/` hold cluster-wide infrastructure,
   grouped by network, security, storage and platform.
@@ -41,10 +45,14 @@ A public HTTPRoute under `serhii.link` is published by external-dns as a proxied
 CNAME to the Beelink tunnel. cloudflared forwards to the Gateway, and Cloudflare
 Access guards those names. Routes under `.home` remain local.
 
+The operator serves a read-only web view of all of this on `flux.home`, and
+on `flux.serhii.link` behind Cloudflare Access - see
+[decisions/0021](../../docs/decisions/0021-flux-operator-for-the-web-interface.md).
+
 Check reconciliation without installing a separate Flux CLI:
 
 ```sh
-kubectl -n flux-system get gitrepositories,kustomizations
+kubectl -n flux-system get fluxinstance,gitrepositories,kustomizations
 kubectl get helmreleases -A
 kubectl get replicationsources -A
 ```

@@ -16,6 +16,7 @@ spec:
   dnsNames:
     - home
     - ca.home
+    - flux.home
     - headlamp.home
     - jellyfin.home
     - immich.home

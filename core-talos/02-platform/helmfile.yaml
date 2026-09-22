@@ -3,8 +3,6 @@ repositories:
     url: https://helm.cilium.io
   - name: external-secrets
     url: https://charts.external-secrets.io
-  - name: fluxcd-community
-    url: https://fluxcd-community.github.io/helm-charts
 
 hooks:
   - events: [ "prepare" ]
@@ -29,11 +27,14 @@ releases:
     values:
       - values/external-secrets-values.yaml
 
-  - name: flux
+  # The operator installs and sizes the Flux controllers itself, from the
+  # FluxInstance in flux-instance.yaml; this release is only the operator. It
+  # replaced the community flux2 chart on 2026-09-22 - see decisions/0021.
+  - name: flux-operator
     namespace: flux-system
-    chart: fluxcd-community/flux2
-    version: 2.19.1
+    chart: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+    version: 0.60.0
     needs:
       - external-secrets/external-secrets
     values:
-      - values/flux-values.yaml
+      - values/flux-operator-values.yaml

@@ -1,0 +1,46 @@
+# Applied once by hand, after Helmfile has installed the operator, the way
+# 03-gitops/flux.yaml is applied after this layer.
+#
+# This describes which Flux controllers exist and how they are sized. It
+# deliberately carries no `.spec.sync`: the GitRepository and root Kustomization
+# that point at this repository are declared in 03-gitops/flux.yaml and stay
+# there, so the operator manages the controllers and nothing else.
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  name: flux
+  namespace: flux-system
+spec:
+  distribution:
+    # The range the operator upgrades within on its own. Pinned to the minor
+    # series that was already running when it took over.
+    version: "2.9.x"
+    registry: ghcr.io/fluxcd
+  # Four of the seven. Image automation and reflection scan registries for new
+  # tags, which is Renovate's job here - see decisions/0018. source-watcher is
+  # for fleets.
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    # Off until now because there was nowhere to send anything. It is the only
+    # place Flux can report a failed reconciliation from, and decisions/0008 is
+    # still open, so it comes back with the operator rather than after it.
+    - notification-controller
+  cluster:
+    type: kubernetes
+    # The profile the operator documents for edge clusters with limited
+    # resources: concurrency 5, and limits of 1000m and 512Mi on the kustomize
+    # and helm controllers.
+    size: small
+    multitenant: false
+    # Off, and it has to be. The policies this creates are the multi-tenancy
+    # lockdown: `allow-egress` denies ingress to everything in flux-system
+    # except pods of the same namespace. The Cilium Gateway's Envoy runs on the
+    # host, not as a pod in a namespace, so no namespaceSelector covers it and
+    # flux.home answered 503 while the same address returned 200 from inside
+    # the cluster. Allowing it back would need an ipBlock for cilium_host,
+    # which is an internal address and not ours to pin. There is one tenant
+    # here, so the lockdown is protecting nothing it needs to.
+    networkPolicy: false
+    domain: cluster.local

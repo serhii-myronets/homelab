@@ -1,10 +1,10 @@
 # The future replacement for core. It is independent bare metal, so workloads
 # may move here gradually without becoming a dependency of the current core.
-# Hardware verified 2026-09-19; GitOps and routes verified 2026-09-21.
+# Hardware verified 2026-09-19; GitOps and routes verified 2026-09-22.
 
 meta:
   host: beelink
-  updated: 2026-09-21
+  updated: 2026-09-22
   tags: [beelink, talos, kubernetes, bare-metal, storage]
 
 identity:
@@ -78,12 +78,14 @@ platform:
   releases:
     - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
     - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
-    - {name: flux, namespace: flux-system, chart: 2.19.1, app: 2.9.5, status: deployed}
+    - {name: flux-operator, namespace: flux-system, chart: 0.60.0, app: v0.60.0, status: deployed}
   gitops:
-    controller: Flux
-    enabled: [source-controller, kustomize-controller, helm-controller]
+    controller: Flux, installed and sized by the Flux Operator's FluxInstance
+    flux: v2.9.5, upgraded by the operator within the 2.9.x range
+    enabled: [source-controller, kustomize-controller, helm-controller, notification-controller]
+    ui: flux.home and flux.serhii.link, anonymous and read-only, served by the operator pod on 9080
     bootstrap: core-talos/03-gitops/README.md
-    decision: docs/decisions/0020-flux-for-gitops.md
+    decision: docs/decisions/0020-flux-for-gitops.md, docs/decisions/0021-flux-operator-for-the-web-interface.md
   gitops_components:
     - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
@@ -99,7 +101,7 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, ca.home]
+    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
@@ -119,7 +121,7 @@ platform:
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones
-    published: [headlamp.serhii.link, jellyfin.serhii.link, torrent.serhii.link]
+    published: [flux.serhii.link, headlamp.serhii.link, jellyfin.serhii.link, torrent.serhii.link]
     other_tunnels:
       - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
       - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
