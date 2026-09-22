@@ -12,8 +12,6 @@ kind: Job
 metadata:
   name: nvme-thinpool
   namespace: openebs
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   backoffLimit: 30
   template:

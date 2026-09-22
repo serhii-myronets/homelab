@@ -5,7 +5,7 @@ kind: StorageClass
 metadata:
   name: lvm
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    kustomize.toolkit.fluxcd.io/prune: disabled
 provisioner: local.csi.openebs.io
 parameters:
   storage: lvm
@@ -21,6 +21,6 @@ kind: VolumeSnapshotClass
 metadata:
   name: lvm
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    kustomize.toolkit.fluxcd.io/prune: disabled
 driver: local.csi.openebs.io
 deletionPolicy: Delete

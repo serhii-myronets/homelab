@@ -1,0 +1,26 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: snapshot-controller
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: snapshot-controller
+      version: "5.3.0"
+      sourceRef:
+        kind: HelmRepository
+        name: snapshot-controller
+  driftDetection:
+    mode: enabled
+  values:
+    # The VolumeSnapshot CRDs and their controller, which the CSI drivers and
+    # VolSync rely on. Snapshot classes belong to the storage that offers them.
+    installCRDs: true
+    # Deleting the CRDs would delete every VolumeSnapshot with them.
+    keepCRDs: true
+
+    controller:
+      resources:
+        requests: {cpu: 10m, memory: 32Mi}
+        limits: {memory: 128Mi}
