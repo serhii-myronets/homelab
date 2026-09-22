@@ -33,9 +33,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: jellyseerr
+  name: seerr
 spec:
   selector:
     app: library
   ports:
-    - {name: http, port: 5055, targetPort: jellyseerr}
+    - {name: http, port: 5055, targetPort: seerr}

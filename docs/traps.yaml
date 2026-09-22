@@ -449,7 +449,7 @@ traps:
     diagnosed: 2026-09-08
 
   - id: jellyseerr-api-key-has-no-owner-before-setup
-    applies_to: [jellyseerr, library, kubernetes]
+    applies_to: [seerr, jellyseerr, library, kubernetes]
     symptom: >-
       Every write to /api/v1/settings/* answers
       {"status":403,"error":"You do not have permission to access this
@@ -470,7 +470,7 @@ traps:
     diagnosed: 2026-09-20
 
   - id: jellyfin-12-rejects-the-header-jellyseerr-sends
-    applies_to: [jellyfin, jellyseerr, library]
+    applies_to: [jellyfin, seerr, jellyseerr, library]
     symptom: >-
       Jellyseerr's setup wizard reports it cannot connect, while the same
       pod reaches Jellyfin perfectly well. Its log shows status 400 from
@@ -607,7 +607,7 @@ traps:
     diagnosed: 2026-09-20
 
   - id: an-image-repositorys-newest-tag-is-not-the-newest-release
-    applies_to: [renovate, containers, jellyseerr]
+    applies_to: [renovate, containers, seerr, jellyseerr]
     symptom: >-
       A pinned image is the highest tag its repository offers and the
       application still reports an update available, a year of releases

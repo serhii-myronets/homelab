@@ -101,14 +101,14 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, jellyseerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
+    names: [jellyfin.home, tv.home, seerr.home, immich.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
       clear, and *.home on 443 with home-tls.
     certificate: >-
       One certificate lists home, argocd.home, ca.home, headlamp.home,
-      immich.home, jellyfin.home, jellyseerr.home, prowlarr.home,
+      immich.home, jellyfin.home, seerr.home, prowlarr.home,
       radarr.home, sonarr.home and torrent.home. tv.home is not on it. cert-manager creates and renews it
       from the cluster's own authority; devices trust its root from
       ca.home/root.crt.
@@ -207,7 +207,7 @@ platform:
       - {name: prowlarr, image: "ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161", port: 9696, role: indexers}
       - {name: sonarr, image: "ghcr.io/linuxserver/sonarr:4.0.20.3014-ls325", port: 8989, role: series}
       - {name: radarr, image: "ghcr.io/linuxserver/radarr:6.4.4.10685-ls317", port: 7878, role: films}
-      - {name: jellyseerr, image: "ghcr.io/seerr-team/seerr:v3.4.1", port: 5055, role: requests}
+      - {name: seerr, image: "ghcr.io/seerr-team/seerr:v3.4.1", port: 5055, role: requests}
     config: one claim data on the lvm class, a directory each, backed up hourly
     disk: >-
       /var/mnt/hdd-a whole, mounted as /data. A download lands in
@@ -217,7 +217,7 @@ platform:
       library's name: its torrents were deleted once everything was
       imported, leaving /data/torrents holding the two category directories
       and whatever is still seeding.
-    names: [jellyseerr.home, prowlarr.home, sonarr.home, radarr.home]   # local only
+    names: [seerr.home, prowlarr.home, sonarr.home, radarr.home]   # local only
     one_pod: >-
       The OpenEBS LVM driver mounts a volume into one pod only, so the four
       cannot be separate Deployments sharing the configuration claim.
@@ -241,7 +241,9 @@ platform:
       project renamed itself Seerr and moved to seerr-team/seerr;
       ghcr.io/fallenbagel/jellyseerr took its last release, 2.7.3, on
       2025-08-14, so its newest tag reads current and is not. The local name
-      stays jellyseerr.home. Signing in still needs Jellyfin's
+      followed on 2026-09-22 and is seerr.home; only the subPath holding its
+      configuration and database still reads jellyseerr, because renaming it
+      would hand Seerr an empty directory. Signing in needs Jellyfin's
       EnableLegacyAuthorization: 3.4.1 asks the API with the Authorization
       header but its sign-in route still sends X-Emby-Authorization, which
       Jellyfin 12 answers with 400.
