@@ -1,0 +1,10 @@
+# Under Argo CD the chart's origin was an entry in the AppProject allowlist.
+# Flux has no such list: a chart can only come from a HelmRepository that
+# exists in this repository, which is the same guarantee said differently.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: headlamp
+spec:
+  interval: 24h
+  url: https://kubernetes-sigs.github.io/headlamp/

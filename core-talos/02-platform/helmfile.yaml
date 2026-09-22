@@ -5,6 +5,8 @@ repositories:
     url: https://helm.cilium.io
   - name: external-secrets
     url: https://charts.external-secrets.io
+  - name: fluxcd-community
+    url: https://fluxcd-community.github.io/helm-charts
 
 hooks:
   - events: [ "prepare" ]
@@ -37,3 +39,15 @@ releases:
       - external-secrets/external-secrets
     values:
       - values/argocd-values.yaml
+
+  # Installed alongside Argo CD while 03-gitops moves across, one Application
+  # at a time. Only one of the two may own an object; the Argo release goes
+  # once nothing is left pointing at it.
+  - name: flux
+    namespace: flux-system
+    chart: fluxcd-community/flux2
+    version: 2.19.1
+    needs:
+      - external-secrets/external-secrets
+    values:
+      - values/flux-values.yaml

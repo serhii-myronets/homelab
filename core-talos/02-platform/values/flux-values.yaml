@@ -1,0 +1,23 @@
+# Three controllers, not six. Image automation and reflection scan registries
+# for new tags; this cluster pins versions in Git and lets Renovate raise the
+# pull request instead - see decisions/0018.
+imageAutomationController:
+  create: false
+imageReflectionController:
+  create: false
+# Nothing is wired to receive an alert yet, and the controller is the only
+# place Flux can send one from. It comes back when decisions/0008 is closed.
+notificationController:
+  create: false
+
+# The chart asks for 100m per controller. Argo CD, doing the same work for the
+# same repository, measured 11m across four pods, and this node has four cores.
+helmController:
+  resources:
+    requests: {cpu: 25m, memory: 64Mi}
+kustomizeController:
+  resources:
+    requests: {cpu: 25m, memory: 64Mi}
+sourceController:
+  resources:
+    requests: {cpu: 25m, memory: 64Mi}
