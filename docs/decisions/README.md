@@ -25,6 +25,7 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0013](0013-pulse-replaces-glances.md) | Pulse replaces Glances as the infrastructure monitor | accepted | monitoring, pulse, docker, proxmox, homepage |
 | [0014](0014-terraform-for-core-talos.md) | Manage the replacement core bootstrap with Terraform | accepted | talos, terraform, bootstrap, secrets |
 | [0015](0015-core-talos-platform-bootstrap.md) | Bootstrap the Beelink platform with Helmfile and External Secrets | accepted | talos, kubernetes, helmfile, argocd, cilium, external-secrets, infisical |
+| [0020](0020-flux-for-gitops.md) | Flux replaces Argo CD on the Beelink | accepted | flux, gitops, resources |
 
 Open items, shortest path first:
 [0008](0008-nothing-tells-anyone-when-something-breaks.md) is a
