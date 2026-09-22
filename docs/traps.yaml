@@ -1076,3 +1076,33 @@ traps:
       still holding the volume and the reclaim finishes on its own.
     diagnosed: 2026-09-22, on the Beelink
 
+  - id: kubectl-top-counts-page-cache-as-memory
+    applies_to: [kubernetes, observability, memory]
+    symptom: >-
+      A container appears to use far more memory than it plausibly needs, and
+      sits near its limit without ever being OOM killed. qBittorrent read as
+      956MiB against a 1Gi limit while actually holding 42MiB; Immich's
+      Postgres reads as 102MiB while holding 8MiB.
+    cause: >-
+      `kubectl top` reports the working set, which is usage minus *inactive*
+      file pages - active page cache is still counted. Anything that reads or
+      writes files at volume is therefore charged for the cache it leaves
+      behind. Across this cluster the difference is about 1.8GiB: 5686MiB
+      reported against 3909MiB actually resident.
+    tell: >-
+      Read the cgroup instead: `anon` is what the process holds, `file` is
+      cache. From outside the pod the same split is
+      `container_memory_rss` and `container_memory_cache` in
+      `kubectl get --raw /api/v1/nodes/<node>/proxy/metrics/cadvisor`.
+      `memory.events` tells the rest of the story - a large `max` count with
+      `oom_kill` at zero means the cgroup keeps hitting its ceiling and the
+      kernel keeps reclaiming cache successfully, which is working as
+      intended, not a shortage.
+    fix: >-
+      Nothing to fix in the workload, and nothing to drop: the kernel releases
+      cache on demand and holding it is the point. What is worth fixing is a
+      limit set from the misleading number. qBittorrent at 1Gi forced 10.5
+      million reclaims in thirty hours for no benefit; at 2Gi the counter is
+      zero. Size limits from `anon` plus headroom, not from what `top` prints.
+    diagnosed: 2026-09-22, on the Beelink
+
