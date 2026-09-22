@@ -751,14 +751,18 @@ traps:
       discovery. It costs nothing to leave - the collector itself keeps
       working, and the next node reboot clears it anyway.
     prevent: >-
-      Recurred a third time on 2026-09-21 when Argo CD's own CRDs went with
-      it at the end of the Flux migration. The pattern is always the same:
-      delete a CRD, however deliberately, and this starts. Cheapest fix is to
-      make the restart part of the same step as the deletion, not a separate
-      diagnosis afterwards - `talosctl -n 192.168.8.10 restart --namespace cri
+      Recurred a third time on 2026-09-21 when Argo CD's own CRDs went with it
+      at the end of the Flux migration. There is no setting that prevents it:
+      client-go caches the type set in the process, and only a new process is
+      guaranteed to rebuild it. Nor is one needed. Restarting
+      kube-controller-manager here takes about ten seconds, and on a single
+      node nothing user-facing depends on it - running pods keep running, the
+      apiserver stays up, only cluster-level reconciliation pauses. So the
+      restart is the fix, not a workaround for one: run
+      `talosctl -n 192.168.8.10 restart --namespace cri
       kube-system/kube-controller-manager-talos-lqh-j5o:kube-controller-manager`
-      right after any `kubectl delete crd`, whether or not the log has started
-      yet.
+      in the same step as any `kubectl delete crd`, without waiting for the
+      log to start.
     diagnosed: 2026-09-20, recurred 2026-09-21
 
   - id: deleting-a-static-pod-does-not-restart-it
@@ -957,3 +961,29 @@ traps:
       An `ignore` block keeping only the one directory stops
       source-controller from holding the whole upstream repository.
     diagnosed: 2026-09-21, migrating the Intel GPU plugin off Argo CD
+
+  - id: talosctl-logs-can-return-the-previous-container
+    applies_to: [talos, kubernetes, debugging]
+    symptom: >-
+      `talosctl logs` for a control plane container returns a log that ends
+      hours ago, at an old crash, so a problem that is firing right now reads
+      as history already dealt with.
+    cause: >-
+      Addressed by pod and container name alone, the command can return the
+      log of a container that has since exited rather than the one running.
+      `talosctl containers --kubernetes` lists both under the same pod, one
+      CONTAINER_RUNNING and one CONTAINER_EXITED.
+    tell: >-
+      The newest line is older than the container's own start time.
+      `kubectl get pod <static-pod> -n kube-system -o
+      jsonpath='{.status.containerStatuses[0].state.running.startedAt}'`
+      gives that start time, and `{.status.containerStatuses[0].containerID}`
+      gives the id to use.
+    fix: >-
+      Append the running container's short id to the address:
+      `talosctl logs --namespace cri
+      kube-system/<pod>:<container>:<first 12 chars of id>`. On 2026-09-21
+      this was the difference between "no errors for 23 hours" and an error
+      several times a second.
+    diagnosed: 2026-09-21, on the Beelink
+
