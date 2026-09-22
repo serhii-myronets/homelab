@@ -1065,7 +1065,14 @@ traps:
       `Released` PV is the other one - `kubectl get pv | grep -v Bound` finds
       it in one line, and that is also what proves the harmless one harmless.
     fix: >-
-      Nothing for the first. For the second, delete the VolumeSnapshot still
-      holding the volume and the reclaim finishes on its own.
+      The first has a cause worth removing rather than tolerating: all four
+      ReplicationSources shared one schedule, `15 * * * *`, because they come
+      from one kustomize component. Four movers then snapshotted at the same
+      instant on four cores, and the snapshot controller's own API client
+      throttled itself - `Waited before sending request ... client-side
+      throttling` in its log, a second at a time - which is what widened the
+      window it then lost. The component takes a MINUTE literal now and the
+      four run at 5, 20, 35 and 50. For the second, delete the VolumeSnapshot
+      still holding the volume and the reclaim finishes on its own.
     diagnosed: 2026-09-22, on the Beelink
 
