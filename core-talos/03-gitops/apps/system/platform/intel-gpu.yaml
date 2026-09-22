@@ -1,0 +1,43 @@
+# kustomize-controller builds only from the artifact source-controller hands
+# it and never reaches the network mid-build, so the plugin's manifests cannot
+# be a remote base the way they were under Argo CD. They become their own
+# source instead, pinned to the same tag, with everything but the one
+# directory ignored so source-controller is not holding the whole Intel
+# repository.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: intel-device-plugins
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: https://github.com/intel/intel-device-plugins-for-kubernetes
+  ref:
+    tag: v0.37.0
+  ignore: |
+    /*
+    !/deployments/gpu_plugin/
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: intel-gpu
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: intel-device-plugins
+  path: ./deployments/gpu_plugin
+  # kube-system is exempt from Pod Security, which the plugin's hostPath
+  # mounts of /dev/dri and the kubelet socket need.
+  targetNamespace: kube-system
+  prune: true
+  patches:
+    # Lets more than one pod use the single iGPU, e.g. Jellyfin and later Immich.
+    - target: {kind: DaemonSet, name: intel-gpu-plugin}
+      patch: |-
+        - op: add
+          path: /spec/template/spec/containers/0/args
+          value: ["-shared-dev-num=3"]
