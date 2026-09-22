@@ -1043,3 +1043,29 @@ traps:
       instead fixes that object and leaves the rest waiting.
     diagnosed: 2026-09-22, renaming jellyseerr.home to seerr.home
 
+  - id: two-snapshot-delete-errors-that-look-alike
+    applies_to: [volsync, openebs, kubernetes, backup]
+    symptom: >-
+      A Warning on a VolumeSnapshot saying a snapshot content or a volume
+      could not be deleted. Two unrelated things say this, and only one of
+      them matters.
+    cause: >-
+      The harmless one is snapshot-controller losing a race with itself:
+      `failed to delete VolumeSnapshotContent ... "not found"`, raised as
+      SnapshotContentObjectDeleteError. It wanted to delete something already
+      deleted, so the end state it was after is the state it found. It fires
+      during the hourly VolSync window - twelve times in the two and a half
+      days to 2026-09-22, always at :15, and every one of them "not found".
+      The one that matters is the CSI driver refusing to reclaim a volume:
+      `failed to handle delete volume request ... with 1 active snapshots`,
+      on a PV in Released. That one repeats for ever and holds disk.
+    tell: >-
+      Read the end of the message, not the reason. "not found" is noise, once
+      per occurrence and self-clearing. A count in the hundreds next to a
+      `Released` PV is the other one - `kubectl get pv | grep -v Bound` finds
+      it in one line, and that is also what proves the harmless one harmless.
+    fix: >-
+      Nothing for the first. For the second, delete the VolumeSnapshot still
+      holding the volume and the reclaim finishes on its own.
+    diagnosed: 2026-09-22, on the Beelink
+
