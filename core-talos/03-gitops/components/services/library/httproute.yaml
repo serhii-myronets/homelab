@@ -1,5 +1,21 @@
-# Local names only: these are the stack's own controls, not something to
-# publish, so no record is created under serhii.link.
+# Two names each. The local one is unchanged; the published one becomes a
+# proxied CNAME to the Beelink tunnel, created by external-dns from the
+# hostname below, with Cloudflare Access in front of it like every other name
+# under serhii.link.
+#
+# What that gate is worth is not the same for all four. Seerr has a sign-in of
+# its own, against Jellyfin accounts. The three *arr do not: they run with
+# AUTH__METHOD External and AUTH__REQUIRED DisabledForLocalAddresses, and the
+# pod is shown the Gateway's address instead of the caller's - the trap about
+# Cilium hiding the client address - so every request reads as local and the
+# web interface opens with no password at all. Their API still refuses a call
+# without a key; the interface does not, and the interface is enough to
+# reconfigure the stack. For those three, Cloudflare Access is the only thing
+# between the internet and that.
+#
+# Published on 2026-09-22 at the owner's request, with this understood. The
+# one word that would change it is `Enabled` in place of
+# DisabledForLocalAddresses, which then asks for a password on the LAN too.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -7,7 +23,7 @@ metadata:
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  hostnames: [prowlarr.home]
+  hostnames: [prowlarr.home, prowlarr.serhii.link]
   rules:
     - backendRefs:
         - {name: prowlarr, port: 9696}
@@ -19,7 +35,7 @@ metadata:
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  hostnames: [sonarr.home]
+  hostnames: [sonarr.home, sonarr.serhii.link]
   rules:
     - backendRefs:
         - {name: sonarr, port: 8989}
@@ -31,7 +47,7 @@ metadata:
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  hostnames: [radarr.home]
+  hostnames: [radarr.home, radarr.serhii.link]
   rules:
     - backendRefs:
         - {name: radarr, port: 7878}
@@ -43,7 +59,7 @@ metadata:
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  hostnames: [seerr.home]
+  hostnames: [seerr.home, seerr.serhii.link]
   rules:
     - backendRefs:
         - {name: seerr, port: 5055}
