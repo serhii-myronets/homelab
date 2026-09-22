@@ -20,7 +20,7 @@ spec:
     - headlamp.home
     - jellyfin.home
     - immich.home
-    - jellyseerr.home
+    - seerr.home
     - prowlarr.home
     - radarr.home
     - sonarr.home

@@ -53,8 +53,12 @@ spec:
             - {name: hdd-a, mountPath: /data}
             # Kubelet creates a missing subPath directory owned by root. The
             # three below are linuxserver images, which chown their own
-            # /config before dropping to PUID; Jellyseerr does not, so its
-            # directory is handed over here.
+            # /config before dropping to PUID; Seerr does not, so its
+            # directory is handed over here. The subPath keeps the name the
+            # service was first deployed under - it is a directory on disk
+            # holding the configuration and the SQLite database, and renaming
+            # it would hand Seerr an empty one and lose every request, user
+            # and setting.
             - {name: data, mountPath: /config, subPath: jellyseerr}
       containers:
         # The indexer manager: it holds the tracker definitions and pushes
@@ -144,9 +148,9 @@ spec:
         # The project renamed itself from Jellyseerr to Seerr and moved to
         # seerr-team/seerr; ghcr.io/fallenbagel/jellyseerr stops at 2.7.3 and
         # takes no more releases, so that tag reads current and is not. The
-        # local name stays jellyseerr.home, which is what the certificate and
-        # the household know it by.
-        - name: jellyseerr
+        # local name followed on 2026-09-22 and is seerr.home; only the
+        # subPath above still says jellyseerr, because that one is data.
+        - name: seerr
           image: ghcr.io/seerr-team/seerr:v3.4.1
           env:
             - {name: TZ, value: America/Los_Angeles}
@@ -157,15 +161,15 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
           ports:
-            - {name: jellyseerr, containerPort: 5055}
+            - {name: seerr, containerPort: 5055}
           startupProbe:
-            httpGet: {path: /api/v1/status, port: jellyseerr}
+            httpGet: {path: /api/v1/status, port: seerr}
             periodSeconds: 5
             failureThreshold: 60
           readinessProbe:
-            httpGet: {path: /api/v1/status, port: jellyseerr}
+            httpGet: {path: /api/v1/status, port: seerr}
           livenessProbe:
-            httpGet: {path: /api/v1/status, port: jellyseerr}
+            httpGet: {path: /api/v1/status, port: seerr}
             periodSeconds: 30
           resources:
             requests: {cpu: 20m, memory: 128Mi}
