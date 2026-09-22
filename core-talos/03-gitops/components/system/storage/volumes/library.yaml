@@ -6,7 +6,7 @@ kind: PersistentVolume
 metadata:
   name: library-hdd-a
   annotations:
-    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   capacity:
     storage: 9000Gi

@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: hdd-a
   annotations:
-    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   accessModes:
     - ReadWriteOnce
