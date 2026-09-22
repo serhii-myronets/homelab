@@ -130,9 +130,19 @@ spec:
             - {name: qbittorrent, containerPort: 8080}
           readinessProbe:
             tcpSocket: {port: qbittorrent}
+          # 2Gi is for the page cache, not for qBittorrent. Measured on
+          # 2026-09-22: 42MiB anonymous against 921MiB of cached file pages,
+          # which is what reading and writing torrent data leaves behind and
+          # what the cgroup is charged for. At 1Gi it sat permanently against
+          # the ceiling - memory.events counted 10.5 million hits of `max` in
+          # thirty hours, each one a direct reclaim - while never once being
+          # OOM killed, because cache always yields. Swap would not have moved
+          # any of it: file-backed pages are already on disk and are dropped,
+          # not swapped, and this node has none anyway. The extra gigabyte is
+          # returned to the node under real pressure like any other cache.
           resources:
             requests: {cpu: 100m, memory: 256Mi}
-            limits: {memory: 1Gi}
+            limits: {memory: 2Gi}
           volumeMounts:
             - {name: data, mountPath: /config, subPath: config}
             - {name: cache, mountPath: /incomplete}
