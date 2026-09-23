@@ -11,7 +11,7 @@ components:
 # hourly copy separate from the other VolSync jobs.
 configMapGenerator:
   - name: backed-up-volume
-    literals: [APP=actual, CAPACITY=2Gi, MINUTE=35]
+    literals: [APP=actual, CAPACITY=2Gi, MINUTE=45]
     options:
       disableNameSuffixHash: true
       annotations: {config.kubernetes.io/local-config: "true"}
