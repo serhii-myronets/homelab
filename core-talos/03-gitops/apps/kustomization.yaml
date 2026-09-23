@@ -13,6 +13,7 @@ resources:
   - services/immich/ks.yaml
   - services/jellyfin/ks.yaml
   - services/library/ks.yaml
+  - services/paperless/ks.yaml
   - services/samba/ks.yaml
   - services/torrent/ks.yaml
 

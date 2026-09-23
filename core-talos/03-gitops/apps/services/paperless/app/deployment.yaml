@@ -1,0 +1,150 @@
+# Three containers in one pod, the way the library stack holds its four: they
+# share one backed-up claim, each under its own directory, and the OpenEBS LVM
+# driver refuses to mount one logical volume into a second pod even on the
+# same node. Postgres and the web server are started and stopped together as
+# a result, which for a document archive costs nothing.
+#
+# Everything worth keeping is on that one claim, including the originals under
+# media/. That is deliberate and unlike Immich, whose photos sit unbacked on
+# the media disk: scanned documents are small and cannot be re-acquired, so
+# they go to R2 hourly with the database beside them. One snapshot catches
+# both at the same instant, which is the strongest consistency available here.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperless
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: paperless
+  template:
+    metadata:
+      labels:
+        app: paperless
+    spec:
+      initContainers:
+        # Kubelet creates a missing subPath directory owned by root. Postgres
+        # runs as 999 and refuses a data directory group- or world-readable;
+        # Paperless runs as 1000. Neither image fixes its own directory, so
+        # they are handed over here.
+        - name: prepare
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - >-
+              set -e;
+              for d in data media consume export; do
+                mkdir -p "/vol/$d"; chown -R 1000:1000 "/vol/$d";
+              done;
+              mkdir -p /vol/postgres;
+              chown 999:999 /vol/postgres; chmod 0700 /vol/postgres
+          volumeMounts:
+            - {name: data, mountPath: /vol}
+      containers:
+        - name: postgres
+          image: docker.io/library/postgres:18.6
+          env:
+            - {name: POSTGRES_USER, value: paperless}
+            - {name: POSTGRES_DB, value: paperless}
+            - {name: POSTGRES_INITDB_ARGS, value: --data-checksums}
+            # Postgres 18 moved its default data directory; naming it here
+            # means the mount below is the cluster wherever that default goes.
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: paperless, key: DB_PASSWORD}
+          startupProbe:
+            exec: {command: [pg_isready, -U, paperless, -d, paperless]}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec: {command: [pg_isready, -U, paperless, -d, paperless]}
+          livenessProbe:
+            exec: {command: [pg_isready, -U, paperless, -d, paperless]}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 192Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data, subPath: postgres}
+            - {name: shm, mountPath: /dev/shm}
+        # The task queue between the web server and its workers. Nothing in it
+        # outlives a restart by design, so it has no volume: a lost queue means
+        # a document is processed a second time.
+        - name: broker
+          image: docker.io/valkey/valkey:9.2
+          readinessProbe:
+            exec: {command: [sh, -c, "valkey-cli ping | grep -q PONG"]}
+          livenessProbe:
+            exec: {command: [sh, -c, "valkey-cli ping | grep -q PONG"]}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 256Mi}
+        - name: paperless
+          image: ghcr.io/paperless-ngx/paperless-ngx:3.2.1
+          env:
+            - {name: PAPERLESS_TIME_ZONE, value: America/Los_Angeles}
+            # Both containers are in this pod, so localhost is the address.
+            - {name: PAPERLESS_REDIS, value: "redis://localhost:6379"}
+            - {name: PAPERLESS_DBENGINE, value: postgresql}
+            - {name: PAPERLESS_DBHOST, value: "127.0.0.1"}
+            - {name: PAPERLESS_DBNAME, value: paperless}
+            - {name: PAPERLESS_DBUSER, value: paperless}
+            - name: PAPERLESS_DBPASS
+              valueFrom:
+                secretKeyRef: {name: paperless, key: DB_PASSWORD}
+            - name: PAPERLESS_SECRET_KEY
+              valueFrom:
+                secretKeyRef: {name: paperless, key: SECRET_KEY}
+            # Sets ALLOWED_HOSTS and CSRF_TRUSTED_ORIGINS together; without it
+            # the browser is refused on any name but localhost.
+            - {name: PAPERLESS_URL, value: "https://paperless.home"}
+            # Ukrainian is not among the five the image ships with, so it is
+            # installed at start - which means the first boot after an image
+            # change needs the network. `ukr+eng` is what Tesseract is asked
+            # to read; a document in either comes out searchable.
+            - {name: PAPERLESS_OCR_LANGUAGE, value: "ukr+eng"}
+            - {name: PAPERLESS_OCR_LANGUAGES, value: "ukr"}
+          ports:
+            - {name: http, containerPort: 8000}
+          startupProbe:
+            httpGet: {path: /accounts/login/, port: http}
+            periodSeconds: 5
+            # OCR language packs are fetched on the first start of a new
+            # image, so this one is allowed to take its time.
+            failureThreshold: 120
+          readinessProbe:
+            httpGet: {path: /accounts/login/, port: http}
+          livenessProbe:
+            httpGet: {path: /accounts/login/, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 100m, memory: 512Mi}
+            # OCR is the memory-hungry part; a large scan is the peak.
+            limits: {memory: 2Gi}
+          volumeMounts:
+            - {name: data, mountPath: /usr/src/paperless/data, subPath: data}
+            - {name: data, mountPath: /usr/src/paperless/media, subPath: media}
+            - {name: data, mountPath: /usr/src/paperless/consume, subPath: consume}
+            - {name: data, mountPath: /usr/src/paperless/export, subPath: export}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+        # Postgres wants more shared memory than the 64 MiB a container gets.
+        - name: shm
+          emptyDir: {medium: Memory, sizeLimit: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paperless
+spec:
+  selector:
+    app: paperless
+  ports:
+    - {name: http, port: 8000, targetPort: http}

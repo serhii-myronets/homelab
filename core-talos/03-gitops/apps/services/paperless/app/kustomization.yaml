@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: paperless
+resources:
+  - namespace.yaml
+  - externalsecret.yaml
+  - deployment.yaml
+  - httproute.yaml
+components:
+  - ../../../../components/backed-up-volume
+# One claim for all of it: the Postgres cluster, Paperless's own data and the
+# scanned originals. 20Gi because a scanned page is a few hundred kilobytes
+# and the database beside it is small; the hourly copy to R2 covers the lot.
+# MINUTE 10 keeps it clear of the four already running at 5, 20, 35 and 50.
+configMapGenerator:
+  - name: backed-up-volume
+    literals: [APP=paperless, CAPACITY=20Gi, MINUTE=10]
+    options:
+      disableNameSuffixHash: true
+      annotations: {config.kubernetes.io/local-config: "true"}

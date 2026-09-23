@@ -1,0 +1,15 @@
+# Local only. Every other published name sits behind Cloudflare Access, which
+# would be the single gate here too - and this one holds scanned documents:
+# contracts, bills, whatever is put in it. It can be published later with one
+# hostname added, once there is a reason to reach it from outside.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: paperless
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [paperless.home]
+  rules:
+    - backendRefs:
+        - {name: paperless, port: 8000}
