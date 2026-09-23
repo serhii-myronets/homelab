@@ -16,6 +16,7 @@ resources:
   - services/library/ks.yaml
   - services/paperless/ks.yaml
   - services/samba/ks.yaml
+  - services/sure/ks.yaml
   - services/torrent/ks.yaml
   - services/uptime-kuma/ks.yaml
   - services/vaultwarden/ks.yaml

@@ -1,0 +1,161 @@
+# Sure's web process and Sidekiq worker both need the same Rails storage, and
+# its Postgres database is the source of truth. Keeping all four containers in
+# one pod permits a single LVM snapshot to preserve database and attachments
+# together for the R2 backup.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sure
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: sure
+  template:
+    metadata:
+      labels:
+        app: sure
+    spec:
+      # Avoid injected SURE_PORT=tcp://...: Rails reads PORT as a number.
+      enableServiceLinks: false
+      initContainers:
+        - name: prepare-data
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - >-
+              set -e;
+              mkdir -p /vol/postgres /vol/storage;
+              chown 999:999 /vol/postgres; chmod 0700 /vol/postgres;
+              chown 1000:1000 /vol/storage
+          volumeMounts:
+            - {name: data, mountPath: /vol}
+      containers:
+        - name: postgres
+          image: docker.io/library/postgres:16
+          env:
+            - {name: POSTGRES_USER, value: sure}
+            - {name: POSTGRES_DB, value: sure}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: sure, key: DB_PASSWORD}
+          startupProbe:
+            exec: {command: [pg_isready, -U, sure, -d, sure]}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec: {command: [pg_isready, -U, sure, -d, sure]}
+          livenessProbe:
+            exec: {command: [pg_isready, -U, sure, -d, sure]}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data, subPath: postgres}
+            - {name: shm, mountPath: /dev/shm}
+        # Redis contains only the Sidekiq queue; jobs are retried after a pod
+        # restart and are not financial records, so it deliberately has no PVC.
+        - name: redis
+          image: docker.io/library/redis:8.4
+          command: [redis-server, --save, "", --appendonly, "no"]
+          readinessProbe:
+            exec: {command: [redis-cli, ping]}
+          livenessProbe:
+            exec: {command: [redis-cli, ping]}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 256Mi}
+        - name: web
+          image: ghcr.io/we-promise/sure:v0.7.4
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            seccompProfile: {type: RuntimeDefault}
+          env:
+            - {name: SELF_HOSTED, value: "true"}
+            - {name: ONBOARDING_STATE, value: open}
+            - {name: RAILS_ASSUME_SSL, value: "true"}
+            - {name: RAILS_FORCE_SSL, value: "false"}
+            - {name: APP_DOMAIN, value: "https://sure.home"}
+            - {name: DB_HOST, value: "127.0.0.1"}
+            - {name: DB_PORT, value: "5432"}
+            - {name: POSTGRES_USER, value: sure}
+            - {name: POSTGRES_DB, value: sure}
+            - {name: REDIS_URL, value: "redis://127.0.0.1:6379/1"}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: sure, key: DB_PASSWORD}
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef: {name: sure, key: SECRET_KEY_BASE}
+          ports:
+            - {name: http, containerPort: 3000}
+          startupProbe:
+            httpGet: {path: /, port: http}
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet: {path: /, port: http}
+          livenessProbe:
+            httpGet: {path: /, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - {name: data, mountPath: /rails/storage, subPath: storage}
+        - name: worker
+          image: ghcr.io/we-promise/sure:v0.7.4
+          command: [bundle, exec, sidekiq]
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            seccompProfile: {type: RuntimeDefault}
+          env:
+            - {name: SELF_HOSTED, value: "true"}
+            - {name: ONBOARDING_STATE, value: open}
+            - {name: RAILS_ASSUME_SSL, value: "true"}
+            - {name: RAILS_FORCE_SSL, value: "false"}
+            - {name: APP_DOMAIN, value: "https://sure.home"}
+            - {name: DB_HOST, value: "127.0.0.1"}
+            - {name: DB_PORT, value: "5432"}
+            - {name: POSTGRES_USER, value: sure}
+            - {name: POSTGRES_DB, value: sure}
+            - {name: REDIS_URL, value: "redis://127.0.0.1:6379/1"}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: sure, key: DB_PASSWORD}
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef: {name: sure, key: SECRET_KEY_BASE}
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {memory: 1Gi}
+          volumeMounts:
+            - {name: data, mountPath: /rails/storage, subPath: storage}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+        - name: shm
+          emptyDir: {medium: Memory, sizeLimit: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sure
+spec:
+  selector:
+    app: sure
+  ports:
+    - {name: http, port: 3000, targetPort: http}
