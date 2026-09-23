@@ -1,7 +1,7 @@
 # A console for this cluster: browse objects and read logs. It watches
 # nothing and alerts on nothing - that gap is still open, and neither Pulse
 # nor the VictoriaMetrics stack closed it either, both now under
-# 03-gitops/archive.
+# archive/ at the repository root.
 #
 # Nothing is stored: no claim, no database, no CRDs. Losing the pod loses a
 # session and nothing else.

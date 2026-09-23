@@ -733,7 +733,7 @@ traps:
       namespace is terminating, no CRD is unestablished.
     cause: >-
       An operator's CRDs were removed - CloudNativePG, here, now under
-      03-gitops/archive - and the garbage collector's monitors for its types
+      archive/ - and the garbage collector's monitors for its types
       were not. It rebuilds that set from discovery only at startup, so it
       keeps retrying types that no longer resolve. The retry never reaches
       the apiserver: the RESTMapper fails locally.

@@ -26,6 +26,11 @@ directory installs something on a host by hand — currently the Pulse agents
 on core and Proxmox, plus Tailscale on Proxmox — because it lands outside a
 Portainer-managed container. A rebuilt host needs its installer run again.
 
+**[`archive/`](archive/)** is neither: setups that worked and were switched
+off, kept whole so they can be brought back rather than rebuilt from memory.
+Nothing reads it — Flux reconciles `core-talos/03-gitops/apps/` and stops
+there — and its README says what each one was and why it went.
+
 Changing one half should rarely mean changing the other.
 
 | | | Deployed from here |
