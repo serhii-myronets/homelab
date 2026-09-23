@@ -126,6 +126,9 @@ spec:
             - name: PLAID_SECRET
               valueFrom:
                 secretKeyRef: {name: sure, key: PLAID_SECRET}
+            - name: TWELVE_DATA_API_KEY
+              valueFrom:
+                secretKeyRef: {name: sure, key: TWELVE_DATA_API_KEY}
           ports:
             - {name: http, containerPort: 3000}
           # Rails redirects unauthenticated requests to HTTPS, while the
@@ -195,6 +198,9 @@ spec:
             - name: PLAID_SECRET
               valueFrom:
                 secretKeyRef: {name: sure, key: PLAID_SECRET}
+            - name: TWELVE_DATA_API_KEY
+              valueFrom:
+                secretKeyRef: {name: sure, key: TWELVE_DATA_API_KEY}
           resources:
             requests: {cpu: 100m, memory: 256Mi}
             limits: {memory: 1Gi}
