@@ -43,6 +43,14 @@ which Flux keeps alive for ever. And an empty R2 repository changes nothing
 about the leak - the mover prints `No eligible snapshots found`, exits
 successfully, and the snapshot of the empty volume is taken regardless.
 
+Verifying the backup documentation afterwards turned up two things it had got
+wrong. `backups.yaml` and `beelink.yaml` both still described four covered
+services on one minute, four months of services out of date; both are corrected
+and the list now lives in `backups.yaml` alone. And `actual`, added on
+2026-09-22, had been given library's minute - two movers on :35, against the
+component's own instruction and the throttling it was written to prevent.
+`actual` moved to :45, so the eight now run five minutes apart.
+
 MinIO was considered and does not apply: it is a backup target, not an
 orchestrator, and its community edition entered maintenance mode in December
 2025. Garage remains the live option should a second, local backup target ever
