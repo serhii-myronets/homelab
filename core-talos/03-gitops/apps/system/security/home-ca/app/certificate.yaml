@@ -19,6 +19,7 @@ spec:
     - flux.home
     - headlamp.home
     - jellyfin.home
+    - paperless.home
     - immich.home
     - seerr.home
     - prowlarr.home
