@@ -11,12 +11,12 @@ resources:
   - deployment.yaml
   - httproute.yaml
 components:
-  - ../../../../components/volsync
+  - ../../../../components/backed-up-volume
 # The claim this declares, `data`, is Postgres's. It is the only part of
 # Immich worth backing up hourly: the photos are on the media disk and the
 # model cache comes back on its own.
 configMapGenerator:
-  - name: volsync
+  - name: backed-up-volume
     literals: [APP=immich, CAPACITY=20Gi, MINUTE=5]
     options:
       disableNameSuffixHash: true

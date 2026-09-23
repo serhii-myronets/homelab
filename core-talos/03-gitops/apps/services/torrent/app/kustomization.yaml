@@ -11,13 +11,13 @@ resources:
 # The data claim from the VolSync component: backed up hourly to R2 and, on an
 # empty cluster, restored from it.
 components:
-  - ../../../../components/volsync
+  - ../../../../components/backed-up-volume
 configMapGenerator:
   # The generated name carries a content hash, so a config change rolls the pod.
   - name: torrent-config
     files:
       - config/qBittorrent.conf
-  - name: volsync
+  - name: backed-up-volume
     literals: [APP=torrent, CAPACITY=5Gi, MINUTE=50]
     options:
       disableNameSuffixHash: true

@@ -1,5 +1,5 @@
 # Hourly: snapshot the volume, then send what changed to R2. The minute is
-# replaced per service from the `volsync` ConfigMap, so the four do not all
+# replaced per service from the `backed-up-volume` ConfigMap, so they do not
 # run at once; the value here is only the shape.
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
