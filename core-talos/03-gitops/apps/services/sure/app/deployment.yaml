@@ -71,7 +71,7 @@ spec:
             requests: {cpu: 10m, memory: 32Mi}
             limits: {memory: 256Mi}
         - name: web
-          image: ghcr.io/we-promise/sure:v0.7.4
+          image: ghcr.io/we-promise/sure:0.7.4
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -113,7 +113,7 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /rails/storage, subPath: storage}
         - name: worker
-          image: ghcr.io/we-promise/sure:v0.7.4
+          image: ghcr.io/we-promise/sure:0.7.4
           command: [bundle, exec, sidekiq]
           securityContext:
             runAsUser: 1000
