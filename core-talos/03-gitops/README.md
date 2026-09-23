@@ -40,8 +40,10 @@ them. Adding a component means adding a directory and one line there.
   chart's source is not beside it: every `HelmRepository` is listed in
   `apps/helm-repositories.yaml`, and a chart cannot come from a repository
   absent from that file.
-- `archive/` is outside the reconciled tree. Its older Argo Applications need
-  conversion before they can be restored; see its README.
+- Setups that worked and were switched off live in `../../archive/` at the
+  repository root, not here: this directory is what Flux reconciles, and they
+  are not. Their older Argo Applications need conversion before they can be
+  restored; see that README.
 
 A component owns its namespace where needed. Dependencies are explicit in
 Flux `spec.dependsOn`; Argo sync-wave annotations do not order Flux applies.

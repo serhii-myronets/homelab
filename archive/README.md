@@ -3,7 +3,8 @@
 Setups that ran on the Beelink and were switched off because nothing needed
 them yet. Their historical Argo manifests are retained unchanged as reference.
 
-Flux reads `../apps/`, not this directory. Moving an archived Argo Application
+Flux reads `../core-talos/03-gitops/apps/`, not this directory, and this
+sits outside `core-talos/` entirely because nothing here is deployed. Moving an archived Argo Application
 into the active tree does not restore it: convert it to a Flux Kustomization
 and, for charts, a HelmRepository/HelmRelease first. Preserve chart values,
 secret references, storage protection and restore settings during conversion.

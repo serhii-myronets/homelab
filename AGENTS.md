@@ -28,6 +28,7 @@ Before debugging anything that should work, check
 | `core/backup/` | restic script, installer, systemd units |
 | `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
+| `archive/` | setups switched off but kept whole; nothing reconciles it |
 
 Each half carries its own README: the root one describes the repository,
 `core/README.md` is the operational manual, `docs/README.md` indexes the facts,

@@ -1,7 +1,7 @@
 # Pulse watches this cluster, and can be pointed at Proxmox and Docker hosts
 # from its own settings afterwards - which is why it replaced the
-# VictoriaMetrics stack now under 03-gitops/archive. It sends its own alerts,
-# through webhooks, mail or Apprise, all of which the free edition carries;
+# VictoriaMetrics stack now beside it here. It sends its own alerts, through
+# webhooks, mail or Apprise, all of which the free edition carries;
 # what is paid for is remote access and the mobile app.
 #
 # The free edition keeps seven days of history. That answers "what broke last

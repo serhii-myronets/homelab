@@ -16,7 +16,7 @@ belongs in a password manager, because without it the backups are unreadable.
 Postgres backs itself up through CloudNativePG's Barman Cloud plugin:
 continuous WAL archiving plus a daily base backup. That half is switched off
 as of 2026-09-19, waiting for an application that needs a database; the
-manifests are kept whole in `core-talos/03-gitops/archive/database/` and its
+manifests are kept whole in `archive/database/` and its
 backups stay in R2.
 
 Everything else is a PersistentVolumeClaim backed up hourly by VolSync with

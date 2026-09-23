@@ -351,7 +351,7 @@ platform:
       None running. CloudNativePG, the Barman Cloud plugin and a shared
       Postgres worked here on 2026-09-19 and were removed the same day,
       because no application needed a database yet; the setup is kept whole
-      in 03-gitops/archive/database. Its backups stay in R2 under
+      in archive/database at the repository root. Its backups stay in R2 under
       cnpg/postgres-v2, with a completed base backup, and the archived
       Cluster bootstraps from them.
     volumes: >-
@@ -363,7 +363,7 @@ platform:
   archived: >-
     Two monitors ran here on 2026-09-20 and neither stayed: the
     VictoriaMetrics stack, then Pulse. Both are whole under
-    03-gitops/archive, with why each went written beside it.
+    archive/ at the repository root, with why each went written beside it.
 
 config:
   talos: core-talos/01-talos/
