@@ -4,7 +4,7 @@
 
 meta:
   host: beelink
-  updated: 2026-09-22
+  updated: 2026-09-23
   tags: [beelink, talos, kubernetes, bare-metal, storage]
 
 identity:
@@ -414,9 +414,10 @@ platform:
       cnpg/postgres-v2, with a completed base backup, and the archived
       Cluster bootstraps from them.
     volumes: >-
-      VolSync, hourly at :15 from a thin snapshot, under volsync/<service>.
+      VolSync, hourly from a thin snapshot, each service on its own minute.
       Keeps 24 hourly, 7 daily, 4 weekly and 3 monthly. Each service's data
-      claim restores itself from R2 on an empty cluster.
+      claim restores itself from R2 on an empty cluster; which services are
+      covered is in backups.yaml.
     not_backed_up: [media on the HDDs, caches]
   deferred: [strimzi, hubble-ui]
   archived: >-
