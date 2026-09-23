@@ -16,6 +16,7 @@ resources:
   - services/paperless/ks.yaml
   - services/samba/ks.yaml
   - services/torrent/ks.yaml
+  - services/vaultwarden/ks.yaml
 
   - system/network/cloudflared/ks.yaml
   - system/network/external-dns/ks.yaml
