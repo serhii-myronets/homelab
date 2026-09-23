@@ -71,7 +71,14 @@ spec:
             requests: {cpu: 10m, memory: 32Mi}
             limits: {memory: 256Mi}
         - name: web
-          image: ghcr.io/we-promise/sure:0.7.4
+          # A prerelease on purpose. Linking an investment-only brokerage
+          # through Plaid needs the fix in we-promise/sure#3271, which asks
+          # Plaid for the liabilities product only when the account being
+          # linked is one; without it Plaid hides such institutions from its
+          # search with no error. 0.7.4 does not carry it and there is no
+          # stable release that does. Renovate ignores unstable versions, so
+          # moving to 0.7.5 when it ships is a manual step.
+          image: ghcr.io/we-promise/sure:0.7.5-alpha.10
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -133,7 +140,7 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /rails/storage, subPath: storage}
         - name: worker
-          image: ghcr.io/we-promise/sure:0.7.4
+          image: ghcr.io/we-promise/sure:0.7.5-alpha.10
           command: [bundle, exec, sidekiq]
           securityContext:
             runAsUser: 1000
