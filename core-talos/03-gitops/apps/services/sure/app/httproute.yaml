@@ -1,5 +1,9 @@
-# Local-only while Plaid is evaluated. A public callback, if Plaid needs one,
-# needs an explicit access design rather than exposing financial data by default.
+# Two names on purpose. Day to day this is sure.home; the public one exists
+# because Plaid refuses a redirect it cannot reach over public TLS, and Sure
+# builds that redirect from the host the browser is on - so accounts are
+# linked from sure.serhii.link and used from either. Cloudflare Access gates
+# the public name whole, with no exemption for Plaid's webhook, which means
+# updates arrive by the worker polling rather than being pushed.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -7,7 +11,9 @@ metadata:
 spec:
   parentRefs:
     - {name: main-gateway, namespace: gateway-system}
-  hostnames: [sure.home]
+  hostnames:
+    - sure.home
+    - sure.serhii.link
   rules:
     - backendRefs:
         - {name: sure, port: 3000}

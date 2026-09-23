@@ -124,7 +124,8 @@ platform:
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones
     published: [flux.serhii.link, headlamp.serhii.link, jellyfin.serhii.link, torrent.serhii.link,
-                prowlarr.serhii.link, radarr.serhii.link, seerr.serhii.link, sonarr.serhii.link]
+                prowlarr.serhii.link, radarr.serhii.link, seerr.serhii.link, sonarr.serhii.link,
+                sure.serhii.link]
     other_tunnels:
       - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
       - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
@@ -257,7 +258,13 @@ platform:
       hourly at minute 40. One snapshot captures both together. Infisical
       holds the database password, Rails secret and three Active Record
       encryption keys; bank-provider tokens are encrypted at rest.
-    access: local HTTPS only; no public route while Plaid callback requirements are evaluated
+    access: >-
+      sure.home locally and sure.serhii.link behind Cloudflare Access since
+      2026-09-23. The public name exists because Plaid will not accept a
+      redirect it cannot reach over public TLS; accounts are linked from it,
+      and Sure takes the redirect from whichever host the browser used. No
+      Access exemption for Plaid's webhook, so provider updates arrive by
+      polling. See decisions/0026.
     setup: Create the first owner account in Sure, then add a provider from its UI.
     measured: 704Mi RAM and 29m CPU at idle after initial migration, on 2026-09-22
     built: 2026-09-22, from a fresh database
