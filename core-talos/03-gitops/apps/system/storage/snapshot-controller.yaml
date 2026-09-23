@@ -1,3 +1,9 @@
+# This one keeps its component directory and its Kustomization, unlike
+# metrics-server beside it, and the reason is `dependsOn`: openebs and
+# openebs-classes wait on it so the snapshot CRDs exist before a
+# VolumeSnapshotClass is applied. A Kustomization can only depend on another
+# Kustomization, never on a bare HelmRelease, so collapsing this one would
+# take the ordering with it.
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -10,10 +16,6 @@ spec:
     kind: GitRepository
     name: homelab
   path: ./core-talos/03-gitops/components/system/storage/snapshot-controller
-  # Temporarily off: this Kustomization is about to be removed from Git, and
-  # deleting one garbage-collects its inventory - which is the HelmRelease,
-  # and deleting that uninstalls the release. The HelmRelease moves to apps/
-  # in the next commit; this one only makes the removal safe.
-  prune: false
+  prune: true
   wait: true
   timeout: 5m
