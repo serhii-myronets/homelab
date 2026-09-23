@@ -1,0 +1,71 @@
+# Kuma's SQLite database is its entire configuration: monitors, notification
+# channels and history. It lives on one backed-up claim, not on the container
+# filesystem, so restarting or updating the pod cannot discard it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uptime-kuma
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: uptime-kuma
+  template:
+    metadata:
+      labels:
+        app: uptime-kuma
+    spec:
+      initContainers:
+        # The rootless image runs as node (1000). A restored claim may have
+        # been written by VolSync's mover, so hand its root back before Kuma
+        # opens the SQLite database and its WAL.
+        - name: prepare-data
+          image: busybox:1.37
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL], add: [CHOWN]}
+            seccompProfile: {type: RuntimeDefault}
+          command: [sh, -c, "chown 1000:1000 /data"]
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      containers:
+        - name: uptime-kuma
+          image: louislam/uptime-kuma:2.5.5-rootless
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            seccompProfile: {type: RuntimeDefault}
+          ports:
+            - {name: http, containerPort: 3001}
+          startupProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket: {port: http}
+          livenessProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: data, mountPath: /app/data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uptime-kuma
+spec:
+  selector:
+    app: uptime-kuma
+  ports:
+    - {name: http, port: 3001, targetPort: http}
