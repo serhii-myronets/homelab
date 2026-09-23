@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: uptime-kuma
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - httproute.yaml
+components:
+  - ../../../../components/backed-up-volume
+# Kuma's data is only monitors and status history. MINUTE 30 stays clear of
+# the existing hourly VolSync jobs at 5, 10, 20 and 25.
+configMapGenerator:
+  - name: backed-up-volume
+    literals: [APP=uptime-kuma, CAPACITY=2Gi, MINUTE=30]
+    options:
+      disableNameSuffixHash: true
+      annotations: {config.kubernetes.io/local-config: "true"}

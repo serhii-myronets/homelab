@@ -26,6 +26,7 @@ spec:
     - radarr.home
     - sonarr.home
     - torrent.home
+    - kuma.home
     - vault.home
   duration: 8760h
   renewBefore: 720h
