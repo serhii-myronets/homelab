@@ -5,6 +5,12 @@ metadata:
   namespace: openebs
 spec:
   interval: 30m
+  # The chart's csi-snapshotter sidecar needs the snapshot CRDs, which the
+  # cluster-wide controller owns. Stating it here puts the dependency where
+  # the requirement actually is, and lets that controller stay a single file.
+  dependsOn:
+    - name: snapshot-controller
+      namespace: kube-system
   chart:
     spec:
       chart: openebs

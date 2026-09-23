@@ -20,8 +20,8 @@ resources:
   - system/network/external-dns/ks.yaml
   - system/network/gateway-system/ks.yaml
 
-  # Two that need no directory of their own: one is a HelmRelease with no
-  # manifests beside it, the other carries its own upstream source.
+  # Three that need no directory of their own: two are HelmReleases with no
+  # manifests beside them, the third carries its own upstream source.
   - system/platform/intel-gpu.yaml
   - system/platform/metrics-server.yaml
   - system/platform/headlamp/ks.yaml
@@ -31,6 +31,6 @@ resources:
   - system/security/home-ca/ks.yaml
 
   - system/storage/openebs/ks.yaml
-  - system/storage/snapshot-controller/ks.yaml
+  - system/storage/snapshot-controller.yaml
   - system/storage/volsync/ks.yaml
   - system/storage/volumes/ks.yaml

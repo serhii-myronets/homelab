@@ -33,8 +33,8 @@ them. Adding a component means adding a directory and one line there.
   The split is what orders reconciliation.
 - `components/` is for kustomize Components only - fragments included by
   several apps, currently just the VolSync volume.
-- Two components are a single file with no directory: one is a HelmRelease
-  with no manifests beside it, the other carries its own upstream source.
+- Three components are a single file with no directory: two are HelmReleases
+  with no manifests beside them, the third carries its own upstream source.
 - A Helm component is a pinned `HelmRelease` beside its namespace and other
   manifests, with the chart values inside it and drift detection enabled. The
   chart's source is not beside it: every `HelmRepository` is listed in
@@ -50,8 +50,11 @@ Flux `spec.dependsOn`; Argo sync-wave annotations do not order Flux applies.
 The `openebs` Kustomization installs the chart and runs the thin-pool Job
 together, waiting for both. `openebs-classes` publishes the storage classes
 only after they are ready.
-The standalone snapshot controller owns the snapshot CRDs. VolSync waits for
-the storage classes, and the local CA waits for cert-manager.
+The standalone snapshot controller owns the snapshot CRDs, and openebs waits
+for it through `HelmRelease.spec.dependsOn` rather than through a
+Kustomization - the dependency sits on the chart that actually needs the CRDs,
+which is why that controller needs no directory. VolSync waits for the storage
+classes, and the local CA waits for cert-manager.
 
 OpenEBS LVM LocalPV provisions thin volumes on the NVMe group. The one-time
 pool job is idempotent. Configuration claims use VolSync's R2 restore source;
