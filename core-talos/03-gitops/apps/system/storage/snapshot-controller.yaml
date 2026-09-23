@@ -5,12 +5,14 @@
 #
 # It owns the snapshot CRDs, and openebs waits for it through the HelmRelease
 # below rather than through a Kustomization, which is why this needs no
-# directory of its own.
+# directory of its own. It sits beside VolSync in `storage` rather than in
+# kube-system: it is not part of the control plane and uses no system
+# priority class.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: snapshot-controller
-  namespace: kube-system
+  namespace: storage
 spec:
   interval: 30m
   chart:
