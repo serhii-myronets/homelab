@@ -51,6 +51,14 @@ and the list now lives in `backups.yaml` alone. And `actual`, added on
 component's own instruction and the throttling it was written to prevent.
 `actual` moved to :45, so the eight now run five minutes apart.
 
+The session ended somewhere else again: the owner asked to put the storage
+stack in one namespace. OpenEBS turned out not to be movable - its driver
+reads OPENEBS_NAMESPACE from its own pod and keeps twenty LVMVolume records
+beside itself - so only the two stateless controllers moved, into `storage`.
+That needed the Helm ownership annotations on eight kept CRDs repointed by
+hand before Flux installed, or the install is refused after the old release is
+already gone; both the move and that trap are recorded in `decisions/0025`.
+
 MinIO was considered and does not apply: it is a backup target, not an
 orchestrator, and its community edition entered maintenance mode in December
 2025. Garage remains the live option should a second, local backup target ever
