@@ -25,6 +25,15 @@ spec:
       labels:
         app: paperless
     spec:
+      # Kubelet injects a Docker-links relic into every pod: one variable per
+      # Service in the namespace, named after it. The Service here is
+      # `paperless`, so the pod was handed
+      # `PAPERLESS_PORT=tcp://10.96.54.209:8000` - and PAPERLESS_PORT is also
+      # what Paperless reads to decide which port to bind, so granian refused
+      # to start on a value that is not an integer. Nothing uses those
+      # variables; turning them off is the fix, and renaming the Service would
+      # only move the collision.
+      enableServiceLinks: false
       initContainers:
         # Kubelet creates a missing subPath directory owned by root. Postgres
         # runs as 999 and refuses a data directory group- or world-readable;
