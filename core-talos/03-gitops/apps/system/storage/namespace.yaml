@@ -1,0 +1,12 @@
+# The two cluster-wide storage controllers live here: the snapshot controller
+# and VolSync. Neither touches a disk, so this namespace keeps the cluster's
+# default baseline Pod Security level.
+#
+# OpenEBS is deliberately not here. Its driver reads OPENEBS_NAMESPACE from
+# its own pod and keeps one LVMVolume record per logical volume in it, so
+# moving it would hide every existing volume from the driver that owns it.
+# See decisions/0025.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: storage

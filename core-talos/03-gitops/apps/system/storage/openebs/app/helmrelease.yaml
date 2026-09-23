@@ -10,7 +10,7 @@ spec:
   # the requirement actually is, and lets that controller stay a single file.
   dependsOn:
     - name: snapshot-controller
-      namespace: kube-system
+      namespace: storage
   chart:
     spec:
       chart: openebs
