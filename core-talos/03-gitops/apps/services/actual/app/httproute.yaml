@@ -1,0 +1,13 @@
+# Financial data stays on the LAN. The desktop and mobile apps can connect
+# directly to this HTTPS endpoint after trusting the home's certificate.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: actual
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [actual.home]
+  rules:
+    - backendRefs:
+        - {name: actual, port: 5006}
