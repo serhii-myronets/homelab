@@ -10,6 +10,7 @@ kind: Kustomization
 resources:
   - helm-repositories.yaml
 
+  - services/actual/ks.yaml
   - services/immich/ks.yaml
   - services/jellyfin/ks.yaml
   - services/library/ks.yaml

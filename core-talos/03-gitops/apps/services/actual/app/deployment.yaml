@@ -1,0 +1,71 @@
+# Actual keeps both its password database and encrypted budget files in
+# /data. Keep that directory on the backed-up claim: a replacement pod then
+# has the same accounts and every device can resume syncing.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: actual
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: actual
+  template:
+    metadata:
+      labels:
+        app: actual
+    spec:
+      initContainers:
+        # The official image runs as the unprivileged `actual` user (1001).
+        # VolSync can restore files owned by its mover, so normalize the
+        # claim before Actual opens its SQLite account database.
+        - name: prepare-data
+          image: busybox:1.37
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL], add: [CHOWN]}
+            seccompProfile: {type: RuntimeDefault}
+          command: [sh, -c, "chown 1001:1001 /data"]
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      containers:
+        - name: actual
+          image: actualbudget/actual-server:26.9.0
+          securityContext:
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            seccompProfile: {type: RuntimeDefault}
+          ports:
+            - {name: http, containerPort: 5006}
+          startupProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket: {port: http}
+          livenessProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 25m, memory: 128Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: actual
+spec:
+  selector:
+    app: actual
+  ports:
+    - {name: http, port: 5006, targetPort: http}
