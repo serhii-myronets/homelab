@@ -26,6 +26,7 @@ spec:
     - prowlarr.home
     - radarr.home
     - sonarr.home
+    - sure.home
     - torrent.home
     - kuma.home
     - vault.home

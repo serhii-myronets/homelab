@@ -1,0 +1,13 @@
+# Local-only while Plaid is evaluated. A public callback, if Plaid needs one,
+# needs an explicit access design rather than exposing financial data by default.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sure
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [sure.home]
+  rules:
+    - backendRefs:
+        - {name: sure, port: 3000}
