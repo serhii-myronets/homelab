@@ -82,3 +82,14 @@ its lessons stayed in [`traps.yaml`](../../../docs/traps.yaml): a probe
 that cannot reach what it probes, and what happens when an operator and
 its work are deleted in one move.
 
+## paperless — Paperless-ngx document archive
+
+Trialled on 2026-09-22 with a fresh, empty database. It was stopped that day:
+Google Drive is sufficient for the household documents now, and an unused OCR
+service was not worth its roughly 700 MiB of RAM. Flux deletes the empty 20 GiB
+claim and its dynamically provisioned volume with the application.
+
+The manifests are preserved in `paperless/`. To restore it, move that directory
+back to `core-talos/03-gitops/apps/services/`, add its `ks.yaml` to the root
+apps Kustomization, and add `paperless.home` to the local certificate. Validate
+the build before committing. Its Infisical entries remain at `/paperless`.

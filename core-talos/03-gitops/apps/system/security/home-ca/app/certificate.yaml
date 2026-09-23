@@ -20,7 +20,6 @@ spec:
     - headlamp.home
     - actual.home
     - jellyfin.home
-    - paperless.home
     - immich.home
     - seerr.home
     - prowlarr.home
