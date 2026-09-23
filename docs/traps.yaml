@@ -1163,3 +1163,29 @@ traps:
       collects it on its own. Prevented since 2026-09-23 by dropping
       `cleanupTempPVC` from the component - see decisions/0024.
     diagnosed: 2026-09-23, on the Beelink
+
+  - id: moving-a-helm-release-between-namespaces-is-refused-by-its-own-crds
+    applies_to: [helm, flux, kubernetes, crds]
+    symptom: >-
+      Changing a HelmRelease's namespace uninstalls the old release and then
+      fails to install the new one with "invalid ownership metadata; annotation
+      validation error: key meta.helm.sh/release-namespace must equal <new>:
+      current value is <old>". The workload is gone by the time it is read.
+    cause: >-
+      CRDs annotated `helm.sh/resource-policy: keep` deliberately survive the
+      uninstall - which is what protects the objects inside them - but they
+      keep `meta.helm.sh/release-name` and `meta.helm.sh/release-namespace`
+      from where they were installed. Helm will not adopt a resource another
+      release claims, so the new install stops on the first one.
+    tell: >-
+      `kubectl get crd <name> -o jsonpath='{.metadata.annotations}'` names the
+      old namespace while the HelmRelease names the new one.
+    fix: >-
+      Repoint every affected CRD before the move, not after - the gap between
+      uninstall and install is an outage:
+      `kubectl annotate crd <name> meta.helm.sh/release-namespace=<new>
+      --overwrite`. Moving snapshot-controller and VolSync to `storage` on
+      2026-09-23 needed eight of them; see decisions/0025. Check first that the
+      CRDs really are kept, because if they are not, the uninstall takes every
+      object in them with it.
+    diagnosed: 2026-09-23, on the Beelink

@@ -91,8 +91,8 @@ platform:
     - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
     - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, jellyfin-hdd-a, library-hdd-a], status: deployed}
     - {name: cert-manager, namespace: cert-manager, chart: v1.21.2, status: deployed}
-    - {name: snapshot-controller, namespace: kube-system, chart: 5.3.0, app: v8.6.0, status: deployed}
-    - {name: volsync, namespace: volsync-system, chart: 0.16.0, status: deployed}
+    - {name: snapshot-controller, namespace: storage, chart: 5.3.0, app: v8.6.0, status: deployed}
+    - {name: volsync, namespace: storage, chart: 0.16.0, status: deployed}
     - {name: samba, namespace: samba, status: deployed}
     - {name: torrent, namespace: torrent, status: deployed}
     - {name: intel-gpu, namespace: kube-system, plugin: "intel-gpu-plugin 0.37.0", resource: "gpu.intel.com/i915", shared_by: 3, status: deployed}
