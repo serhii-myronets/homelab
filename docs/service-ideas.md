@@ -24,4 +24,5 @@ was built on 2026-09-22, originals included in the hourly copy to R2, on a
 fresh database rather than the empty one archived for it; the *arr stack was chosen and built;
 Homepage and Pulse stopped with the rest of core's Docker services; Actual
 Budget was built on 2026-09-22 with its data copied to R2 hourly, from a fresh
-data directory.
+data directory; Sure was built on 2026-09-22 for a Plaid-capable finance
+dashboard trial, also with its data copied hourly to R2.
