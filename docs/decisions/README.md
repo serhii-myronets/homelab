@@ -26,6 +26,7 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0014](0014-terraform-for-core-talos.md) | Manage the replacement core bootstrap with Terraform | accepted | talos, terraform, bootstrap, secrets |
 | [0015](0015-core-talos-platform-bootstrap.md) | Bootstrap the Beelink platform with Helmfile and External Secrets | accepted | talos, kubernetes, helmfile, argocd, cilium, external-secrets, infisical |
 | [0020](0020-flux-for-gitops.md) | Flux replaces Argo CD on the Beelink | accepted | flux, gitops, resources |
+| [0022](0022-uptime-kuma-on-beelink.md) | Uptime Kuma observes the Beelink from inside it | accepted | monitoring, uptime-kuma, beelink |
 
 Open items, shortest path first:
 [0008](0008-nothing-tells-anyone-when-something-breaks.md) is a
