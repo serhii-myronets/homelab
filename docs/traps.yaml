@@ -1106,3 +1106,30 @@ traps:
       zero. Size limits from `anon` plus headroom, not from what `top` prints.
     diagnosed: 2026-09-22, on the Beelink
 
+  - id: a-service-hands-the-app-its-own-name-as-config
+    applies_to: [kubernetes, paperless, gotchas]
+    symptom: >-
+      A container refuses to start on a value nobody wrote. Paperless's server
+      exited with `Invalid value for '--port': 'tcp://10.96.54.209:8000' is
+      not a valid integer`, an address that appears in no manifest.
+    cause: >-
+      Kubelet injects a Docker-links relic into every pod: for each Service in
+      the same namespace it sets `<NAME>_PORT`, `<NAME>_SERVICE_HOST` and
+      friends, named after the Service. A Service called `paperless` therefore
+      sets `PAPERLESS_PORT` - and that is also the variable Paperless reads to
+      choose the port it binds. Any app whose configuration prefix equals its
+      own Service name collides the same way.
+    tell: >-
+      `kubectl exec ... -- env | grep ^<PREFIX>_` from a *different* container
+      in the same pod shows the injected set plainly, and none of it is in the
+      manifest. The give-away shape is a value like `tcp://10.x.x.x:port`
+      where a number belongs.
+    fix: >-
+      `enableServiceLinks: false` on the pod spec. Nothing uses those
+      variables; they predate DNS in Kubernetes. Renaming the Service also
+      works and only moves the collision to the next app named after its own
+      configuration. Checked the rest of this cluster afterwards - the *arr
+      stack reads double-underscore names and Postgres reads PGPORT, so
+      paperless was the only one.
+    diagnosed: 2026-09-22, on the Beelink
+
