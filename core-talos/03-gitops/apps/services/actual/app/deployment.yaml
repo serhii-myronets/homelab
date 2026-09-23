@@ -17,6 +17,10 @@ spec:
       labels:
         app: actual
     spec:
+      # Kubernetes would otherwise inject ACTUAL_PORT for this Service in the
+      # form tcp://<cluster-ip>:5006. Actual treats that name as its numeric
+      # listen port and exits before opening the socket.
+      enableServiceLinks: false
       initContainers:
         # The official image runs as the unprivileged `actual` user (1001).
         # VolSync can restore files owned by its mover, so normalize the
