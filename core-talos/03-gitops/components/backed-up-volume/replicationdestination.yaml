@@ -16,6 +16,11 @@ spec:
     volumeSnapshotClassName: lvm
     cacheStorageClassName: lvm
     cleanupCachePVC: true
-    cleanupTempPVC: true
+    # cleanupTempPVC is deliberately absent. VolSync restores into a volume of
+    # its own, snapshots it, and that snapshot is what the claim above is
+    # populated from - so it outlives the restore and keeps referencing the
+    # volume. Deleting the volume therefore leaves OpenEBS refusing to free a
+    # logical volume "with 1 active snapshot", for ever. Keeping it costs one
+    # bound claim per service; see decisions/0024.
     enableFileDeletion: true
     moverSecurityContext: {runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000}

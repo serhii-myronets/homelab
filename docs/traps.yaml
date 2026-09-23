@@ -7,7 +7,7 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-09-22
+  updated: 2026-09-23
   tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux]
 
 traps:
@@ -1133,3 +1133,33 @@ traps:
       paperless was the only one.
     diagnosed: 2026-09-22, on the Beelink
 
+
+  - id: volsyncs-restore-snapshot-pins-the-volume-it-came-from
+    applies_to: [volsync, openebs, kubernetes, beelink]
+    symptom: >-
+      csi-provisioner logs "failed to handle delete volume request for
+      {pvc-...} with 1 active snapshots" every two minutes for ever, with a
+      failure counter in the hundreds, and a Released PV per affected service
+      that never goes away. Nothing is broken; the noise never stops.
+    cause: >-
+      Every claim built from the backed-up-volume component runs its
+      ReplicationDestination once. VolSync provisions a volume of its own,
+      restores into it, snapshots it and keeps that snapshot as
+      status.latestImage - it is the image the populator fills the real claim
+      from, so VolSync never deletes it, and with `trigger.manual` there is no
+      later sync to replace it either. `cleanupTempPVC: true` then deleted the
+      volume underneath it, and OpenEBS will not free a logical volume an LVM
+      snapshot still references. Unrelated to the leak-protection race above:
+      this one fires on every healthy service at birth, empty repository or
+      not.
+    tell: >-
+      `kubectl get pv | grep Released` names claims called
+      `volsync-data-restore-dest`, and each namespace's ReplicationDestination
+      reports a `.status.latestImage` whose VolumeSnapshot is still present.
+    fix: >-
+      Delete those VolumeSnapshots; the PVs clear within about three minutes,
+      once csi-provisioner's backoff expires. The snapshot is owned by the
+      ReplicationDestination, which Flux keeps alive for ever, so nothing
+      collects it on its own. Prevented since 2026-09-23 by dropping
+      `cleanupTempPVC` from the component - see decisions/0024.
+    diagnosed: 2026-09-23, on the Beelink
