@@ -112,14 +112,20 @@ spec:
             - name: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
               valueFrom:
                 secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT}
-            # The client id alone selects SnapTrade's device code flow, which
-            # needs no redirect back to sure.home - the name resolves only on
-            # the LAN and its certificate is the home authority's. The browser
-            # flow would need SNAPTRADE_OAUTH_CLIENT_SECRET and a registered
-            # redirect URI, so it is deliberately not set.
-            - name: SNAPTRADE_OAUTH_CLIENT_ID
+            # Only the address Plaid sends the browser back to has to be
+            # public, and Sure builds it from the host in use - so accounts
+            # are linked from sure.serhii.link, and sure.home still serves
+            # everything else. The webhook Plaid would call is behind
+            # Cloudflare Access and never arrives, by decisions/0026; the
+            # worker polls instead, and investments refresh about once a
+            # trading day either way.
+            - {name: PLAID_ENV, value: production}
+            - name: PLAID_CLIENT_ID
               valueFrom:
-                secretKeyRef: {name: sure, key: SNAPTRADE_OAUTH_CLIENT_ID}
+                secretKeyRef: {name: sure, key: PLAID_CLIENT_ID}
+            - name: PLAID_SECRET
+              valueFrom:
+                secretKeyRef: {name: sure, key: PLAID_SECRET}
           ports:
             - {name: http, containerPort: 3000}
           # Rails redirects unauthenticated requests to HTTPS, while the
@@ -175,14 +181,20 @@ spec:
             - name: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
               valueFrom:
                 secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT}
-            # The client id alone selects SnapTrade's device code flow, which
-            # needs no redirect back to sure.home - the name resolves only on
-            # the LAN and its certificate is the home authority's. The browser
-            # flow would need SNAPTRADE_OAUTH_CLIENT_SECRET and a registered
-            # redirect URI, so it is deliberately not set.
-            - name: SNAPTRADE_OAUTH_CLIENT_ID
+            # Only the address Plaid sends the browser back to has to be
+            # public, and Sure builds it from the host in use - so accounts
+            # are linked from sure.serhii.link, and sure.home still serves
+            # everything else. The webhook Plaid would call is behind
+            # Cloudflare Access and never arrives, by decisions/0026; the
+            # worker polls instead, and investments refresh about once a
+            # trading day either way.
+            - {name: PLAID_ENV, value: production}
+            - name: PLAID_CLIENT_ID
               valueFrom:
-                secretKeyRef: {name: sure, key: SNAPTRADE_OAUTH_CLIENT_ID}
+                secretKeyRef: {name: sure, key: PLAID_CLIENT_ID}
+            - name: PLAID_SECRET
+              valueFrom:
+                secretKeyRef: {name: sure, key: PLAID_SECRET}
           resources:
             requests: {cpu: 100m, memory: 256Mi}
             limits: {memory: 1Gi}
