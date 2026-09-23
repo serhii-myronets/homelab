@@ -31,8 +31,12 @@ them. Adding a component means adding a directory and one line there.
 - `apps/system/` holds cluster-wide infrastructure, grouped by network,
   security, storage and platform; `apps/services/` holds service workloads.
   The split is what orders reconciliation.
-- `components/` is for kustomize Components only - fragments included by
-  several apps, currently just the VolSync volume.
+- `components/` is for kustomize Components only - fragments merged into
+  several apps rather than deployed on their own. One so far:
+  `backed-up-volume`, which gives a service a `data` claim that is backed up
+  hourly to R2 and restores itself on an empty cluster. It is named for what
+  it provides, not for VolSync which implements it, because the VolSync
+  controller is a separate component under `apps/system/storage/`.
 - Three components are a single file with no directory: two are HelmReleases
   with no manifests beside them, the third carries its own upstream source.
 - A Helm component is a pinned `HelmRelease` beside its namespace and other

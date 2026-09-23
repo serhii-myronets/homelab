@@ -8,11 +8,11 @@ resources:
   - service.yaml
   - httproute.yaml
 components:
-  - ../../../../components/volsync
+  - ../../../../components/backed-up-volume
 # The data claim from the VolSync component: backed up hourly to R2 and, on an
 # empty cluster, restored from it.
 configMapGenerator:
-  - name: volsync
+  - name: backed-up-volume
     literals: [APP=jellyfin, CAPACITY=10Gi, MINUTE=20]
     options:
       disableNameSuffixHash: true

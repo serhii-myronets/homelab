@@ -9,11 +9,11 @@ resources:
   - service.yaml
   - httproute.yaml
 components:
-  - ../../../../components/volsync
+  - ../../../../components/backed-up-volume
 # The claim the three share, each under its own directory. Their databases
 # are SQLite, which the snapshot the mover takes catches whole.
 configMapGenerator:
-  - name: volsync
+  - name: backed-up-volume
     literals: [APP=library, CAPACITY=5Gi, MINUTE=35]
     options:
       disableNameSuffixHash: true

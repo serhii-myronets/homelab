@@ -1,11 +1,11 @@
 # A backed-up, self-restoring volume named `data`, shared by every service
 # that includes this component. The service supplies a local ConfigMap named
-# `volsync` with APP, the R2 folder, CAPACITY, and MINUTE - the minute past
+# `backed-up-volume` with APP, the R2 folder, CAPACITY, and MINUTE - the minute past
 # each hour when its backup runs:
 #
-#   components: [../../../../components/volsync]
+#   components: [../../../../components/backed-up-volume]
 #   configMapGenerator:
-#     - name: volsync
+#     - name: backed-up-volume
 #       literals: [APP=jellyfin, CAPACITY=5Gi, MINUTE=20]
 #
 # MINUTE exists to keep the four apart. Sharing one minute meant four movers
@@ -27,17 +27,17 @@ resources:
   - replicationdestination.yaml
   - pvc.yaml
 replacements:
-  - source: {kind: ConfigMap, name: volsync, fieldPath: data.APP}
+  - source: {kind: ConfigMap, name: backed-up-volume, fieldPath: data.APP}
     targets:
       - select: {kind: ExternalSecret, name: volsync-restic}
         fieldPaths: [spec.target.template.data.RESTIC_REPOSITORY]
         options: {delimiter: /, index: 3}
-  - source: {kind: ConfigMap, name: volsync, fieldPath: data.MINUTE}
+  - source: {kind: ConfigMap, name: backed-up-volume, fieldPath: data.MINUTE}
     targets:
       - select: {kind: ReplicationSource, name: data}
         fieldPaths: [spec.trigger.schedule]
         options: {delimiter: " ", index: 0}
-  - source: {kind: ConfigMap, name: volsync, fieldPath: data.CAPACITY}
+  - source: {kind: ConfigMap, name: backed-up-volume, fieldPath: data.CAPACITY}
     targets:
       - select: {kind: PersistentVolumeClaim, name: data}
         fieldPaths: [spec.resources.requests.storage]
