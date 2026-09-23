@@ -13,15 +13,33 @@ The first tells the operator which Flux controllers to install and how to size
 them; the operator upgrades them within its pinned minor range on its own. The
 second defines the `homelab` GitRepository and the root Flux Kustomization -
 deliberately not the operator's `spec.sync`, so the desired state stays
-described here. The root reads `apps/` and creates one Flux Kustomization per
-component; each reconciles its directory under `components/`.
+described here.
 
-- `apps/system/` and `components/system/` hold cluster-wide infrastructure,
-  grouped by network, security, storage and platform.
-- `apps/services/` and `components/services/` hold service workloads.
-- Helm components define a pinned `HelmRepository` and `HelmRelease` beside
-  their namespace and other manifests. Chart values are inside the
-  HelmRelease, with drift detection enabled.
+The root reconciles `apps/`, whose `kustomization.yaml` names every `ks.yaml`
+in the tree and nothing else. Each `ks.yaml` is a Flux Kustomization pointing
+at the `app/` directory beside it:
+
+```
+apps/services/jellyfin/ks.yaml     the Kustomization
+apps/services/jellyfin/app/        what it reconciles
+```
+
+That index matters: without it the root would scan the tree and apply the
+manifests inside every `app/` itself, bypassing the Kustomizations that own
+them. Adding a component means adding a directory and one line there.
+
+- `apps/system/` holds cluster-wide infrastructure, grouped by network,
+  security, storage and platform; `apps/services/` holds service workloads.
+  The split is what orders reconciliation.
+- `components/` is for kustomize Components only - fragments included by
+  several apps, currently just the VolSync volume.
+- Two components are a single file with no directory: one is a HelmRelease
+  with no manifests beside it, the other carries its own upstream source.
+- A Helm component is a pinned `HelmRelease` beside its namespace and other
+  manifests, with the chart values inside it and drift detection enabled. The
+  chart's source is not beside it: every `HelmRepository` is listed in
+  `apps/helm-repositories.yaml`, and a chart cannot come from a repository
+  absent from that file.
 - `archive/` is outside the reconciled tree. Its older Argo Applications need
   conversion before they can be restored; see its README.
 
@@ -35,7 +53,7 @@ the storage classes, and the local CA waits for cert-manager.
 
 OpenEBS LVM LocalPV provisions thin volumes on the NVMe group. The one-time
 pool job is idempotent. Configuration claims use VolSync's R2 restore source;
-caches are excluded from backups. `components/system/storage/volumes/`
+caches are excluded from backups. `apps/system/storage/volumes/app/`
 defines static HDD PVs pre-bound to each service's claims. Their Flux prune
 protection, and the matching protection on the claims, prevents Git removal
 from deleting them. This is separate from a StorageClass's reclaim policy;

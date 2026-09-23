@@ -13,7 +13,7 @@
   ignoreDeps: ["https://github.com/serhii-myronets/homelab.git"],
 
   kubernetes: {
-    managerFilePatterns: ["/^core-talos/03-gitops/components/.+\\.ya?ml$/"],
+    managerFilePatterns: ["/^core-talos/03-gitops/(apps|components)/.+\\.ya?ml$/"],
   },
   flux: {
     managerFilePatterns: ["/^core-talos/03-gitops/(apps|components)/.+\\.ya?ml$/"],

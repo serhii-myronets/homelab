@@ -117,7 +117,7 @@ platform:
       (omv, portainer, homepage, pulse, proxmox, proxmenux) answer 404 until
       they move or get a route.
   public_access:
-    tunnel: {name: beelink, id: 2150274f-5bd6-4826-b46f-16992d9f8293, managed: locally, config: core-talos/03-gitops/components/system/network/cloudflared/config.yaml}
+    tunnel: {name: beelink, id: 2150274f-5bd6-4826-b46f-16992d9f8293, managed: locally, config: core-talos/03-gitops/apps/system/network/cloudflared/app/config.yaml}
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones

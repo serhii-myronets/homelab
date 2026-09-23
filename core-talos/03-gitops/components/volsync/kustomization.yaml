@@ -1,0 +1,45 @@
+# A backed-up, self-restoring volume named `data`, shared by every service
+# that includes this component. The service supplies a local ConfigMap named
+# `volsync` with APP, the R2 folder, CAPACITY, and MINUTE - the minute past
+# each hour when its backup runs:
+#
+#   components: [../../../../components/volsync]
+#   configMapGenerator:
+#     - name: volsync
+#       literals: [APP=jellyfin, CAPACITY=5Gi, MINUTE=20]
+#
+# MINUTE exists to keep the four apart. Sharing one minute meant four movers
+# snapshotting, reading and uploading at the same instant on four cores, which
+# throttled the snapshot controller's own API client and left it racing itself
+# over the content it was deleting - see traps.yaml. Give each service a
+# different one.
+#       options:
+#         disableNameSuffixHash: true
+#         annotations: {config.kubernetes.io/local-config: "true"}
+#
+# On an empty cluster the claim is filled from R2 before the service starts;
+# with no backup yet it starts empty.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - externalsecret.yaml
+  - replicationsource.yaml
+  - replicationdestination.yaml
+  - pvc.yaml
+replacements:
+  - source: {kind: ConfigMap, name: volsync, fieldPath: data.APP}
+    targets:
+      - select: {kind: ExternalSecret, name: volsync-restic}
+        fieldPaths: [spec.target.template.data.RESTIC_REPOSITORY]
+        options: {delimiter: /, index: 3}
+  - source: {kind: ConfigMap, name: volsync, fieldPath: data.MINUTE}
+    targets:
+      - select: {kind: ReplicationSource, name: data}
+        fieldPaths: [spec.trigger.schedule]
+        options: {delimiter: " ", index: 0}
+  - source: {kind: ConfigMap, name: volsync, fieldPath: data.CAPACITY}
+    targets:
+      - select: {kind: PersistentVolumeClaim, name: data}
+        fieldPaths: [spec.resources.requests.storage]
+      - select: {kind: ReplicationDestination, name: data-restore}
+        fieldPaths: [spec.restic.capacity]
