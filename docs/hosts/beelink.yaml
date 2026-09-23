@@ -100,9 +100,10 @@ platform:
     - {name: library, namespace: library, status: deployed}
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
+    - {name: actual, namespace: actual, image: "actualbudget/actual-server:26.9.0", status: deployed}
     - {name: uptime-kuma, namespace: uptime-kuma, image: "louislam/uptime-kuma:2.5.5-rootless", status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, seerr.home, immich.home, paperless.home, kuma.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
+    names: [jellyfin.home, tv.home, seerr.home, immich.home, paperless.home, actual.home, kuma.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
@@ -246,6 +247,17 @@ platform:
       down; decision 0022 records the boundary.
     access: local HTTPS only; no public route
     built: 2026-09-22, from a fresh database
+  actual:
+    role: local-first household budget and transaction categorisation
+    image: "actualbudget/actual-server:26.9.0"
+    names: [actual.home]
+    data: >-
+      The account-password database and encrypted budget files share one 2Gi
+      LVM claim. VolSync copies it to R2 hourly at minute 35; the initial
+      source backup completed on 2026-09-22.
+    access: local HTTPS only; no public route
+    setup: Create the server password and first budget in Actual's own UI.
+    built: 2026-09-22, from a fresh data directory
   library:
     role: finds and organises what Jellyfin plays; one pod, four programs
     containers:
