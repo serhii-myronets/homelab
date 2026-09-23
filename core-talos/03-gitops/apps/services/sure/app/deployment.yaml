@@ -96,16 +96,28 @@ spec:
             - name: SECRET_KEY_BASE
               valueFrom:
                 secretKeyRef: {name: sure, key: SECRET_KEY_BASE}
+            - name: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+              valueFrom:
+                secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY}
+            - name: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+              valueFrom:
+                secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY}
+            - name: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+              valueFrom:
+                secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT}
           ports:
             - {name: http, containerPort: 3000}
+          # Rails redirects unauthenticated requests to HTTPS, while the
+          # kubelet probes the pod over HTTP. A socket probe tests availability
+          # without following that redirect to a TLS port Puma does not serve.
           startupProbe:
-            httpGet: {path: /, port: http}
+            tcpSocket: {port: http}
             periodSeconds: 5
             failureThreshold: 60
           readinessProbe:
-            httpGet: {path: /, port: http}
+            tcpSocket: {port: http}
           livenessProbe:
-            httpGet: {path: /, port: http}
+            tcpSocket: {port: http}
             periodSeconds: 30
           resources:
             requests: {cpu: 100m, memory: 256Mi}
@@ -139,6 +151,15 @@ spec:
             - name: SECRET_KEY_BASE
               valueFrom:
                 secretKeyRef: {name: sure, key: SECRET_KEY_BASE}
+            - name: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY
+              valueFrom:
+                secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY}
+            - name: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY
+              valueFrom:
+                secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY}
+            - name: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT
+              valueFrom:
+                secretKeyRef: {name: sure, key: ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT}
           resources:
             requests: {cpu: 100m, memory: 256Mi}
             limits: {memory: 1Gi}
