@@ -26,6 +26,7 @@ spec:
     - radarr.home
     - sonarr.home
     - torrent.home
+    - vault.home
   duration: 8760h
   renewBefore: 720h
   # Apple platforms reject a server certificate without serverAuth.

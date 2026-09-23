@@ -1,0 +1,73 @@
+# Vaultwarden implements the Bitwarden client API, so its official browser
+# extension and mobile applications work without a second account or client.
+# Its SQLite database, attachments and configuration share one backed-up claim:
+# SQLite's WAL lives beside its database, so one snapshot catches both safely.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      initContainers:
+        # A restored claim may be owned by the VolSync mover, while the image
+        # deliberately runs unprivileged as UID 1000.
+        - name: prepare-data
+          image: busybox:1.37
+          command: [sh, -c, "chown 1000:1000 /data"]
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      containers:
+        - name: vaultwarden
+          image: vaultwarden/server:1.37.3
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+          env:
+            # The domain is part of cryptographic client configuration and
+            # must stay stable once a vault has been created.
+            - {name: DOMAIN, value: "https://vault.home"}
+            # Local-only while the household creates its accounts. A later
+            # change can close registration without touching stored vaults.
+            - {name: SIGNUPS_ALLOWED, value: "true"}
+            - {name: INVITATIONS_ALLOWED, value: "false"}
+            - {name: SHOW_PASSWORD_HINT, value: "false"}
+          ports:
+            - {name: http, containerPort: 80}
+          startupProbe:
+            httpGet: {path: /alive, port: http}
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet: {path: /alive, port: http}
+          livenessProbe:
+            httpGet: {path: /alive, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 25m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vaultwarden
+spec:
+  selector:
+    app: vaultwarden
+  ports:
+    - {name: http, port: 80, targetPort: http}

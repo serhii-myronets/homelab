@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: vaultwarden
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - httproute.yaml
+components:
+  - ../../../../components/backed-up-volume
+# Password vaults and attachments are small, but they cannot be recreated.
+# MINUTE 25 keeps this hourly snapshot away from the existing backup jobs.
+configMapGenerator:
+  - name: backed-up-volume
+    literals: [APP=vaultwarden, CAPACITY=2Gi, MINUTE=25]
+    options:
+      disableNameSuffixHash: true
+      annotations: {config.kubernetes.io/local-config: "true"}

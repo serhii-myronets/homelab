@@ -1,0 +1,14 @@
+# Password-manager clients call the server directly, so this stays local until
+# there is an explicit remote-access design. Cloudflare Access's browser gate
+# is not a transparent transport for Bitwarden's mobile and extension clients.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: vaultwarden
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [vault.home]
+  rules:
+    - backendRefs:
+        - {name: vaultwarden, port: 80}
