@@ -2,7 +2,7 @@
 # including a restore in both directions.
 
 meta:
-  updated: 2026-09-06
+  updated: 2026-09-23
   tags: [backup, restic, disaster-recovery]
 
 tool: restic
@@ -69,13 +69,17 @@ gaps:
   - proxmox has no vzdump schedule; its guests are Terraform-rebuildable.
   - The router's config is not backed up, only documented in hosts/router.yaml.
 
-# Added 2026-09-20. The hourly VolSync copies to Cloudflare R2 are a second
-# system, separate from the restic job above, and cover the Beelink only.
+# Added 2026-09-20, service list verified 2026-09-23. The hourly VolSync copies
+# to Cloudflare R2 are a second system, separate from the restic job above, and
+# cover the Beelink only.
 volsync_to_r2:
   covers: >-
     One claim per service, named data, under volsync/<service> in the
-    homelab-backups bucket: jellyfin, torrent, library and immich. Hourly, at
-    :15, by VolumeSnapshot so the application keeps running.
+    homelab-backups bucket: actual, immich, jellyfin, library, sure,
+    torrent, uptime-kuma and vaultwarden. Hourly, by VolumeSnapshot so the
+    application keeps running. Each service runs on its own minute past the
+    hour, set by MINUTE in its kustomization - sharing one minute is what
+    throttled the snapshot controller once, see traps.yaml.
   not_covered:
     - >-
       immich's photographs. The only irreplaceable data in the house, on one
@@ -86,7 +90,9 @@ volsync_to_r2:
   restore: >-
     Each service's ReplicationDestination fills its claim from R2 before the
     service starts, so an empty cluster restores itself. Verified for library
-    on 2026-09-20 after its snapshot was recreated.
+    on 2026-09-20 after its snapshot was recreated. It restores into a volume
+    of its own and keeps it, by decisions/0024; cleaning it up left a snapshot
+    pinning a deleted volume and an error every two minutes for ever.
   watch: >-
     A ReplicationSource with an empty lastSyncTime has never run, and looks
     identical to a healthy one at a glance. See traps.yaml.
