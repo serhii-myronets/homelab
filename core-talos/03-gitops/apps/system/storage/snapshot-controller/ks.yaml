@@ -16,6 +16,9 @@ spec:
     kind: GitRepository
     name: homelab
   path: ./core-talos/03-gitops/apps/system/storage/snapshot-controller/app
-  prune: true
+  # Temporarily off: this Kustomization is removed in the next commit and
+  # deleting one garbage-collects its inventory, which here is the HelmRelease
+  # that VolSync's hourly backups run through.
+  prune: false
   wait: true
   timeout: 5m
