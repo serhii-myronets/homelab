@@ -101,7 +101,7 @@ platform:
     - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
     - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, seerr.home, immich.home, paperless.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
+    names: [jellyfin.home, tv.home, seerr.home, immich.home, paperless.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
@@ -218,6 +218,20 @@ platform:
     secrets: Infisical /paperless - DB_PASSWORD and SECRET_KEY
     auth: its own sign-in; local name only, nothing published
     built: 2026-09-22, on a fresh database
+  vaultwarden:
+    role: household password vault, compatible with Bitwarden browser and mobile clients
+    image: "vaultwarden/server:1.37.3"
+    data: >-
+      The SQLite database, its write-ahead log, attachments and configuration
+      share one 2Gi LVM claim, copied hourly to R2 at minute 25. One snapshot
+      keeps the database and its log consistent.
+    names: [vault.home]
+    access: >-
+      Local HTTPS only. No public route exists: Cloudflare Access's browser
+      gate is not a transparent transport for Bitwarden mobile or extension
+      clients.
+    registration: open locally while the household creates its initial accounts
+    built: 2026-09-22, from a fresh vault
   library:
     role: finds and organises what Jellyfin plays; one pod, four programs
     containers:
