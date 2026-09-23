@@ -17,7 +17,7 @@ cluster, as the media on the HDDs do, and there is no backup yet. OpenEBS
 Hostpath names each directory after a generated PVC UID, so a reinstalled
 cluster would give every application an empty directory. Configurations
 therefore use static `hostPath` PVs with one fixed directory per service,
-declared in `03-gitops/components/system/storage/volumes/`.
+declared in `03-gitops/apps/system/storage/volumes/app/`.
 
 OpenEBS stays for scratch data such as caches. Both share the 500 GB WD NVMe,
 which Talos splits into two XFS volumes: `apps` (100 GB) for the static PVs

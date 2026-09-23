@@ -1,0 +1,36 @@
+# Everything this cluster runs, in one list.
+#
+# The root Kustomization reconciles this directory. Without this file it would
+# scan the tree and apply every manifest it found, including the ones inside
+# each app/ - which belong to that app's own Kustomization, not to the root.
+# Naming the ks.yaml files explicitly keeps the root applying pointers and
+# nothing else, and gives one place to read what is installed.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - helm-repositories.yaml
+
+  - services/immich/ks.yaml
+  - services/jellyfin/ks.yaml
+  - services/library/ks.yaml
+  - services/samba/ks.yaml
+  - services/torrent/ks.yaml
+
+  - system/network/cloudflared/ks.yaml
+  - system/network/external-dns/ks.yaml
+  - system/network/gateway-system/ks.yaml
+
+  # Two that need no directory of their own: one is a HelmRelease with no
+  # manifests beside it, the other carries its own upstream source.
+  - system/platform/intel-gpu.yaml
+  - system/platform/metrics-server.yaml
+  - system/platform/headlamp/ks.yaml
+
+  - system/security/cert-manager/ks.yaml
+  - system/security/external-secrets/ks.yaml
+  - system/security/home-ca/ks.yaml
+
+  - system/storage/openebs/ks.yaml
+  - system/storage/snapshot-controller/ks.yaml
+  - system/storage/volsync/ks.yaml
+  - system/storage/volumes/ks.yaml

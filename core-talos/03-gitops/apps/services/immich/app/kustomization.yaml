@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: immich
+resources:
+  - namespace.yaml
+  - externalsecret.yaml
+  - pvc.yaml
+  - postgres.yaml
+  - valkey.yaml
+  - machine-learning.yaml
+  - deployment.yaml
+  - httproute.yaml
+components:
+  - ../../../../components/volsync
+# The claim this declares, `data`, is Postgres's. It is the only part of
+# Immich worth backing up hourly: the photos are on the media disk and the
+# model cache comes back on its own.
+configMapGenerator:
+  - name: volsync
+    literals: [APP=immich, CAPACITY=20Gi, MINUTE=5]
+    options:
+      disableNameSuffixHash: true
+      annotations: {config.kubernetes.io/local-config: "true"}
