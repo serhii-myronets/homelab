@@ -22,5 +22,6 @@ the open half of
 
 Settled since this list was written: Immich was built on 2026-09-20, with
 its database backed up and its originals deliberately not, yet; Paperless-ngx
-is postponed and its database archived; the *arr stack was chosen and built;
+was built on 2026-09-22, originals included in the hourly copy to R2, on a
+fresh database rather than the empty one archived for it; the *arr stack was chosen and built;
 Homepage and Pulse stopped with the rest of core's Docker services.
