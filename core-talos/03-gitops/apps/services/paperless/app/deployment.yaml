@@ -119,6 +119,16 @@ spec:
             # to read; a document in either comes out searchable.
             - {name: PAPERLESS_OCR_LANGUAGE, value: "ukr+eng"}
             - {name: PAPERLESS_OCR_LANGUAGES, value: "ukr"}
+            # Without this the originals are stored as 0000001.pdf and the
+            # only way back in is Paperless itself. With it, Paperless keeps
+            # a readable tree under media/documents/originals - year, who it
+            # came from, title - so the archive is browsable by anyone with a
+            # file manager and losing interest in Paperless costs nothing but
+            # the search. Quoted because bare {{ }} is a YAML flow mapping.
+            - {name: PAPERLESS_FILENAME_FORMAT, value: "{{ created_year }}/{{ correspondent }}/{{ title }}"}
+            # A document with no correspondent would otherwise land in a
+            # directory literally called none.
+            - {name: PAPERLESS_FILENAME_FORMAT_REMOVE_NONE, value: "true"}
           ports:
             - {name: http, containerPort: 8000}
           startupProbe:
