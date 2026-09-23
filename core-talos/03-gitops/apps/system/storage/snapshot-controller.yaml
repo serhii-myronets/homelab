@@ -1,3 +1,11 @@
+# A cluster takes exactly one of these: the cluster-wide snapshot controller,
+# which turns a VolumeSnapshot into a VolumeSnapshotContent. The per-driver
+# half - the csi-snapshotter sidecar that makes the actual LVM snapshot -
+# belongs to OpenEBS and is enabled there.
+#
+# It owns the snapshot CRDs, and openebs waits for it through the HelmRelease
+# below rather than through a Kustomization, which is why this needs no
+# directory of its own.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:

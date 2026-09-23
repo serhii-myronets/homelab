@@ -13,8 +13,6 @@ spec:
   prune: true
   wait: true
   timeout: 5m
-  dependsOn:
-  - name: snapshot-controller
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -31,6 +29,8 @@ spec:
   prune: true
   wait: true
   timeout: 5m
+  # openebs is enough: it waits for its own HelmRelease, and that waits for
+  # the snapshot controller, so the CRDs exist by the time this applies a
+  # VolumeSnapshotClass.
   dependsOn:
   - name: openebs
-  - name: snapshot-controller
