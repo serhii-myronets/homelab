@@ -104,7 +104,7 @@ platform:
     - {name: sure, namespace: sure, image: "ghcr.io/we-promise/sure:0.7.4", status: deployed}
     - {name: uptime-kuma, namespace: uptime-kuma, image: "louislam/uptime-kuma:2.5.5-rootless", status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, seerr.home, immich.home, paperless.home, actual.home, sure.home, kuma.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
+    names: [jellyfin.home, tv.home, seerr.home, immich.home, actual.home, sure.home, kuma.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
@@ -204,22 +204,6 @@ platform:
       OPENVPN_PASSWORD kept so one value here reverts the protocol.
     webui_auth: none from 192.168.8.0/24 and the pod network
     migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
-  paperless:
-    role: document archive; scan or drop a file in and it is OCR'd and searchable
-    containers:
-      - {name: paperless, image: "ghcr.io/paperless-ngx/paperless-ngx:3.2.1", port: 8000, role: web and workers}
-      - {name: postgres, image: "docker.io/library/postgres:18.6", port: 5432, role: database}
-      - {name: broker, image: "docker.io/valkey/valkey:9.2", port: 6379, role: task queue}
-    config: >-
-      One claim data on the lvm class, 20Gi, holding the Postgres cluster,
-      Paperless's own data and the scanned originals under media/. All of it
-      goes to R2 hourly at minute 10 - unlike Immich, whose photos have no
-      second copy, because documents are small and cannot be re-acquired.
-      One snapshot catches the database and the originals at the same instant.
-    ocr: ukr+eng; Ukrainian is installed at start, the image ships five others
-    secrets: Infisical /paperless - DB_PASSWORD and SECRET_KEY
-    auth: its own sign-in; local name only, nothing published
-    built: 2026-09-22, on a fresh database
   vaultwarden:
     role: household password vault, compatible with Bitwarden browser and mobile clients
     image: "vaultwarden/server:1.37.3"
@@ -439,6 +423,8 @@ platform:
     Two monitors ran here on 2026-09-20 and neither stayed: the
     VictoriaMetrics stack, then Pulse. Both are whole under
     archive/ at the repository root, with why each went written beside it.
+    Paperless followed on 2026-09-22 after a fresh, empty trial; its manifests
+    are under archive/paperless/ and its 20Gi volume was deliberately deleted.
 
 config:
   talos: core-talos/01-talos/

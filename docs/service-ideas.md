@@ -20,8 +20,8 @@ the open half of
 
 Settled since this list was written: Immich was built on 2026-09-20, with
 its database backed up and its originals deliberately not, yet; Paperless-ngx
-was built on 2026-09-22, originals included in the hourly copy to R2, on a
-fresh database rather than the empty one archived for it; the *arr stack was chosen and built;
+was trialled on 2026-09-22 and then archived without documents because Google
+Drive is sufficient for now; the *arr stack was chosen and built;
 Homepage and Pulse stopped with the rest of core's Docker services; Actual
 Budget was built on 2026-09-22 with its data copied to R2 hourly, from a fresh
 data directory; Sure was built on 2026-09-22 for a Plaid-capable finance
