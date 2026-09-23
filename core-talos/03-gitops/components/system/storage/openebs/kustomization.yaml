@@ -3,6 +3,5 @@ kind: Kustomization
 namespace: openebs
 resources:
 - namespace.yaml
-- helmrepository.yaml
 - helmrelease.yaml
 - thinpool-job.yaml

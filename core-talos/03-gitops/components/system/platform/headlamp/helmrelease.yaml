@@ -19,6 +19,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: headlamp
+        namespace: flux-system
   # helm-controller leaves a release alone once installed. This is what Argo
   # CD's selfHeal did: an edit made by hand is reverted at the next interval.
   driftDetection:

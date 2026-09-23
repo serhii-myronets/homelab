@@ -12,6 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: cert-manager
+        namespace: flux-system
   driftDetection:
     mode: enabled
   values:

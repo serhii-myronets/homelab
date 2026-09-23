@@ -3,5 +3,4 @@ kind: Kustomization
 namespace: volsync-system
 resources:
 - namespace.yaml
-- helmrepository.yaml
 - helmrelease.yaml

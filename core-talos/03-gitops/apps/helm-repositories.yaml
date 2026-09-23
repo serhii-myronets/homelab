@@ -1,0 +1,59 @@
+# Every upstream chart this cluster is allowed to install from, in one file.
+#
+# Argo CD had this as `AppProject.sourceRepos` and the migration lost it; a
+# HelmRelease could name any URL it liked. This brings the list back: a chart
+# can only come from a HelmRepository that exists, and they all exist here.
+# Adding a source is a visible line in a diff rather than a field buried in a
+# component.
+#
+# They live in flux-system and are referenced across namespaces, which
+# helm-controller allows because multitenancy lockdown is off - see
+# ../02-platform/flux-instance.yaml.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: cert-manager, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://charts.jetstack.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: external-dns, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://kubernetes-sigs.github.io/external-dns/
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: headlamp, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://kubernetes-sigs.github.io/headlamp/
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: metrics-server, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://kubernetes-sigs.github.io/metrics-server/
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: openebs, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://openebs.github.io/openebs
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: snapshot-controller, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://piraeus.io/helm-charts/
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: volsync, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://backube.github.io/helm-charts/

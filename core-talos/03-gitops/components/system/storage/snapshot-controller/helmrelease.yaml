@@ -12,6 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: snapshot-controller
+        namespace: flux-system
   driftDetection:
     mode: enabled
   values:
