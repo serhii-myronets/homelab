@@ -1,5 +1,5 @@
 ---
-id: 0002
+id: "0002"
 title: OpenMediaVault stays, for now
 status: accepted
 date: 2026-09-06

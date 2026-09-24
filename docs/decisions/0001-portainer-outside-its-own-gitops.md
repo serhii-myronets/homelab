@@ -1,5 +1,5 @@
 ---
-id: 0001
+id: "0001"
 title: Portainer deploys the stacks, nothing deploys Portainer
 status: accepted
 date: 2026-09-06

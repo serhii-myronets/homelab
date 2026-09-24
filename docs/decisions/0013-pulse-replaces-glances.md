@@ -1,5 +1,5 @@
 ---
-id: 0013
+id: "0013"
 title: Pulse replaces Glances as the infrastructure monitor
 date: 2026-09-12
 status: accepted

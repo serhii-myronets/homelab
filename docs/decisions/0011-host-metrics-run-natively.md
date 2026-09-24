@@ -1,5 +1,5 @@
 ---
-id: 0011
+id: "0011"
 title: Host metrics run natively under systemd, from tools/ rather than core/
 date: 2026-09-07
 status: superseded

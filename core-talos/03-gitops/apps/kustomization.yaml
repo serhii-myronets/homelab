@@ -34,6 +34,9 @@ resources:
   - system/security/external-secrets/ks.yaml
   - system/security/home-ca/ks.yaml
 
+  # The namespace is listed before the two controllers that share it and
+  # belongs to neither, so it has no directory either. snapshot-controller is
+  # the third HelmRelease with nothing beside it.
   - system/storage/namespace.yaml
   - system/storage/openebs/ks.yaml
   - system/storage/snapshot-controller.yaml

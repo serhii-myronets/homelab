@@ -1,5 +1,5 @@
 ---
-id: 0010
+id: "0010"
 title: Route Kubernetes through a local wildcard and separate dashboard tabs
 date: 2026-09-07
 status: accepted

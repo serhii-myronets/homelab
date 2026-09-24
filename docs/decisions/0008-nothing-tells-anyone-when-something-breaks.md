@@ -1,5 +1,5 @@
 ---
-id: 0008
+id: "0008"
 title: Nothing tells anyone when something breaks
 status: open
 date: 2026-09-06

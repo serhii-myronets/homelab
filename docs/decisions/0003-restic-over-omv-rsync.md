@@ -1,5 +1,5 @@
 ---
-id: 0003
+id: "0003"
 title: restic, not OMV's rsync
 status: accepted
 date: 2026-09-06

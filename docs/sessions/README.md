@@ -6,19 +6,16 @@ tags: [index, sessions, handoff]
 # Sessions
 
 What was done, what was learned, and what was left open — one file per working
-session, named `YYYY-MM-DD-topic.md`, newest last. Decisions that outlive the
-session graduate to [`../decisions/`](../decisions/); facts graduate to
+session, named `YYYY-MM-DD-topic.md`. Decisions that outlive the session
+graduate to [`../decisions/`](../decisions/); facts graduate to
 [`../hosts/`](../hosts/) or the other YAML files. What stays here is the
 narrative: what was tried, what failed, and why.
 
-Read the newest one before starting work.
+**Read the newest one before starting work, and only that one.** Everything
+from the older ones that still matters has already graduated. A day with more
+than one file means more than one thread of work — read whichever names the
+thread you are picking up, or both if you are starting cold.
 
-| Date | Session | Left open |
-|---|---|---|
-| 2026-09-06 | [Restructure, backups, router review](2026-09-06-restructure-and-router.md) | alerting ([0008](../decisions/0008-nothing-tells-anyone-when-something-breaks.md)) |
-| 2026-09-07 | [Kubernetes wildcard, Homepage tabs and host metrics](2026-09-07-wildcard-and-homepage-tabs.md) | an unreproduced browser certificate warning |
-| 2026-09-08 | [Tailscale routing for LAN and the Proxmox VLAN](2026-09-08-tailscale-subnet-routing.md) | — |
-| 2026-09-10 | [A power cut and its two failures](2026-09-10-power-cut.md) | the certificate warning, unreproduced a second time |
-| 2026-09-12 | [Replace Glances with Pulse](2026-09-12-pulse.md) | Proxmox API and router availability checks can be added in Pulse UI |
-| 2026-09-17 | [Prepare the ME Pro bootstrap](2026-09-17-me-pro-bootstrap-preparation.md) | install and bootstrap the replacement core |
-| 2026-09-18 | [Simplify core Talos local files](2026-09-18-simplify-core-talos-local-files.md) | applications and storage remain to be added |
+The directory is the index: every file is dated and named for its topic, so a
+listing says what a table here would, and cannot fall out of date. One did —
+it stopped at 2026-09-18 while eighteen more sessions were written.
