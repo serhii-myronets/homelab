@@ -1,5 +1,5 @@
 ---
-id: 0022
+id: "0022"
 title: Uptime Kuma observes the Beelink from inside it
 status: accepted
 date: 2026-09-22

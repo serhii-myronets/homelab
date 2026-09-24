@@ -1,3 +1,8 @@
+---
+title: Documentation index
+tags: [index, docs]
+---
+
 # docs
 
 Facts are YAML, verified against the live host. Reasoning is Markdown with YAML

@@ -1,5 +1,5 @@
 ---
-id: 0004
+id: "0004"
 title: TrueNAS SCALE ruled out on hardware
 status: rejected
 date: 2026-09-06

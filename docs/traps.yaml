@@ -7,7 +7,7 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-09-23
+  updated: 2026-09-24
   tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux]
 
 traps:
@@ -202,15 +202,18 @@ traps:
       snapshot, which is a different job.
     diagnosed: 2026-09-19, on the Beelink
 
-  - id: argo-cannot-update-a-job
-    applies_to: [argocd, kubernetes]
+  - id: gitops-cannot-update-a-job
+    applies_to: [flux, kubernetes]
     symptom: >-
       A Job keeps running its old script after the change is pushed and
-      synced.
-    cause: A Job's pod template is immutable, so the update is rejected.
+      reconciled, and the controller reports success.
+    cause: >-
+      A Job's pod template is immutable, so the update is rejected and no
+      GitOps tool can force it. Found under Argo CD, unchanged under Flux.
     fix: >-
-      Delete the Job and let Argo recreate it. Jobs meant to be changed this
-      way have to be safe to run twice.
+      Delete the Job and let the controller recreate it. A Job meant to be
+      changed this way has to be safe to run twice - nvme-thinpool is the one
+      here, and it is.
     diagnosed: 2026-09-19, on the Beelink
 
   - id: gluetun-is-oomkilled-building-its-dns-block-lists
@@ -313,19 +316,23 @@ traps:
       it, owned by the live ReplicaSet.
     diagnosed: 2026-09-19, on the Beelink, after rolling OpenEBS
 
-  - id: openebs-hostpath-needs-privileged-namespace
+  - id: openebs-needs-a-privileged-namespace
     applies_to: [openebs, kubernetes, talos]
     symptom: >-
-      The first claim on an OpenEBS LocalPV Hostpath class stays Pending with
-      ProvisioningFailed, and its pod cannot be scheduled.
+      OpenEBS pods are rejected, or a first claim stays Pending with
+      ProvisioningFailed, on a cluster that enforces the baseline Pod Security
+      level - which Talos does by default.
     cause: >-
-      The provisioner creates each PVC directory from a privileged helper pod
-      with a hostPath volume in its own namespace. Talos enforces the baseline
-      Pod Security level by default, which rejects that pod.
+      The LVM node plugin runs privileged, because it reaches the host's
+      devices to make logical volumes. The Hostpath provisioner needed the
+      same for a different reason - a privileged helper pod per claim - and
+      that is what the label was first added for, before Hostpath was
+      switched off.
     fix: >-
       Label the openebs namespace `pod-security.kubernetes.io/enforce:
-      privileged`. The claim binds on the provisioner's next retry.
-    diagnosed: 2026-09-19, on the Beelink
+      privileged`. Still required with Hostpath disabled: check the node
+      DaemonSet, not the provisioner, before deciding the label is spare.
+    diagnosed: 2026-09-19, on the Beelink; reason corrected 2026-09-24
 
   - id: external-dns-target-annotation-lost-alpha
     applies_to: [external-dns, cloudflare, gateway-api]
@@ -902,50 +909,6 @@ traps:
       the controller manager wants a restart when the dust settles.
     diagnosed: 2026-09-20
 
-  - id: helm-controller-will-not-take-over-what-argo-applied
-    applies_to: [flux, argocd, helm, kubernetes]
-    symptom: >-
-      A HelmRelease that points at the same chart and the same values Argo CD
-      was using fails on first reconcile with "invalid ownership metadata",
-      naming an object that is already there and already correct.
-    cause: >-
-      Argo CD renders a chart and applies the manifests; no Helm release ever
-      exists. helm-controller runs Helm for real, and `helm install` refuses
-      any object that does not already claim to belong to the release it is
-      installing.
-    tell: >-
-      `helm list -n <ns>` is empty while the Deployment, Service and
-      ServiceAccount are all running.
-    fix: >-
-      Stamp every object the chart renders, before Flux reconciles, with the
-      annotations `meta.helm.sh/release-name` and
-      `meta.helm.sh/release-namespace` and the label
-      `app.kubernetes.io/managed-by=Helm`. `helm template` with the same
-      values lists exactly which objects need it, cluster-scoped ones
-      included. Done first, the install adopts them in place and no pod
-      restarts.
-    diagnosed: 2026-09-21, migrating Headlamp off Argo CD
-
-  - id: flux-strips-restartedat-and-rolls-the-workload-once
-    applies_to: [flux, argocd, kubernetes]
-    symptom: >-
-      A component moved onto Flux with no change to its manifests rolls its
-      pods anyway, exactly once, the moment kustomize-controller first
-      applies it.
-    cause: >-
-      `kubectl rollout restart` writes
-      `kubectl.kubernetes.io/restartedAt` into the pod template. Argo CD did
-      not own that field and left it alone; Flux applies the template as
-      written in git and takes the field with it. Removing it changes the
-      pod-template hash, which is a new ReplicaSet.
-    tell: >-
-      The two ReplicaSets differ in that annotation and nothing else.
-    fix: >-
-      Nothing to fix - it happens once and the workload comes back. Worth
-      knowing which ones will move first: any Deployment, StatefulSet or
-      DaemonSet whose pod template still carries the annotation.
-    diagnosed: 2026-09-21, migrating Jellyfin off Argo CD
-
   - id: kustomize-controller-does-not-fetch-remote-bases
     applies_to: [flux, kubernetes]
     symptom: >-
@@ -1189,3 +1152,28 @@ traps:
       CRDs really are kept, because if they are not, the uninstall takes every
       object in them with it.
     diagnosed: 2026-09-23, on the Beelink
+
+  - id: a-new-public-name-is-cached-as-missing-twice
+    applies_to: [dns, cloudflare, external-dns, router, macos]
+    symptom: >-
+      A name just published through external-dns does not open on the LAN, for
+      up to half an hour, while every public resolver already answers for it.
+      Later `dig` returns the address but the browser still cannot connect.
+    cause: >-
+      Two caches, one after the other. Anything on the network that looked the
+      name up before the record existed made the router's dnsmasq cache the
+      NXDOMAIN, and the zone's SOA asks for that to be held 1800 seconds. Once
+      the router lets go, macOS has its own negative entry in mDNSResponder,
+      which `dig` bypasses and applications do not.
+    tell: >-
+      `dig +short <name> @1.1.1.1` answers while `dig +short <name>
+      @192.168.8.1` returns nothing - the router is the first cache. When `dig`
+      succeeds but `curl` says "Could not resolve host", it is the second.
+      `dig sure.serhii.link @192.168.8.1` prints the SOA with the seconds left.
+    fix: >-
+      Wait it out, or clear each cache: `killall -HUP dnsmasq` on the router
+      reloads it without dropping the service, and `sudo dscacheutil
+      -flushcache; sudo killall -HUP mDNSResponder` clears the Mac. Better,
+      publish the name before anyone tries to open it. Nothing is wrong with
+      the route, the tunnel or Access while this lasts.
+    diagnosed: 2026-09-23, publishing sure.serhii.link

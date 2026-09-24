@@ -1,5 +1,5 @@
 ---
-id: 0006
+id: "0006"
 title: A third copy on the Proxmox box
 status: accepted
 date: 2026-09-06

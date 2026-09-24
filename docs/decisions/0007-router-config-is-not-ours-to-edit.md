@@ -1,5 +1,5 @@
 ---
-id: 0007
+id: "0007"
 title: The router is configured through its own UI, never over ssh
 status: accepted
 date: 2026-09-06

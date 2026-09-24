@@ -1,4 +1,5 @@
 ---
+id: "0023"
 title: Archive the empty Paperless trial
 date: 2026-09-22
 status: accepted

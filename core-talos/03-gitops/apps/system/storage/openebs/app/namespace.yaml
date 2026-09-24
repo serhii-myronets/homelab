@@ -3,6 +3,8 @@ kind: Namespace
 metadata:
   name: openebs
   labels:
-    # The provisioner creates each PVC directory with a privileged helper pod
-    # in this namespace, which the baseline Pod Security level rejects.
+    # The LVM node plugin runs privileged: it reaches the host's devices to
+    # make logical volumes, and the baseline Pod Security level rejects that.
+    # Hostpath's provisioner needed the same for its own reason and is off,
+    # so this is not left over from it.
     pod-security.kubernetes.io/enforce: privileged

@@ -1,5 +1,5 @@
 ---
-id: 0005
+id: "0005"
 title: Fold everything into the Proxmox box
 status: open
 date: 2026-09-06

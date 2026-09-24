@@ -1,5 +1,5 @@
 ---
-id: 0009
+id: "0009"
 title: Keep the Homepage dashboard configuration in git
 status: accepted
 date: 2026-09-06
