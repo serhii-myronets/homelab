@@ -17,7 +17,7 @@
 # archive/ holds setups switched off but kept whole, read by nothing.
 
 meta:
-  updated: 2026-09-21
+  updated: 2026-09-24
   tags: [index, entrypoint, homelab]
 
 files:
