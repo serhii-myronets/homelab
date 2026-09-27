@@ -35,8 +35,9 @@ spec:
         csi:
           volumeSnapshots:
             enabled: false
-      # CPU requests, which the chart leaves out; see the note in the Cilium
-      # values. Each value applies to every container in the pod, so the
+      # Requests, which the chart leaves out: without them these pods are
+      # BestEffort and die first when the node runs short of memory. See the
+      # note in the Cilium values. Each value applies to every container in the pod, so the
       # controller's four ask for 40m together. No limits: a throttled volume
       # driver fails mounts and snapshots.
       lvmNode:
