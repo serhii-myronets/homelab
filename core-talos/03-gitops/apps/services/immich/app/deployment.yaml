@@ -53,13 +53,11 @@ spec:
             timeoutSeconds: 5
           resources:
             requests: {cpu: 100m, memory: 512Mi}
-            # A CPU ceiling, which nothing else here has. An import generates
-            # thumbnails and transcodes as fast as the cores allow, and on
-            # 2026-09-26 it and machine learning together starved Cilium and
-            # OpenEBS - which request no CPU - until their probes failed and
-            # every route went down. Throttled, it answers slowly, hence the
-            # probe timeouts above. 2Gi was killed at 1.85Gi-and-climbing
-            # while extracting motion-photo videos during the same import.
+            # A CPU ceiling: an import generates thumbnails and transcodes as
+            # fast as the cores allow, and the rest of the node needs some.
+            # Throttled, it answers slowly, hence the probe timeouts above.
+            # The memory limit does not protect the node - Talos kills by
+            # node pressure, not by this number; see traps.yaml.
             limits: {cpu: "1", memory: 3Gi}
           volumeMounts:
             # Upstream calls this UPLOAD_LOCATION and mounts it at /data:

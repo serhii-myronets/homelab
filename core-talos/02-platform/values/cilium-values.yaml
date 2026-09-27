@@ -77,11 +77,12 @@ operator:
 # RESOURCES
 # =========================
 
-# Requests, not limits. The chart sets none, and a container without a CPU
-# request gets the smallest share the kernel has: on 2026-09-26 an Immich
-# import took every core, Envoy's and the operator's probes timed out, and
-# every Gateway route went down. A request is a guaranteed share under
-# contention; a limit would throttle the network instead. The envoy and
-# operator requests sit with their own settings above.
+# Requests, not limits. The chart sets none, which makes every Cilium pod
+# BestEffort - the first thing Talos's OOM controller kills when the node runs
+# short of memory. On 2026-09-26 an Immich import did exactly that to Envoy
+# and the operator, 35 kills in five minutes, and every Gateway route went
+# down. A request also guarantees a CPU share under contention; a limit would
+# throttle the network instead. The envoy and operator requests sit with
+# their own settings above.
 resources:
   requests: {cpu: 100m, memory: 256Mi}

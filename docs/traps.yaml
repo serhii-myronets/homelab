@@ -1178,32 +1178,34 @@ traps:
       the route, the tunnel or Access while this lasts.
     diagnosed: 2026-09-23, publishing sure.serhii.link
 
-  - id: an-uncapped-workload-starves-cilium
-    applies_to: [kubernetes, cilium, openebs, immich, beelink]
+  - id: talos-oom-controller-kills-besteffort-pods-first
+    applies_to: [talos, kubernetes, cilium, openebs, immich, beelink, memory]
     symptom: >-
       Every route through the Gateway stops answering at once, while the
       applications behind them look healthy. cilium-envoy, cilium-operator and
-      both OpenEBS LVM pods restart with probe timeouts, "procReady not
-      received" or "sandbox container is not running"; a VolSync snapshot
-      claim waits on "context deadline exceeded".
+      both OpenEBS LVM pods restart over and over with "procReady not
+      received", "sandbox container is not running" or SandboxChanged; later a
+      busy pod dies with exit 137 and reason Error, never OOMKilled, well
+      under its own memory limit.
     cause: >-
-      One workload used every core. Cilium and OpenEBS set no CPU request, so
-      under contention the kernel gives them the smallest share there is, and
-      their one-second probes time out; the restarts add load to a node that
-      has none to spare. Their priority classes govern eviction and
-      scheduling, not CPU time.
+      The node ran out of memory, not the container. Talos's own OOM
+      controller, not the kernel's, watches node memory pressure and kills a
+      whole pod cgroup with SIGKILL. It took BestEffort pods first - on
+      2026-09-26 that meant Cilium and OpenEBS, whose charts set no requests -
+      35 kills in five minutes; once they were Burstable it took the largest
+      Burstable pod, the Immich server. A container limit does not help: the
+      trigger is the node's total.
     tell: >-
-      `kubectl top node` near or above 100% CPU, and the restarting pods are
-      the system ones rather than the busy one. `kubectl top pods -A
-      --sort-by=cpu` names the culprit.
+      `talosctl -n 192.168.8.10 dmesg | grep -E "OOM controller|SIGKILL to
+      cgroup"` names each victim's pod UID; match it with `kubectl get pods -A
+      -o custom-columns=UID:.metadata.uid,NAME:.metadata.name`. `talosctl -n
+      192.168.8.10 memory` shows AVAILABLE; it was 534 MB of 11708 during the
+      Immich import. The pod's own memory.events shows no oom_kill.
     fix: >-
-      Give the heavy workload a CPU limit, and its own probes a longer
-      timeout, because a throttled pod answers slowly; give the system pods
-      CPU requests, never limits. Since 2026-09-26 Immich has one core for the
-      server and one for machine learning, and Cilium and OpenEBS carry
-      requests in their chart values. The system pods recover on their own
-      once the load ends; a backup that failed meanwhile runs at its next
-      hour.
+      Give every pod a request, so none is BestEffort; Cilium and OpenEBS carry
+      them in their chart values since 2026-09-26. Then take load off the
+      node's memory: the Immich import - machine learning above all - is what
+      filled it. Raising a container's limit changes nothing.
     diagnosed: 2026-09-26, the first phone upload into Immich
 
   - id: helmfile-diff-applies-the-prepare-hook
