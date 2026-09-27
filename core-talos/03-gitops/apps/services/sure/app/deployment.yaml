@@ -7,7 +7,9 @@ kind: Deployment
 metadata:
   name: sure
 spec:
-  replicas: 1
+  # Off while Immich works through the first import's machine-learning queue:
+  # the node has too little memory for both. Back to 1 once that queue empties.
+  replicas: 0
   strategy:
     type: Recreate
   selector:
