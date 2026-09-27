@@ -18,7 +18,6 @@ spec:
     - ca.home
     - flux.home
     - headlamp.home
-    - actual.home
     - jellyfin.home
     - immich.home
     - seerr.home
