@@ -93,3 +93,22 @@ The manifests are preserved in `paperless/`. To restore it, move that directory
 back to `core-talos/03-gitops/apps/services/`, add its `ks.yaml` to the root
 apps Kustomization, and add `paperless.home` to the local certificate. Validate
 the build before committing. Its Infisical entries remain at `/paperless`.
+
+## actual — Actual Budget
+
+Ran from 2026-09-22 to 2026-09-26: actual-server 26.9.0 behind `actual.home`,
+at about 62 MiB. It was switched off because Sure took over budgets alongside
+the bank connections Actual cannot make here; see
+[`decisions/0027`](../docs/decisions/0027-archive-actual.md). It held one
+budget, 116 KB, and Flux deleted its 2 GiB claim with the application.
+
+The data is not gone. The last hourly VolSync copy is in R2 under
+`volsync/actual`, and nothing prunes that repository any more. The claim is
+built on the `backed-up-volume` component, whose ReplicationDestination fills
+a new claim from R2 before the application starts - so restoring the
+application restores the budget.
+
+To restore it, move `actual/` back to `core-talos/03-gitops/apps/services/`,
+add its `ks.yaml` to the root apps Kustomization, and add `actual.home` to the
+local certificate. Validate the build before committing. Its only secret is
+the shared R2 key pair in Infisical at `/backups/R2`.

@@ -75,8 +75,9 @@ gaps:
 volsync_to_r2:
   covers: >-
     One claim per service, named data, under volsync/<service> in the
-    homelab-backups bucket: actual, immich, jellyfin, library, sure,
-    torrent, uptime-kuma and vaultwarden. Hourly, by VolumeSnapshot so the
+    homelab-backups bucket: immich, jellyfin, library, sure, torrent,
+    uptime-kuma and vaultwarden. volsync/actual stays from Actual, archived
+    on 2026-09-26; nothing writes or prunes it now. Hourly, by VolumeSnapshot so the
     application keeps running. Each service runs on its own minute past the
     hour, set by MINUTE in its kustomization - sharing one minute is what
     throttled the snapshot controller once, see traps.yaml.
