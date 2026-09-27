@@ -46,12 +46,20 @@ spec:
             failureThreshold: 60
           readinessProbe:
             httpGet: {path: /api/server/ping, port: http}
+            timeoutSeconds: 5
           livenessProbe:
             httpGet: {path: /api/server/ping, port: http}
             periodSeconds: 30
+            timeoutSeconds: 5
           resources:
             requests: {cpu: 100m, memory: 512Mi}
-            limits: {memory: 2Gi}
+            # A CPU ceiling, which nothing else here has. An import generates
+            # thumbnails and transcodes as fast as the cores allow, and on
+            # 2026-09-26 it and machine learning together starved Cilium and
+            # OpenEBS - which request no CPU - until their probes failed and
+            # every route went down. Throttled, it answers slowly, hence the
+            # probe timeouts above.
+            limits: {cpu: "1", memory: 2Gi}
           volumeMounts:
             # Upstream calls this UPLOAD_LOCATION and mounts it at /data:
             # originals, thumbnails and encoded video all live under it.

@@ -39,12 +39,17 @@ spec:
             failureThreshold: 60
           readinessProbe:
             httpGet: {path: /ping, port: http}
+            timeoutSeconds: 5
           livenessProbe:
             httpGet: {path: /ping, port: http}
             periodSeconds: 30
+            # Loading a model blocks /ping for longer than a second.
+            timeoutSeconds: 5
           resources:
             requests: {cpu: 100m, memory: 1Gi}
+            # One core, like the server: see the note in deployment.yaml.
             limits:
+              cpu: "1"
               memory: 4Gi
               gpu.intel.com/i915: "1"
           volumeMounts:
