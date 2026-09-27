@@ -13,10 +13,7 @@ kind: Deployment
 metadata:
   name: machine-learning
 spec:
-  # Off while the first phone import runs: with it the node ran out of memory
-  # and Talos killed the server three times. Back to 1 afterwards, then Jobs,
-  # Missing, for faces, smart search and OCR.
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
