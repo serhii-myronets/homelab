@@ -58,8 +58,9 @@ spec:
             # 2026-09-26 it and machine learning together starved Cilium and
             # OpenEBS - which request no CPU - until their probes failed and
             # every route went down. Throttled, it answers slowly, hence the
-            # probe timeouts above.
-            limits: {cpu: "1", memory: 2Gi}
+            # probe timeouts above. 2Gi was killed at 1.85Gi-and-climbing
+            # while extracting motion-photo videos during the same import.
+            limits: {cpu: "1", memory: 3Gi}
           volumeMounts:
             # Upstream calls this UPLOAD_LOCATION and mounts it at /data:
             # originals, thumbnails and encoded video all live under it.
