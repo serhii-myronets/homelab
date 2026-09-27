@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-09-24
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux]
+  updated: 2026-09-26
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1177,3 +1177,28 @@ traps:
       publish the name before anyone tries to open it. Nothing is wrong with
       the route, the tunnel or Access while this lasts.
     diagnosed: 2026-09-23, publishing sure.serhii.link
+
+  - id: an-uncapped-workload-starves-cilium
+    applies_to: [kubernetes, cilium, openebs, immich, beelink]
+    symptom: >-
+      Every route through the Gateway stops answering at once, while the
+      applications behind them look healthy. cilium-envoy, cilium-operator and
+      both OpenEBS LVM pods restart with probe timeouts, "procReady not
+      received" or "sandbox container is not running"; a VolSync snapshot
+      claim waits on "context deadline exceeded".
+    cause: >-
+      One workload used every core. Cilium and OpenEBS set no CPU request, so
+      under contention the kernel gives them the smallest share there is, and
+      their one-second probes time out; the restarts add load to a node that
+      has none to spare. Their priority classes govern eviction and
+      scheduling, not CPU time.
+    tell: >-
+      `kubectl top node` near or above 100% CPU, and the restarting pods are
+      the system ones rather than the busy one. `kubectl top pods -A
+      --sort-by=cpu` names the culprit.
+    fix: >-
+      Give the heavy workload a CPU limit, and its own probes a longer
+      timeout, because a throttled pod answers slowly. Immich has one core for
+      the server and one for machine learning since 2026-09-26. The load ends
+      when the offending pod does; the system pods recover on their own.
+    diagnosed: 2026-09-26, the first phone upload into Immich

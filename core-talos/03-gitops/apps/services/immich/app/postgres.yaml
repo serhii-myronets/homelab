@@ -50,9 +50,11 @@ spec:
             failureThreshold: 60
           readinessProbe:
             exec: {command: [pg_isready, -U, postgres, -d, immich]}
+            timeoutSeconds: 5
           livenessProbe:
             exec: {command: [pg_isready, -U, postgres, -d, immich]}
             periodSeconds: 30
+            timeoutSeconds: 5
           resources:
             requests: {cpu: 50m, memory: 256Mi}
             limits: {memory: 1Gi}
