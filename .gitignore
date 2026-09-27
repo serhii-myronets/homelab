@@ -10,3 +10,6 @@
 /core-talos/02-platform/prepare-hook/initial-secret.yaml
 /core-talos/03-gitops/system/*/charts/
 !/core-talos/01-talos/.terraform.lock.hcl
+
+# Personal Claude Code permissions; not the repository's business.
+.claude/settings.local.json
