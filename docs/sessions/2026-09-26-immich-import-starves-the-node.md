@@ -48,6 +48,12 @@ while OpenEBS restarted, actual and torrent, succeeded on their own at 02:53
 UTC. The Immich server restarted twice waiting for Postgres's volume, then
 settled.
 
+Ten minutes later the server was killed with exit 137 and no failed probe
+before it, at 1.85 of its 2 GiB while writing motion-photo videos; its
+memory limit went to 3 GiB. The `flux` installed from Homebrew's core formula
+turned out to be InfluxData's query-language shell, not Flux CD, which lives
+in the fluxcd/tap tap.
+
 Left open: the photographs now exist and still have no second copy; the job
 concurrency inside Immich's own settings was not lowered; the smart-search
 entry for one photo failed while models loaded and needs Jobs, Missing.
