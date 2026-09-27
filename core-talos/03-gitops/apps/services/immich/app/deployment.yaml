@@ -57,8 +57,11 @@ spec:
             # fast as the cores allow, and the rest of the node needs some.
             # Throttled, it answers slowly, hence the probe timeouts above.
             # The memory limit does not protect the node - Talos kills by
-            # node pressure, not by this number; see traps.yaml.
-            limits: {cpu: "1", memory: 3Gi}
+            # node pressure, not by this number; see traps.yaml. The iGPU
+            # slot is for video transcoding, which is QSV only once it is
+            # chosen under Administration, Video Transcoding; without it one
+            # core took an hour over 130 phone videos.
+            limits: {cpu: "1", memory: 3Gi, gpu.intel.com/i915: "1"}
           volumeMounts:
             # Upstream calls this UPLOAD_LOCATION and mounts it at /data:
             # originals, thumbnails and encoded video all live under it.

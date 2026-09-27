@@ -372,10 +372,11 @@ platform:
       about $0.015 per GB per month. They are the only irreplaceable data in
       the house, so this is the open risk, not an oversight.
     gpu: >-
-      Face detection and search run on the Intel iGPU through OpenVINO. The
-      device plugin advertises three; Jellyfin holds one and this holds
-      another, so they never queue for a slot - but they do share the
-      silicon, and a transcode during an import slows both.
+      Face detection and search run on the Intel iGPU through OpenVINO, and
+      since 2026-09-26 the server transcodes video on it through QSV. The
+      device plugin advertises three slots and all three are now taken:
+      Jellyfin, machine learning and the server. They never queue for a
+      slot, but they share the silicon, so work in one slows the others.
     secret: >-
       /immich/DB_PASSWORD in Infisical, read by the ExternalSecret immich-db.
       Postgres initialises its data directory once with whatever password it
