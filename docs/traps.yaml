@@ -1226,3 +1226,22 @@ traps:
       Every apply of the Cilium release also regenerates cilium-ca and the
       Hubble certificates; that is the chart, not drift.
     diagnosed: 2026-09-26, adding CPU requests to Cilium
+
+  - id: immich-ml-spins-after-its-queue-empties
+    applies_to: [immich, beelink]
+    symptom: >-
+      Immich machine learning holds a whole core - its CPU limit - with every
+      Immich queue empty, the server idle and nothing in its own log.
+    cause: >-
+      Unconfirmed. The gunicorn worker kept burning CPU after the first
+      import's faces, smart search and OCR were done; a restart left it idle,
+      so it is state left behind by the work, not load. Inside the container
+      /proc reports no CPU for any of its processes, which hides it.
+    tell: >-
+      `talosctl -n 192.168.8.10 processes` twice, ten seconds apart: the
+      gunicorn worker's CPU-TIME grows by ten seconds. `kubectl top` shows
+      the pod at 1000m while the Immich job queues in Valkey are all zero.
+    fix: >-
+      `kubectl -n immich rollout restart deploy/machine-learning`. It is
+      stateless, so the restart costs only a model reload on the next job.
+    diagnosed: 2026-09-26, after the first phone import
