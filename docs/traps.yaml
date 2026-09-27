@@ -1198,7 +1198,29 @@ traps:
       --sort-by=cpu` names the culprit.
     fix: >-
       Give the heavy workload a CPU limit, and its own probes a longer
-      timeout, because a throttled pod answers slowly. Immich has one core for
-      the server and one for machine learning since 2026-09-26. The load ends
-      when the offending pod does; the system pods recover on their own.
+      timeout, because a throttled pod answers slowly; give the system pods
+      CPU requests, never limits. Since 2026-09-26 Immich has one core for the
+      server and one for machine learning, and Cilium and OpenEBS carry
+      requests in their chart values. The system pods recover on their own
+      once the load ends; a backup that failed meanwhile runs at its next
+      hour.
     diagnosed: 2026-09-26, the first phone upload into Immich
+
+  - id: helmfile-diff-applies-the-prepare-hook
+    applies_to: [helmfile, talos, kubernetes]
+    symptom: >-
+      `helmfile diff` in core-talos/02-platform changes the cluster, although
+      its name promises a preview.
+    cause: >-
+      Helmfile runs `prepare` hooks before every command, diff included, and
+      this one server-side applies the Gateway API CRDs and the Infisical
+      machine credential from prepare-hook/.
+    tell: Lines prefixed `hook[prepare] logs |` ending in serverside-applied.
+    fix: >-
+      Harmless while prepare-hook/ matches the cluster, since the apply is
+      idempotent. To preview with no side effect, call the plugin helmfile
+      uses directly: `helm diff upgrade cilium cilium/cilium --version <v> -n
+      kube-system -f values/cilium-values.yaml`.
+      Every apply of the Cilium release also regenerates cilium-ca and the
+      Hubble certificates; that is the chart, not drift.
+    diagnosed: 2026-09-26, adding CPU requests to Cilium
