@@ -7,9 +7,7 @@ kind: Deployment
 metadata:
   name: sure
 spec:
-  # Off while the second phone's first import runs into Immich: the node has
-  # too little memory for both. Back to 1 once Immich's queues empty.
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
