@@ -376,6 +376,7 @@ platform:
       - {name: torrents, path: /var/mnt/hdd-a/torrents}  # what is seeding
       - {name: scan, path: /var/mnt/hdd-b/scan}
       - {name: hdd-b, path: /var/mnt/hdd-b}
+      - {name: photos, path: /var/mnt/hdd-a/photos/library, read_only: true}  # Immich originals
     migrated: 89 document files from core on 2026-09-19
     owner: "1000:1000"         # shared with every media application
     modes: {files: "0664", directories: "0775"}
