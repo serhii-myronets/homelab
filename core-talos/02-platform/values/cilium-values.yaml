@@ -74,6 +74,14 @@ operator:
   resources:
     requests: {cpu: 25m, memory: 64Mi}
     limits: {memory: 256Mi}
+  # Its leader election cannot be switched off, only slowed: a 60 s lease and
+  # 40 s to renew it ride out the etcd stalls of a node short of memory, which
+  # made it exit on the defaults (15 s, 10 s) in the stress test of
+  # 2026-09-29. With one replica nobody waits for the lease.
+  extraArgs:
+    - --leader-election-lease-duration=60s
+    - --leader-election-renew-deadline=40s
+    - --leader-election-retry-period=5s
 
 # =========================
 # RESOURCES
