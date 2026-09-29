@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-09-26
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich]
+  updated: 2026-09-29
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1253,3 +1253,44 @@ traps:
       `kubectl -n immich rollout restart deploy/machine-learning`. It is
       stateless, so the restart costs only a model reload on the next job.
     diagnosed: 2026-09-26, after the first phone import
+
+  - id: router-reflash-wipes-everything
+    applies_to: [router, glinet, dhcp, dns, beelink, proxmox]
+    symptom: >-
+      After the router is recovered from a failed firmware update, `*.home`
+      stops resolving, Proxmox is unreachable, the Beelink answers on a pool
+      address instead of .10, and ssh to the router refuses the key.
+    cause: >-
+      Flashing the firmware again keeps no settings. DHCP reservations, the
+      AdGuard rewrite, the LuCI-made VLAN 10 and its zone, WireGuard keys and
+      peers, Wi-Fi names and the ssh key all go at once.
+    tell: >-
+      ssh warns REMOTE HOST IDENTIFICATION HAS CHANGED, then Permission
+      denied; the SSIDs are back to GL-MT6000-xxx; `dig +short x.home
+      @192.168.8.1` returns nothing.
+    fix: >-
+      Rebuild through the UI from hosts/router.yaml, which is the only record
+      that survived. Take a configuration backup in the GL.iNet UI before every
+      firmware update, and keep it out of this repository - it holds keys.
+      Nothing whose address others depend on should take it from the router:
+      see decisions/0028.
+    diagnosed: 2026-09-29, rebuilding after the 2026-09-28 reflash
+
+  - id: talos-shutdown-leaves-failed-pods
+    applies_to: [talos, kubernetes, beelink]
+    symptom: >-
+      `kubectl get pods -A` lists pods in Error, 0/1, some days old, while the
+      same workloads also have Running pods and every deployment is ready.
+    cause: >-
+      Graceful node shutdown. Before the Beelink powers off, kubelet stops
+      every pod and marks it Failed; after boot the ReplicaSets create new
+      pods instead. The controller manager keeps terminated pods until 12500
+      of them exist, so every shutdown adds one more set.
+    tell: >-
+      `kubectl get pods -A --field-selector=status.phase=Failed -o
+      custom-columns=POD:.metadata.name,MSG:.status.message` shows "Pod was
+      terminated in response to imminent node shutdown" on every row.
+    fix: >-
+      Harmless. `kubectl delete pods -A --field-selector=status.phase=Failed`
+      clears them; it touches only pods that already stopped.
+    diagnosed: 2026-09-29, 18 of them after two shutdowns in one day
