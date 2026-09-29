@@ -23,6 +23,10 @@ spec:
         - name: prepare
           image: busybox:1.37
           command: [sh, -c, "mkdir -p /data && chown 1000:1000 /data"]
+          # Equal to its limits, so the pod stays Guaranteed; see below.
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+            limits: {cpu: 100m, memory: 64Mi}
           volumeMounts:
             - {name: hdd-a, mountPath: /data, subPath: photos}
       containers:
@@ -51,17 +55,18 @@ spec:
             httpGet: {path: /api/server/ping, port: http}
             periodSeconds: 30
             timeoutSeconds: 5
+          # Requests equal to limits make this pod Guaranteed. When the node
+          # runs out of memory, Talos's OOM controller kills BestEffort pods
+          # first and Guaranteed ones last, so machine learning - Burstable,
+          # stateless - goes before the process that is receiving uploads.
+          # Before this, the server was the victim every time; see traps.yaml.
+          # The CPU ceiling keeps an import's thumbnails and transcodes from
+          # taking every core; a throttled pod answers slowly, hence the probe
+          # timeouts above. The iGPU slot is for QSV transcoding, chosen under
+          # Administration, Video Transcoding.
           resources:
-            requests: {cpu: 100m, memory: 512Mi}
-            # A CPU ceiling: an import generates thumbnails and transcodes as
-            # fast as the cores allow, and the rest of the node needs some.
-            # Throttled, it answers slowly, hence the probe timeouts above.
-            # The memory limit does not protect the node - Talos kills by
-            # node pressure, not by this number; see traps.yaml. The iGPU
-            # slot is for video transcoding, which is QSV only once it is
-            # chosen under Administration, Video Transcoding; without it one
-            # core took an hour over 130 phone videos.
-            limits: {cpu: "1", memory: 3Gi, gpu.intel.com/i915: "1"}
+            requests: {cpu: "1", memory: 2560Mi, gpu.intel.com/i915: "1"}
+            limits: {cpu: "1", memory: 2560Mi, gpu.intel.com/i915: "1"}
           volumeMounts:
             # Upstream calls this UPLOAD_LOCATION and mounts it at /data:
             # originals, thumbnails and encoded video all live under it.

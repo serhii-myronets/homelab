@@ -47,10 +47,13 @@ spec:
             timeoutSeconds: 5
           resources:
             requests: {cpu: 100m, memory: 1Gi}
-            # One core, like the server: see the note in deployment.yaml.
+            # One core, like the server. 2.5Gi rather than 4: with one job of
+            # each kind at a time it peaks under that, and if it ever does not,
+            # the kernel kills it inside its own limit - a stateless restart -
+            # before the whole node runs short and Talos picks a victim.
             limits:
               cpu: "1"
-              memory: 4Gi
+              memory: 2560Mi
               gpu.intel.com/i915: "1"
           volumeMounts:
             - {name: model-cache, mountPath: /cache}
