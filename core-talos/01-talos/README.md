@@ -13,11 +13,10 @@ terraform apply
 the installation, scheduling, network and storage configuration. The provider
 lock file is committed.
 
-`patches/storage.yaml` provisions 499 GB of the dedicated 500 GB WD NVMe by serial
-number as two XFS user volumes, bind-mounted into kubelet: `apps` (100 GB) at
-`/var/mnt/apps` for application configurations and databases, and `cache`
-(399 GB) at `/var/mnt/cache` for the `fast-local` OpenEBS storage class. The
-split keeps a growing cache from starving the applications.
+`patches/storage.yaml` leaves the 500 GB WD NVMe unclaimed: it is one LVM
+volume group for OpenEBS LVM LocalPV, created by a Job in `03-gitops` because
+this provider's configuration contract has no LVMVolumeGroupConfig. See
+`docs/decisions/0019`.
 
 `terraform.tfstate`, its backups and `secrets.yaml` are plaintext local files
 ignored by Git. Back them up securely outside the repository. The state is the
@@ -47,7 +46,7 @@ The stable Talos provider 0.11.0 uses the v1.13 configuration contract, while
 the installed OS and validation CLI are Talos 1.14.1. Provider 0.12.0-rc.0 was
 tested during setup but generated incompatible configuration documents.
 
-It also provisions each 10 TB HDD, selected by WWID, as the XFS user volumes
+The same patch provisions each 10 TB HDD, selected by WWID, as the XFS user volumes
 `hdd-a` and `hdd-b` at `/var/mnt/hdd-a` and `/var/mnt/hdd-b`, and labels the
 node `homelab/media-hdd=true` for the static PVs that use them. A reinstall
 with this configuration reuses the existing partitions; never reset the node

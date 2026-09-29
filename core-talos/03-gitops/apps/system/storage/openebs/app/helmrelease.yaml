@@ -35,17 +35,19 @@ spec:
         csi:
           volumeSnapshots:
             enabled: false
-      # Requests, which the chart leaves out: without them these pods are
-      # BestEffort and die first when the node runs short of memory. See the
-      # note in the Cilium values. Each value applies to every container in the pod, so the
-      # controller's four ask for 40m together. No limits: a throttled volume
-      # driver fails mounts and snapshots.
+      # Resources, which the chart leaves out. Each value applies to every
+      # container in the pod, so the controller's four ask for 40m together.
+      # No CPU limit: a throttled volume driver fails mounts and snapshots.
+      # The memory limits sit far above use only so that Talos's OOM
+      # controller scores these pods zero; see the note in the Cilium values.
       lvmNode:
         resources:
           requests: {cpu: 25m, memory: 32Mi}
+          limits: {memory: 256Mi}
       lvmController:
         resources:
           requests: {cpu: 10m, memory: 32Mi}
+          limits: {memory: 256Mi}
         # A cluster takes one snapshot controller, and it is the one in
         # kube-system. The csi-snapshotter sidecar beside this stays: it turns a
         # VolumeSnapshot into an LVM snapshot, which is the driver's own work.

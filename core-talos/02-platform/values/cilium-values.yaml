@@ -47,6 +47,7 @@ envoy:
   enabled: true
   resources:
     requests: {cpu: 50m, memory: 128Mi}
+    limits: {memory: 512Mi}
 
 # =========================
 # LOAD BALANCER
@@ -72,17 +73,24 @@ operator:
   replicas: 1
   resources:
     requests: {cpu: 25m, memory: 64Mi}
+    limits: {memory: 256Mi}
 
 # =========================
 # RESOURCES
 # =========================
 
-# Requests, not limits. The chart sets none, which makes every Cilium pod
-# BestEffort - the first thing Talos's OOM controller kills when the node runs
-# short of memory. On 2026-09-26 an Immich import did exactly that to Envoy
-# and the operator, 35 kills in five minutes, and every Gateway route went
-# down. A request also guarantees a CPU share under contention; a limit would
-# throttle the network instead. The envoy and operator requests sit with
-# their own settings above.
+# The chart sets no resources, which made every Cilium pod BestEffort - the
+# first thing Talos's OOM controller kills when the node runs short of memory.
+# On 2026-09-26 an Immich import did exactly that to Envoy and the operator,
+# 35 kills in five minutes, and every Gateway route went down. Requests
+# guarantee a CPU share under contention; there is no CPU limit, which would
+# throttle the network. Memory limits sit far above use only so that every
+# container - init containers too - has one: that controller scores such a
+# pod zero and never picks it. The envoy and operator settings sit with their
+# own sections above. See traps.yaml.
 resources:
   requests: {cpu: 100m, memory: 256Mi}
+  limits: {memory: 1Gi}
+initResources:
+  requests: {cpu: 10m, memory: 32Mi}
+  limits: {memory: 512Mi}
