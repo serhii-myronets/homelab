@@ -31,6 +31,11 @@ spec:
               mkdir -p /vol/postgres /vol/storage;
               chown 999:999 /vol/postgres; chmod 0700 /vol/postgres;
               chown 1000:1000 /vol/storage
+          # With this, every container in the pod has a memory limit, which
+          # keeps Talos's OOM controller off Sure; see traps.yaml.
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 64Mi}
           volumeMounts:
             - {name: data, mountPath: /vol}
       containers:

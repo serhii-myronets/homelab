@@ -51,16 +51,20 @@ spec:
           readinessProbe:
             httpGet: {path: /api/server/ping, port: http}
             timeoutSeconds: 5
+          # Six misses thirty seconds apart before a restart. On one core
+          # during an import it answers late but has not hung, and a restart
+          # throws away every job in flight.
           livenessProbe:
             httpGet: {path: /api/server/ping, port: http}
             periodSeconds: 30
-            timeoutSeconds: 5
-          # Requests equal to limits make this pod Guaranteed. When the node
-          # runs out of memory, Talos's OOM controller kills BestEffort pods
-          # first and Guaranteed ones last, so machine learning - Burstable,
-          # stateless - goes before the process that is receiving uploads.
-          # Before this, the server was the victim every time; see traps.yaml.
-          # The CPU ceiling keeps an import's thumbnails and transcodes from
+            timeoutSeconds: 10
+            failureThreshold: 6
+          # Every container here, the init one included, has a memory limit, so
+          # the pod cgroup has memory.max and Talos's OOM controller scores it
+          # zero - it is never chosen while any pod without a limit is left.
+          # Before the init container had one, this was the victim every time;
+          # see traps.yaml. Requests equal limits as well, which keeps CPU
+          # reserved for it. The CPU ceiling keeps an import's thumbnails and transcodes from
           # taking every core; a throttled pod answers slowly, hence the probe
           # timeouts above. The iGPU slot is for QSV transcoding, chosen under
           # Administration, Video Transcoding.
