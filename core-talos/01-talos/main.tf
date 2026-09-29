@@ -35,6 +35,7 @@ data "talos_machine_configuration" "controlplane" {
     file("${path.module}/patches/network.yaml"),
     file("${path.module}/patches/cilium.yaml"),
     file("${path.module}/patches/storage.yaml"),
+    file("${path.module}/patches/swap.yaml"),
     yamlencode({ machine = { install = {
       disk  = ""
       image = "factory.talos.dev/metal-installer/${local.schematic}:${local.talos_version}"

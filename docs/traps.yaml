@@ -1303,3 +1303,22 @@ traps:
       already stopped.
     diagnosed: 2026-09-29, 49 of them - 18 Failed, 31 Succeeded - from
       shutdowns since 2026-09-19
+
+  - id: pods-read-running-straight-after-an-etcd-recovery
+    applies_to: [talos, etcd, kubernetes, beelink]
+    symptom: >-
+      Seconds after `talosctl bootstrap --recover-from`, `kubectl get pods`
+      shows every pod Running and ready, while the services do not answer.
+    cause: >-
+      Those statuses are the snapshot's, not the node's. After an EPHEMERAL
+      wipe no container exists and no image is on disk; kubelet first logs
+      "node not found" until kube-apiserver is back, then rebuilds each pod
+      and pulls its images, and only then do the statuses turn true.
+    tell: >-
+      `talosctl -n 192.168.8.10 containers -k | grep -c CONTAINER_RUNNING` is a
+      handful instead of about 45.
+    fix: >-
+      Wait on the node, not on the API: count running containers until it is
+      near its usual number, then check the routes. On 2026-09-29 that took
+      under nine minutes from the wipe.
+    diagnosed: 2026-09-29, wiping EPHEMERAL for swap
