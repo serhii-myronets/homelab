@@ -62,7 +62,9 @@ disks:
 network:
   bridge: br0
   address: 192.168.8.10/24
+  addressing: static in Talos, no DHCP - see decisions/0028
   gateway: 192.168.8.1
+  resolver: 192.168.8.1
   ports:
     - {name: enp3s0, role: router uplink}
     - {name: enp2s0, role: monitor and desktop downlink}
