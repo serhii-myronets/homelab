@@ -55,3 +55,20 @@ Swapped pages stay out until something touches them, so an idle service now
 costs the node much less real memory; the price is a slower first request
 when it wakes. Swap does not change scheduling: requests still reserve 88% of
 the node's memory, and a new service is sized against what is left of that.
+
+## Tested again, with a monitoring stack's worth of memory
+
+A second run added what a small VictoriaMetrics stack would hold - a pod
+keeping 1 GiB hot - and real work, Smart Search over every asset, beside the
+same climbing pod. Swap reached 3.5 GB with up to 1.7 GB in zswap; the run
+was stopped when available memory fell to about 290 MB. Talos's OOM
+controller acted nine times and took Immich machine learning every time.
+Every service kept answering. At the bottom, the controller manager, the
+scheduler and cilium-operator each exited once: etcd was too slow for them to
+renew their leader-election leases. The first two now run with leader
+election off - there is one control plane - and the operator with a 60 s
+lease and 40 s to renew it.
+
+So a 1 GiB monitoring stack fits ordinary days and ordinary imports, with
+available memory staying near a gigabyte; at the extreme, machine learning
+dies in a loop until the pressure passes.

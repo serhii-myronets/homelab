@@ -25,7 +25,16 @@ cluster:
     resources:
       requests: {cpu: 50m, memory: 256Mi}
       limits: {memory: 512Mi}
+    # One control plane, so no rival to elect a leader against. With it on,
+    # a node short of memory slows etcd, the lease lapses and the process
+    # exits: it restarted this way in the stress test of 2026-09-29. Turn it
+    # back on before a second control-plane node joins.
+    extraArgs:
+      leader-elect: "false"
   scheduler:
     resources:
       requests: {cpu: 10m, memory: 64Mi}
       limits: {memory: 256Mi}
+    # See controllerManager.
+    extraArgs:
+      leader-elect: "false"
