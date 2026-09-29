@@ -38,6 +38,7 @@ resources:
   # the third HelmRelease with nothing beside it.
   - system/storage/namespace.yaml
   - system/storage/openebs/ks.yaml
+  - system/storage/etcd-backup/ks.yaml
   - system/storage/snapshot-controller.yaml
   - system/storage/volsync/ks.yaml
   - system/storage/volumes/ks.yaml

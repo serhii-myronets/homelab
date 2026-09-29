@@ -1,0 +1,85 @@
+# A nightly etcd snapshot, kept in R2 by restic for thirty days. With it and
+# 01-talos/secrets.yaml the cluster can be recovered on a new disk with
+# `talosctl bootstrap --recover-from`; see decisions/0030.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-backup
+spec:
+  schedule: "30 3 * * *"
+  timeZone: America/Los_Angeles
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+            seccompProfile: {type: RuntimeDefault}
+          initContainers:
+            # talosctl writes the snapshot; restic below uploads it.
+            - name: snapshot
+              image: ghcr.io/siderolabs/talosctl:v1.14.1
+              env:
+                - name: NODE_IP
+                  valueFrom:
+                    fieldRef: {fieldPath: status.hostIP}
+                - {name: HOME, value: /tmp}
+              args:
+                - --talosconfig=/var/run/secrets/talos.dev/config
+                - --nodes=$(NODE_IP)
+                - --endpoints=$(NODE_IP)
+                - etcd
+                - snapshot
+                - /backup/etcd.snapshot
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: [ALL]}
+              # Memory limits on every container keep Talos's OOM controller
+              # off this pod; see traps.yaml.
+              resources:
+                requests: {cpu: 10m, memory: 32Mi}
+                limits: {memory: 256Mi}
+              volumeMounts:
+                - {name: backup, mountPath: /backup}
+                - {name: tmp, mountPath: /tmp}
+                - {name: talos, mountPath: /var/run/secrets/talos.dev, readOnly: true}
+          containers:
+            - name: restic
+              image: restic/restic:0.19.1
+              command:
+                - sh
+                - -c
+                - >-
+                  set -e;
+                  restic cat config >/dev/null 2>&1 || restic init;
+                  restic backup --host beelink --tag etcd /backup/etcd.snapshot;
+                  restic forget --host beelink --tag etcd --keep-daily 30 --prune
+              env:
+                - {name: HOME, value: /tmp}
+                - {name: RESTIC_CACHE_DIR, value: /tmp/restic-cache}
+              envFrom:
+                - secretRef: {name: etcd-backup-restic}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: [ALL]}
+              resources:
+                requests: {cpu: 50m, memory: 64Mi}
+                limits: {memory: 512Mi}
+              volumeMounts:
+                - {name: backup, mountPath: /backup, readOnly: true}
+                - {name: tmp, mountPath: /tmp}
+          volumes:
+            - name: backup
+              emptyDir: {sizeLimit: 256Mi}
+            - name: tmp
+              emptyDir: {sizeLimit: 256Mi}
+            - name: talos
+              secret: {secretName: etcd-backup}

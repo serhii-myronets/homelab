@@ -3,6 +3,14 @@ machine:
     disk: /dev/nvme1n1
     diskSelector:
       serial: MQ49W66504526
+  # One role, from one namespace: the nightly job in etcd-backup may take an
+  # etcd snapshot through the Talos API and do nothing else. See
+  # docs/decisions/0030.
+  features:
+    kubernetesTalosAPIAccess:
+      enabled: true
+      allowedRoles: [os:etcd:backup]
+      allowedKubernetesNamespaces: [etcd-backup]
 cluster:
   allowSchedulingOnControlPlanes: true
   # Memory limits, well above use, only so that Talos's OOM controller never
