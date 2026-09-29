@@ -66,9 +66,13 @@ short once machine learning is off the node.
 
 ## Left open
 
-- kube-apiserver has no memory limit, so it stays a Talos candidate while
-  machine learning is idle and small. A limit and a smaller watch cache belong
-  in the Talos patches in 01-talos; not done.
+- Done later the same day: the control plane got memory limits in the Talos
+  patch (applied by the owner with terraform apply after validate, dry-run and
+  plan), and Cilium and OpenEBS got them on every container. Immich machine
+  learning is now the only pod Talos's OOM controller can pick. Cilium's
+  restart left `*.home` unanswered for under a minute while 192.168.8.15 was
+  announced again. The watch cache was left alone: most of kube-apiserver's
+  memory is growth over uptime, and no saving could be estimated.
 - kube-apiserver fell from about 1.45 GiB to 0.86 GiB after the node's reboot
   that day. It was 0.83 GiB after the 03:58 kill as well, so this looks like
   growth over uptime rather than anything the static address changed; worth
@@ -76,7 +80,8 @@ short once machine learning is off the node.
 - Sure's Sidekiq worker had been started with `command`, which skipped the
   entrypoint that preloads jemalloc; it now uses `args`. The saving is not
   measured yet.
-- 01-talos/README.md still names the kubectl context admin@beelink and
-  describes the NVMe as apps and cache volumes; both are out of date.
+- 01-talos/README.md described the NVMe as apps and cache volumes; fixed.
+  Its context name, admin@beelink, is right for the kubeconfig Terraform
+  generates; the local one had been renamed to beelink by hand.
 - Moving machine learning to Proxmox remains the largest saving, once
   Proxmox stops losing power.
