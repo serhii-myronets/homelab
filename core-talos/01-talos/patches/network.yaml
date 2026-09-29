@@ -8,8 +8,14 @@ links:
 stp:
   enabled: true
 up: true
+# Static, not DHCP: a router reset once dropped the reservation and the node
+# came back on another address. See docs/decisions/0028.
+addresses:
+  - address: 192.168.8.10/24
+routes:
+  - gateway: 192.168.8.1
 ---
 apiVersion: v1alpha1
-kind: DHCPv4Config
-name: br0
-clientIdentifier: mac
+kind: ResolverConfig
+nameservers:
+  - address: 192.168.8.1
