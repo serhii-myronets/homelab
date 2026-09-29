@@ -17,7 +17,7 @@
 # archive/ holds setups switched off but kept whole, read by nothing.
 
 meta:
-  updated: 2026-09-24
+  updated: 2026-09-29
   tags: [index, entrypoint, homelab]
 
 files:
@@ -33,11 +33,11 @@ files:
     holds: hypervisor at 10.1.1.100 - hardware, guests, spare capacity
     tags: [proxmox, hypervisor, lab]
   - path: docs/hosts/router.yaml
-    holds: GL.iNet GL-MT6000 - VLANs, zones, DNS, DHCP, WireGuard, Tailscale, risks
-    tags: [router, openwrt, glinet, firewall, vpn, tailscale]
+    holds: GL.iNet GL-MT6000 - zones, DNS, DHCP, WireGuard, what the reflash lost, risks
+    tags: [router, openwrt, glinet, firewall, vpn, wireguard]
   - path: docs/network.yaml
     holds: subnets, gateways, DNS, TLS and VPN routes - the parts that span hosts
-    tags: [network, dns, tls, vpn, tailscale]
+    tags: [network, dns, tls, vpn, wireguard]
   - path: docs/backups.yaml
     holds: restic repositories, schedule, what is and is not covered
     tags: [backup, restic, disaster-recovery]

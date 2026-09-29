@@ -1,14 +1,16 @@
 # The parts of the network that span hosts. Per-host detail lives in
-# docs/hosts/. Verified 2026-09-19.
+# docs/hosts/. Verified 2026-09-19; router-dependent rows re-verified
+# 2026-09-29, after the router's reflash.
 
 meta:
-  updated: 2026-09-19
-  tags: [network, subnets, dns, tls, vpn, tailscale]
+  updated: 2026-09-29
+  tags: [network, subnets, dns, tls, vpn, wireguard]
 
 subnets:
-  - {cidr: 192.168.8.0/24, use: LAN, vlan: 1, hosts: [core, beelink], gateway: 192.168.8.1}
-  - {cidr: 10.1.1.0/24, use: lab, vlan: 10, hosts: [proxmox], gateway: 10.1.1.1}
-  - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1}
+  - {cidr: 192.168.8.0/24, use: LAN, hosts: [core, beelink], gateway: 192.168.8.1}
+  - {cidr: 10.1.1.0/24, use: lab, vlan: 10, hosts: [proxmox], gateway: 10.1.1.1,
+     routed: no}                   # VLAN not rebuilt after the reflash
+  - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1, enabled: no}
   - {cidr: 10.1.0.0/24, use: wireguard clients, gateway: 10.1.0.1}
 
 load_balancers:
@@ -24,15 +26,10 @@ dns:
     New internal hostnames need no DNS work, but need an HTTPRoute and an
     entry in the Gateway certificate before the Gateway can serve them.
 
-tailscale:
-  lan_route: {cidr: 192.168.8.0/24, advertised_by: router}
-  lab_route: {cidr: 10.1.1.0/24, advertised_by: null}
-  split_dns: {domain: home, server: 192.168.8.1}
-  exit_node: none
-  routing_note: >-
-    The Proxmox advertiser was removed; see hosts/proxmox.yaml.
-    The conflicting-route failure remains documented in traps.yaml.
-    The alternative topology proposed in decisions/0012 was withdrawn.
+vpn:
+  wireguard: the router's server, the only way in - see hosts/router.yaml
+  tailscale: not used              # its old subnet-route failure stays in
+                                   # traps.yaml in case it ever comes back
 
 tls:
   internal: cert-manager home-ca; root certificate served at ca.home
@@ -42,16 +39,11 @@ tls:
     Cloudflare Zero Trust dashboard, not in this repository.
 
 reachability:                      # who can reach whom, as configured today
-  lan_to_lab: yes                  # forwarding lan -> homelabzone
-  lab_to_lan: yes                  # forwarding homelabzone -> lan
-  vpn_to_lab: yes                  # forwarding wgserver -> homelabzone
-  vpn_to_lan: yes                  # wgserver2lan, added 2026-09-06
-  vpn_note: >-
-    Both vpn_ rows describe firewall rules that are in place, not access that
-    works: the WireGuard interface is disabled, so nothing arrives on it.
-    See hosts/router.yaml.
-  tailscale_to_lan: yes            # router advertises 192.168.8.0/24
-  tailscale_to_lab: no             # no lab subnet advertiser
+  lan_to_lab: no                   # no VLAN 10 on the router at all
+  lab_to_lan: no
+  vpn_to_internet: yes             # wgserver2wan
+  vpn_to_lan: no                   # wgserver2lan exists, disabled
+  vpn_to_lab: no
   guest_to_anything: no            # wan only
   wan_to_lan: no                   # no port forwards; public access is the
                                    # Cloudflare tunnel, which dials outward

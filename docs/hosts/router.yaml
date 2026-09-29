@@ -3,203 +3,146 @@
 #
 # Do not edit its uci config. Changes made outside GL.iNet's own UI drift from
 # what that UI believes, and the firmware may overwrite or hide them — see
-# decisions/0007. Facts below verified 2026-09-08 over ssh, read-only.
+# decisions/0007. Facts below verified 2026-09-29 over ssh, read-only, after a
+# reflash on 2026-09-28 wiped every earlier setting (traps.yaml,
+# router-reflash-wipes-everything). Whatever is not listed here was not
+# rebuilt.
 
 meta:
   host: router
-  updated: 2026-09-19
-  tags: [router, openwrt, glinet, firewall, vlan, dns, wireguard, tailscale]
+  updated: 2026-09-29
+  tags: [router, openwrt, glinet, firewall, dns, wireguard]
 
 identity:
   model: GL.iNet GL-MT6000 (Flint 2)
   ip: 192.168.8.1
-  ssh: root@192.168.8.1
-  os: OpenWrt 21.02-SNAPSHOT (GL.iNet build)
+  ssh: root@192.168.8.1            # key added through LuCI after the reflash;
+                                   # the host key changed with it
+  firmware: GL.iNet 4.11.0
+  os: OpenWrt 21.02-SNAPSHOT r15812+1095-46b6ee7ffc
   kernel: 5.4.238
   arch: aarch64, mediatek/mt7986
 
 wan:
   device: eth1
   proto: dhcp
-  address: 50.45.167.79/21         # public, straight on the router
+  address: 50.126.64.12/22         # public, straight on the router
   address_is_not_stable: >-
-    DHCP, and it moves. It was 50.38.32.155/21 on 2026-09-08 and a different
-    /21 entirely by 2026-09-10, so anything that pins the number breaks —
-    WireGuard peer endpoints above all.
+    DHCP, and it moves: 50.38.32.155/21 on 2026-09-08, 50.45.167.79/21 on
+    2026-09-19, a /22 by 2026-09-29. Anything that pins the number breaks —
+    WireGuard peer endpoints above all; they should use the DDNS name.
   ddns:
     hostname: bf403f6.glddns.com   # allocated by GL.iNet, never published
-    enabled: yes                   # gl_ddns.glddns.enabled='1'; resolved to the
-                                   # WAN address on 2026-09-19
+    enabled: yes                   # IPv4 and IPv6; resolved to the WAN
+                                   # address on 2026-09-29
   port_forwards: none              # nothing reaches the LAN from outside
-  open_ports:                      # the router itself, from the internet
-    - {port: 51820, proto: udp, rule: wgserver_allow, for: WireGuard server}
 
-vlans:                             # both are VLANs on the one br-lan bridge
-  - {id: 1, device: br-lan.1, subnet: 192.168.8.0/24, ports: [lan2, lan3, lan4, lan5]}
-  - {id: 10, device: br-lan.10, subnet: 10.1.1.0/24, ports: [lan1], name: homelab}
+lan:
+  bridge: br-lan
+  ports: [lan1, lan2, lan3, lan4, lan5]   # one flat network; no VLANs
+  subnet: 192.168.8.0/24
 
 other_networks:
-  - {name: guest, subnet: 192.168.9.0/24}
-  - name: wgserver
-    subnet: 10.66.66.0/24          # router is 10.66.66.1
-    port: 51820
-    enabled: yes
-    peers_seen: 2                  # both last handshook from the LAN, not
-                                   # yet from outside (verified 2026-09-19)
-  - name: tailscale
-    running: no                    # tailscaled stopped by the owner; its
-                                   # tailscale0 zone and forwardings remain
+  - {name: guest, subnet: 192.168.9.0/24, enabled: no}
+  - {name: iot, subnet: 192.168.10.0/24, enabled: no}
+  - {name: wgserver, subnet: 10.1.0.0/24, enabled: yes}   # see wireguard_server
+
+not_rebuilt:
+  homelab_vlan: >-
+    VLAN 10 (10.1.1.0/24 on lan1), its interface and the homelabzone firewall
+    zone were LuCI-made and went with the reflash. Proxmox still expects
+    10.1.1.100 behind 10.1.1.1, so it is unreachable until they return.
+  reservations: core (84:39:4C:00:25:FC -> .100) and F8:89:D2:5B:E3:1B -> .110;
+    paused by the owner. core holds .100 from the pool for now, not by right.
+
+vpn: WireGuard only. Tailscale ships with the firmware but is not used;
+  tailscaled is not running.
 
 dns:
-  resolver: AdGuard Home on the router, port 3053
-  rewrite: "*.home -> 192.168.8.15"    # the Beelink Gateway since 2026-09-19;
-                                       # it was core until then
-  note: >-
-    Explains why the adguard docker stack was redundant and got removed.
+  resolver: >-
+    dnsmasq on port 53 forwards everything to AdGuard Home on 127.0.0.1:3053
+    (noresolv). AdGuard's own web UI answers on port 3000.
+  rewrite: "*.home -> 192.168.8.15"    # the Beelink Gateway
 
 dhcp:
   pools:
-    - {vlan: 1, range: 192.168.8.100-249}
-    - {vlan: 10, range: 10.1.1.150-249}   # moved off .100 on 2026-09-06 so the
-                                          # pool cannot lease Proxmox's own
-                                          # static address; .100-.149 is now
-                                          # free for statics
+    - {network: lan, range: 192.168.8.100-249, lease: 12h}
   reservations:
-    - {mac: "78:55:36:08:cd:fe", ip: 192.168.8.10, host: me-pro} # verified after owner UI reservation
-    - {mac: "84:39:4C:00:25:FC", ip: 192.168.8.100, host: core}
-    - {mac: "F8:89:D2:5B:E3:1B", ip: 192.168.8.110}
-    - {mac: "02:A5:88:66:E8:5E", ip: 10.1.1.10}
+    - {mac: "78:55:36:08:CD:FE", ip: 192.168.8.10, host: talos-lqh-j5o}
+  reservations_note: >-
+    The Beelink no longer needs its reservation — its address is static in
+    Talos (decisions/0028); it stays so the router names the machine.
 
 zones:
-  lan: {policy: accept}
-  homelabzone: {policy: accept, masquerade: true}
-  guest: {policy: reject}
-  iot: {policy: reject}
-  wgserver: {input: accept, output: accept, masquerade: true, mtu_fix: true}
-  tailscale0: {input: accept, output: accept, forward: reject, masquerade: true, mtu_fix: true}
-  wan: {input: drop, masquerade: true}
+  lan: {input: accept, output: accept, forward: accept}
+  wan: {input: drop, forward: reject, masquerade: true}
+  guest: {input: reject, forward: reject}
+  iot: {input: reject, forward: reject}
+  wgserver: {input: reject, output: accept, masquerade: true, mtu_fix: true}
 
-forwardings:                       # what may reach what; i is the UCI index when stable
-  - {i: 0,  src: lan,         dest: wan}
-  - {i: 1,  src: guest,       dest: wan}
-  - {i: 2,  src: homelabzone, dest: wan}
-  - {i: 3,  src: lan,         dest: homelabzone}
-  - {i: 4,  src: lan,         dest: wgclient1, name: lan2wgclient1}
-  - {i: 5,  src: guest,       dest: wgclient1, name: guest2wgclient1}
-  - {i: 6,  src: wan,         dest: wgclient1, name: wan2wgclient1}
-  - {i: 7,  src: ovpnserver,  dest: wgclient1, name: ovpnserver2wgclient1}
-  - {i: 8,  src: wgserver,    dest: wgclient1, name: wgserver2wgclient1}
-  - {i: 9,  src: homelabzone, dest: lan}
-  - {i: 10, src: wgserver,    dest: homelabzone}
-  - {i: 11, src: homelabzone, dest: wgserver}
-  - {i: 12, src: iot,         dest: wan}
-  - {i: 13, src: wgserver,    dest: lan,       name: wgserver2lan}
-  - {i: 14, src: wgserver,    dest: wan,       name: wgserver2wan}
-  - {i: 15, src: lan,         dest: wgserver,  name: lan2wgserver}
-  - {src: tailscale0, dest: lan, name: tailscale_lan}
-  - {src: lan, dest: tailscale0, name: lan_tailscale}
-  - {i: 18, src: tailscale0, dest: homelabzone}
+forwardings:                       # what may reach what
+  - {src: lan,      dest: wan}
+  - {src: guest,    dest: wan}
+  - {src: iot,      dest: wan}
+  - {src: wgserver, dest: wan,      name: wgserver2wan}
+  - {src: lan,      dest: wgserver, name: lan2wgserver}
 forwardings_note: >-
-  GL.iNet names the rules it creates <src>2<dest>. Anonymous entries came from
-  LuCI or from the wizard. wgserver2lan was added by hand through LuCI on
-  2026-09-06 — GL.iNet's own UI has no toggle for it, so there is nothing for
-  it to drift from. See decisions/0007.
-
-custom_configuration:
-  - >-
-    VLAN 10, interface homelab and firewall zone homelabzone are maintained
-    through LuCI because the installed GL.iNet UI does not expose arbitrary
-    wired VLAN segmentation on Flint 2.
-  - >-
-    tailscale0 -> homelabzone was added through LuCI so Tailscale clients can
-    enter the Proxmox VLAN.
-  - >-
-    Tailscale route acceptance is disabled with `tailscale set
-    --accept-routes=false`; otherwise Flint installs Proxmox's advertised
-    10.1.1.0/24 route in table 52 and loops traffic away from br-lan.10.
-
-installed_features:
-  tailscale: firmware-integrated     # enabled in GL.iNet UI; not installed as a custom package
-  adguard_home: firmware-integrated
-
-masquerade_note: >-
-  The rule is `-o br-lan.10 -j MASQUERADE`, so traffic entering VLAN 10 is
-  NAT'd: Proxmox sees everything from the LAN as coming from 10.1.1.1 rather
-  than its real source. Traffic the other way is not translated.
-
-wireguard_server:
-  status: disabled                 # network.wgserver.disabled='1'; wg show is empty
-  status_note: >-
-    The zones, forwardings and peers below are all still configured — only the
-    interface is off, so nothing has to be rebuilt to bring it back.
-  reaches: [lan, homelabzone, wan, wgclient1]   # everything, since 2026-09-06
-  masquerade_note: >-
-    The wgserver zone masquerades, so a host on the LAN sees a VPN client as
-    192.168.8.1 rather than as 10.1.0.x. Guest-auth shares do not care; anything
-    matching on source address would.
-  address_v4: 10.1.0.1/24
-  port: 51820
-  peers: 5                         # macbook, pixel and three others
-  client_to_client: false
-  masquerade: true
-  peer_config:
-    dns: 192.168.8.1
-    allowed_ips: [192.168.8.0/24, 10.1.1.0/24]
-    persistent_keepalive: 25
-    mtu: 1420
-
-tailscale:
-  address_v4: 100.117.65.76
-  advertises: [192.168.8.0/24]
-  accepts_subnet_routes: false
-  exit_node: false
-  masquerade: true
-  reaches: [lan, homelabzone]
-  homelab_route_source: proxmox     # 10.1.1.0/24; see docs/hosts/proxmox.yaml
-  split_dns: {domain: home, server: 192.168.8.1}
-
-wifi:
-  - {ssid: gl.inet, band: 2.4G, network: lan, enabled: true}
-  - {ssid: gl.inet-5G, band: 5G, network: lan, enabled: true}
-  - {ssid: GL-MT6000-3f6-Guest, network: guest, enabled: false}
-  - {ssid: GL-MT6000-3f6-IoT, network: iot, enabled: false}
+  GL.iNet names what it creates <src>2<dest>. Firmware 4.11 now ships its own
+  wgserver2lan, as a rule rather than a forwarding, and leaves it disabled.
 
 wan_input_allowed:                 # everything else is dropped
   - {port: 68/udp, what: DHCP renew}
   - {proto: igmp, what: multicast}
   - {port: 51820/udp, what: WireGuard server}
 
-closed:                            # fixed 2026-09-06, kept for the record
-  samba_exposed_on_wan:
-    was: >-
-      firewall.sambasharewan accepted 137/138/139/445 from the wan zone and
-      samba4 bound `loopback wan lan`, so the USB disk at
-      /tmp/mountd/disk1_part1 answered over SMB on the public address
-      50.38.32.155.
-    now: >-
-      The rule's target is DROP and samba4 binds `loopback lan`. Verified: the
-      eight matching rules in zone_wan_input are all DROP.
-  vpn_cannot_reach_lan:
-    was: >-
-      lan -> wgserver existed with no wgserver -> lan, so dialling in reached
-      Proxmox and the Talos cluster but not the NAS.
-    now: >-
-      wgserver2lan added through LuCI. Verified: one ACCEPT in
-      zone_wgserver_forward.
+samba: >-
+  The router serves no shares: samba4 carries only its global section and smbd
+  is not running. The shares seen on the LAN are the Beelink's — see
+  hosts/beelink.yaml, services.samba.
+
+wireguard_server:
+  status: enabled
+  address_v4: 10.1.0.1/24
+  address_v6: fd00:d5cc:a7e7:fdc7::1/64
+  port: 51820
+  peers: 0                         # every pre-reflash client config is dead:
+                                   # the server key is new
+  access: DROP                     # clients reach the internet and the
+                                   # router's DNS, not the LAN
+  client_to_client: false
+  masquerade: true
+
+wifi:
+  - {ssid: gl.inet, band: 2.4G, network: lan, enabled: true, encryption: psk2}
+  - {ssid: gl.inet-5G, band: 5G, network: lan, enabled: true, encryption: psk2}
+  - {ssid: GL-MT6000-3f6-Guest, network: guest, enabled: false}
+  - {ssid: GL-MT6000-3f6-5G-Guest, network: guest, enabled: false}
+  - {ssid: GL-MT6000-3f6-IoT, network: iot, enabled: false}
+  - {ssid: GL-MT6000-3f6-5G-IoT, network: iot, enabled: false}
 
 gaps:
+  no_config_backup:
+    severity: high
+    symptom: >-
+      A reflash on 2026-09-28 lost every setting, and nothing held a copy —
+      the rebuild came from this file, which is descriptive, not a backup.
+    fix: >-
+      Download a configuration backup in the GL.iNet UI before every firmware
+      update and after every change worth keeping. It holds the WireGuard and
+      Wi-Fi keys, so it belongs outside this repository.
   wireguard_subnet_overlap:
     severity: medium
     symptom: >-
       A roaming client on a network covering 10.1.0.0/24 sends WireGuard
-      gateway or lab traffic to its local interface instead of the tunnel.
+      gateway traffic to its local interface instead of the tunnel.
     observed: >-
       A Mac at 10.1.0.62/22 routed 10.1.0.1 and 10.1.1.0/24 through en0.
     fix: >-
-      Renumber wgserver and every peer to a less common subnet, for example
-      10.66.66.0/24. Changing only a client address is insufficient.
+      The reflash put the server back on 10.1.0.1/24 with no peers, so
+      renumbering now costs nothing: move it to a rarer subnet, for example
+      10.66.66.0/24, before issuing client configs.
   firmware_age:
     severity: medium
     symptom: >-
-      The OpenWrt base is 21.02 on kernel 5.4 — old, and only as current as
-      GL.iNet's own builds.
+      The OpenWrt base is 21.02 on kernel 5.4 even on 4.11 — old, and only as
+      current as GL.iNet's own builds.
