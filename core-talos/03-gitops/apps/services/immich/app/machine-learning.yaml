@@ -47,12 +47,14 @@ spec:
             timeoutSeconds: 5
           resources:
             requests: {cpu: 100m, memory: 1Gi}
-            # One core, like the server. 2.5Gi rather than 4: with one job of
-            # each kind at a time it peaks under that, and if it ever does not,
-            # the kernel kills it inside its own limit - a stateless restart -
-            # before the whole node runs short and Talos picks a victim.
+            # Two cores: it sat against one through every import's faces and
+            # search. The server keeps one, since it is Guaranteed and a second
+            # core there would have to be reserved. 2.5Gi rather than 4: with
+            # one job of each kind at a time it peaks under that, and if it
+            # ever does not, the kernel kills it inside its own limit - a
+            # stateless restart - before the node runs short and Talos picks.
             limits:
-              cpu: "1"
+              cpu: "2"
               memory: 2560Mi
               gpu.intel.com/i915: "1"
           volumeMounts:
