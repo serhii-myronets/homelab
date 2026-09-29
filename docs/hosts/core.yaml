@@ -6,7 +6,7 @@
 
 meta:
   host: core
-  updated: 2026-09-20
+  updated: 2026-09-29
   tags: [core, nas, omv, debian, docker, storage]
 
 identity:
@@ -40,13 +40,18 @@ docker:
   compose: 5.5.1
   source: OMV-Extras apt repository (omvdocker.sources)
 
-disks:
-  - dev: sdb
+disks:                             # sda and sdb swap between boots - they
+                                   # were the other way round on 2026-09-20;
+                                   # match on model, not on the name
+  - dev: sda                       # on 2026-09-29
     model: M.2 SSD 128GB
     size: 119G
+    transport: sata
     role: system
     layout: "/ (110G, ~9G used), /boot/efi, 6.2G swap"
-  - dev: sda
+    smart: {health: passed, reallocated: 0, pending: 0, erase_fails: 0,
+            power_on_hours: 16707}    # 2026-09-29
+  - dev: sdb                       # on 2026-09-29
     model: ORICO
     size: 1.9T
     role: data
@@ -57,7 +62,7 @@ disks:
     symlink: /srv/ssd              # what every compose file refers to
     used: 1.7T
     free: ~100G
-    smart: {reallocated: 0, uncorrectable: 0, power_on_hours: 11653}
+    smart: {health: passed, reallocated: 0, uncorrectable: 0, power_on_hours: 12193}  # 2026-09-29
 
 redundancy: none                    # neither disk is mirrored
 
