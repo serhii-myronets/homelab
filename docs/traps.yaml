@@ -1178,7 +1178,7 @@ traps:
       the route, the tunnel or Access while this lasts.
     diagnosed: 2026-09-23, publishing sure.serhii.link
 
-  - id: talos-oom-controller-kills-besteffort-pods-first
+  - id: talos-oom-controller-kills-pods-without-a-memory-limit
     applies_to: [talos, kubernetes, cilium, openebs, immich, beelink, memory]
     symptom: >-
       Every route through the Gateway stops answering at once, while the
@@ -1190,11 +1190,16 @@ traps:
     cause: >-
       The node ran out of memory, not the container. Talos's own OOM
       controller, not the kernel's, watches node memory pressure and kills a
-      whole pod cgroup with SIGKILL. It took BestEffort pods first - on
-      2026-09-26 that meant Cilium and OpenEBS, whose charts set no requests -
-      35 kills in five minutes; once they were Burstable it took the largest
-      Burstable pod, the Immich server. A container limit does not help: the
-      trigger is the node's total.
+      whole pod cgroup with SIGKILL. Its default ranking, documented at
+      docs.siderolabs.com under the OOM handler, scores every cgroup that has
+      memory.max as zero and ranks the rest by usage, weighted 1.0 for
+      BestEffort and 0.5 for Burstable. A pod cgroup gets memory.max only when
+      every container in it, init containers included, has a memory limit. So
+      the victims are the pods with no complete limit: on 2026-09-26 Cilium and
+      OpenEBS (35 kills), then the Immich server, whose init container had no
+      limit; on 2026-09-29, once that was fixed, kube-apiserver - no limit at
+      all - and Sure, whose init container had none. Pods with limits are never
+      touched, however large.
     tell: >-
       `talosctl -n 192.168.8.10 dmesg | grep -E "OOM controller|SIGKILL to
       cgroup"` names each victim's pod UID; match it with `kubectl get pods -A
@@ -1202,12 +1207,13 @@ traps:
       192.168.8.10 memory` shows AVAILABLE; it was 534 MB of 11708 during the
       Immich import. The pod's own memory.events shows no oom_kill.
     fix: >-
-      Give every pod a request, so none is BestEffort; Cilium and OpenEBS carry
-      them in their chart values since 2026-09-26. Then choose the victim:
-      since 2026-09-29 the Immich server is Guaranteed (requests equal to
-      limits) and machine learning is capped at 2.5Gi, so the stateless
-      process goes first. Raising a container's limit changes nothing; the
-      pod limits on this node add up to more than twice its memory.
+      Decide which pod has no memory limit, because that is the one it kills.
+      Since 2026-09-29 Immich machine learning deliberately has none: it is
+      stateless and the largest unlimited pod under load, so it goes first.
+      Every other application pod, init containers included, carries a limit.
+      Cilium and OpenEBS have requests, so they are no longer BestEffort, but
+      the control plane static pods still have no limits and stay candidates.
+      Raising a container's limit changes nothing; adding a missing one does.
     diagnosed: 2026-09-26, the first phone upload into Immich
 
   - id: helmfile-diff-applies-the-prepare-hook

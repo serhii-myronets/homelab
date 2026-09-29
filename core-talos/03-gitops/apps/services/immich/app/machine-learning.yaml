@@ -47,15 +47,14 @@ spec:
             timeoutSeconds: 5
           resources:
             requests: {cpu: 100m, memory: 1Gi}
-            # Two cores: it sat against one through every import's faces and
-            # search. The server keeps one, since it is Guaranteed and a second
-            # core there would have to be reserved. 2.5Gi rather than 4: with
-            # one job of each kind at a time it peaks under that, and if it
-            # ever does not, the kernel kills it inside its own limit - a
-            # stateless restart - before the node runs short and Talos picks.
+            # No memory limit, on purpose. Talos's OOM controller only kills
+            # pods whose cgroup has no memory.max, largest first; without a
+            # limit this - stateless, at 2-3Gi under load - is the one it takes
+            # when the node runs short, rather than kube-apiserver, which it
+            # took on 2026-09-29. See traps.yaml. Two cores: it sat against one
+            # through every import's faces and search.
             limits:
               cpu: "2"
-              memory: 2560Mi
               gpu.intel.com/i915: "1"
           volumeMounts:
             - {name: model-cache, mountPath: /cache}
