@@ -13,9 +13,7 @@ kind: Deployment
 metadata:
   name: machine-learning
 spec:
-  # Off while six re-encoded videos are uploaded: with it running, writing a
-  # 1.8 GB upload pushed the node into Talos's OOM controller. Back to 1 after.
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
