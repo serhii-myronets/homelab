@@ -39,3 +39,19 @@ no zram module, and Sidero Labs prefer zswap (siderolabs/talos#11308).
 Encrypting EPHEMERAL and swap was possible only at this moment and was left
 out: without Secure Boot, Talos would key it to the machine's own identity,
 which protects a disk removed from the Beelink and nothing else.
+
+## Tested the same evening
+
+A throwaway pod took hot memory in 512 MB steps towards a 6 GiB limit. Swap
+started at about 2 GB allocated; by 5.6 GB, 1.9 GB had left memory, mostly
+compressed in zswap at about 3:1 and only a few hundred MB written to disk,
+and available memory never fell below about 1.2 GB. Twenty-three pods gave
+up pages, the idle ones most: Sure 509 MiB, library 417, Jellyfin 173,
+machine learning 128, flaresolverr 98, Uptime Kuma 93, Immich's Postgres 66.
+The Immich server, Guaranteed, gave none. The pod was OOM-killed by its own
+limit; Talos's OOM controller did not act, and every service kept answering.
+
+Swapped pages stay out until something touches them, so an idle service now
+costs the node much less real memory; the price is a slower first request
+when it wakes. Swap does not change scheduling: requests still reserve 88% of
+the node's memory, and a new service is sized against what is left of that.
