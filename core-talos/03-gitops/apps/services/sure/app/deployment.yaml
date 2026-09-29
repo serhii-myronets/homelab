@@ -155,7 +155,9 @@ spec:
             - {name: data, mountPath: /rails/storage, subPath: storage}
         - name: worker
           image: ghcr.io/we-promise/sure:0.7.5-alpha.10
-          command: [bundle, exec, sidekiq]
+          # args, not command: command replaces the image's entrypoint, which is
+          # what preloads jemalloc; without it Sidekiq ran on glibc malloc.
+          args: [bundle, exec, sidekiq]
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
