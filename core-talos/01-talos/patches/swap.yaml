@@ -1,0 +1,32 @@
+# Swap on the system disk, with zswap in front of it. EPHEMERAL is capped so
+# the disk keeps room for the partition; it holds about 22 GB, and a cap only
+# takes effect when the volume is created, so it was wiped and etcd recovered
+# from a snapshot to apply it. See docs/decisions/0029.
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  maxSize: 100GiB
+---
+apiVersion: v1alpha1
+kind: SwapVolumeConfig
+name: swap
+provisioning:
+  diskSelector:
+    match: system_disk
+  minSize: 16GiB
+  maxSize: 16GiB
+---
+# Pages are compressed in memory first and reach the disk only when the pool
+# is full.
+apiVersion: v1alpha1
+kind: ZswapConfig
+maxPoolPercent: 20
+---
+# Talos already sets failSwapOn: false. LimitedSwap lets Burstable pods swap
+# in proportion to their memory requests; Guaranteed pods never do.
+machine:
+  kubelet:
+    extraConfig:
+      memorySwap:
+        swapBehavior: LimitedSwap

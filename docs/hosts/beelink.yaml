@@ -43,7 +43,14 @@ disks:
     serial: MQ49W66504526
     size: 128G
     transport: nvme
-    role: Talos system disk
+    controller: Maxio MAP1202 (PCI 1e4b:1202), no DRAM, 8 MB host memory buffer
+    role: >-
+      Talos system disk: EFI, META, STATE, EPHEMERAL capped at 100 GiB, and a
+      16 GiB swap partition behind zswap since 2026-09-29; see decisions/0029
+  # The kernel names the two NVMe drives in either order from boot to boot;
+  # match them by serial, never by nvme0 or nvme1. Both read healthy on
+  # 2026-09-29: no critical warnings or media errors, 0% and 1% worn. The WD
+  # sits on one PCIe lane, the system disk on two.
   - dev: sda
     model: ST10000DM0004-1Z
     size: 10T

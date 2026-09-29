@@ -64,6 +64,15 @@ swaps only onto partitions. A logical volume switched on by a privileged pod
 would work outside Talos's knowledge; it was set aside unless memory is still
 short once machine learning is off the node.
 
+The owner chose the supported way the same evening, downtime accepted. With
+the cap on EPHEMERAL, a SwapVolumeConfig, zswap and LimitedSwap applied first,
+EPHEMERAL was wiped and etcd recovered from a snapshot taken a minute before;
+see decisions/0029. Both NVMe drives were read for health first and are fine;
+the system disk's controller is a Maxio MAP1202 without DRAM, not the worry
+first suggested. The node came back with 16 GiB of swap and every service
+answering under nine minutes after the wipe, most of it spent pulling images.
+The API reporting every pod Running before any had started is now a trap.
+
 ## Left open
 
 - Done later the same day: the control plane got memory limits in the Talos

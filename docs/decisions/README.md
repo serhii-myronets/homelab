@@ -37,6 +37,8 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0025](0025-one-namespace-for-the-storage-controllers.md) | One namespace for the storage controllers, and why OpenEBS is not in it | accepted | beelink, kubernetes, storage, openebs, volsync, namespaces, helm |
 | [0026](0026-sure-goes-public-for-plaid.md) | Publish Sure so Plaid can reach it, and drop the other two providers | accepted | beelink, sure, plaid, snaptrade, simplefin, cloudflare, privacy, finance |
 | [0027](0027-archive-actual.md) | Archive Actual Budget; Sure keeps the budgets | accepted | beelink, actual, sure, finance, archive |
+| [0028](0028-beelink-address-is-static.md) | The Beelink's address is set in Talos, not reserved on the router | accepted | beelink, talos, network, dhcp, router |
+| [0029](0029-swap-on-the-system-disk.md) | Swap on the system disk, behind zswap | accepted | beelink, talos, swap, zswap, memory, ephemeral |
 
 Open items, shortest path first:
 [0008](0008-nothing-tells-anyone-when-something-breaks.md) is a
