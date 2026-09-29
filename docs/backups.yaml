@@ -97,3 +97,25 @@ volsync_to_r2:
   watch: >-
     A ReplicationSource with an empty lastSyncTime has never run, and looks
     identical to a healthy one at a glance. See traps.yaml.
+
+# Added 2026-09-29. The cluster's own state, which VolSync does not cover:
+# every object in etcd, Secrets included.
+etcd_to_r2:
+  what: >-
+    A nightly etcd snapshot of the Beelink, taken through the Talos API by the
+    CronJob etcd-backup/etcd-backup at 03:30 Pacific and stored by restic in
+    s3:<R2>/homelab-backups/etcd/beelink, 30 daily snapshots kept. About
+    45 MiB each, deduplicated between days.
+  secrets: >-
+    The R2 key pair and restic password at /backups/R2 in Infisical - the
+    same password as every VolSync repository. Recovering onto a new disk also
+    needs 01-talos/secrets.yaml, because Talos encrypts Kubernetes Secrets
+    inside etcd with a key from it; that file lives only on the Mac.
+  restore: >-
+    restic restore the latest snapshot, then
+    `talosctl -n 192.168.8.10 bootstrap --recover-from=<file>` on a node whose
+    etcd is in Preparing. The same recovery ran from a manual snapshot on
+    2026-09-29 and brought the cluster back as it was.
+  verified: >-
+    2026-09-29: a manual run of the job uploaded snapshot 65d55c20; not yet
+    restored from R2.
