@@ -40,6 +40,11 @@ spec:
         # missing. Owned by the UID every media application shares.
         - name: prepare
           image: busybox:1.37
+          # A memory limit on every container, this one included, gives the pod
+          # memory.max and keeps Talos's OOM controller off it; see traps.yaml.
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 64Mi}
           command:
             - sh
             - -c
