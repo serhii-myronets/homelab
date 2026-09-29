@@ -68,9 +68,12 @@ spec:
           # taking every core; a throttled pod answers slowly, hence the probe
           # timeouts above. The iGPU slot is for QSV transcoding, chosen under
           # Administration, Video Transcoding.
+          # 3Gi: at 2.5Gi the kernel killed it inside its own limit during the
+          # second phone's import - Node at about 2Gi plus the ffmpeg processes
+          # transcoding and grabbing video frames, all charged to this pod.
           resources:
-            requests: {cpu: "1", memory: 2560Mi, gpu.intel.com/i915: "1"}
-            limits: {cpu: "1", memory: 2560Mi, gpu.intel.com/i915: "1"}
+            requests: {cpu: "1", memory: 3Gi, gpu.intel.com/i915: "1"}
+            limits: {cpu: "1", memory: 3Gi, gpu.intel.com/i915: "1"}
           volumeMounts:
             # Upstream calls this UPLOAD_LOCATION and mounts it at /data:
             # originals, thumbnails and encoded video all live under it.
