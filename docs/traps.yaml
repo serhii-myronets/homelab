@@ -1203,9 +1203,11 @@ traps:
       Immich import. The pod's own memory.events shows no oom_kill.
     fix: >-
       Give every pod a request, so none is BestEffort; Cilium and OpenEBS carry
-      them in their chart values since 2026-09-26. Then take load off the
-      node's memory: the Immich import - machine learning above all - is what
-      filled it. Raising a container's limit changes nothing.
+      them in their chart values since 2026-09-26. Then choose the victim:
+      since 2026-09-29 the Immich server is Guaranteed (requests equal to
+      limits) and machine learning is capped at 2.5Gi, so the stateless
+      process goes first. Raising a container's limit changes nothing; the
+      pod limits on this node add up to more than twice its memory.
     diagnosed: 2026-09-26, the first phone upload into Immich
 
   - id: helmfile-diff-applies-the-prepare-hook
