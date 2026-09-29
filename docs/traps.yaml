@@ -1210,10 +1210,12 @@ traps:
       Decide which pod has no memory limit, because that is the one it kills.
       Since 2026-09-29 Immich machine learning deliberately has none: it is
       stateless and the largest unlimited pod under load, so it goes first.
-      Every other application pod, init containers included, carries a limit.
-      Cilium and OpenEBS have requests, so they are no longer BestEffort, but
-      the control plane static pods still have no limits and stay candidates.
-      Raising a container's limit changes nothing; adding a missing one does.
+      Every other pod carries a limit on every container, init containers
+      included: the applications in their manifests, Cilium in its Helmfile
+      values, OpenEBS in its HelmRelease, and kube-apiserver, the controller
+      manager and the scheduler in the Talos patch (cluster.*.resources) -
+      all set far above use, only to take them out of the ranking. Raising a
+      container's limit changes nothing; adding a missing one does.
     diagnosed: 2026-09-26, the first phone upload into Immich
 
   - id: helmfile-diff-applies-the-prepare-hook
