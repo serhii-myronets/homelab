@@ -5,3 +5,19 @@ machine:
       serial: MQ49W66504526
 cluster:
   allowSchedulingOnControlPlanes: true
+  # Memory limits, well above use, only so that Talos's OOM controller never
+  # picks the control plane: it scores zero any pod whose every container has
+  # a limit. It killed kube-apiserver on 2026-09-29 for want of one. Requests
+  # are Talos's defaults. See traps.yaml.
+  apiServer:
+    resources:
+      requests: {cpu: 200m, memory: 512Mi}
+      limits: {memory: 2560Mi}
+  controllerManager:
+    resources:
+      requests: {cpu: 50m, memory: 256Mi}
+      limits: {memory: 512Mi}
+  scheduler:
+    resources:
+      requests: {cpu: 10m, memory: 64Mi}
+      limits: {memory: 256Mi}
