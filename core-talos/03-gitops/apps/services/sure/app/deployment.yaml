@@ -7,9 +7,7 @@ kind: Deployment
 metadata:
   name: sure
 spec:
-  # Off at the owner's request while Immich work continues on a node short of
-  # memory. Back to 1 when asked.
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate
   selector:
