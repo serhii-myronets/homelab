@@ -1,0 +1,8 @@
+# Its own namespace because the Talos API is opened to exactly one: the Talos
+# patch names it in allowedKubernetesNamespaces.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: etcd-backup
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
