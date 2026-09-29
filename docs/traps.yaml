@@ -1279,18 +1279,25 @@ traps:
   - id: talos-shutdown-leaves-failed-pods
     applies_to: [talos, kubernetes, beelink]
     symptom: >-
-      `kubectl get pods -A` lists pods in Error, 0/1, some days old, while the
-      same workloads also have Running pods and every deployment is ready.
+      `kubectl get pods -A` lists pods in Error or Completed, some days old,
+      while the same workloads also have Running pods and every deployment is
+      ready.
     cause: >-
       Graceful node shutdown. Before the Beelink powers off, kubelet stops
-      every pod and marks it Failed; after boot the ReplicaSets create new
-      pods instead. The controller manager keeps terminated pods until 12500
+      every pod - Failed if a container exited non-zero, Succeeded if it
+      exited cleanly - and after boot the ReplicaSets create new pods
+      instead. The controller manager keeps terminated pods until 12500
       of them exist, so every shutdown adds one more set.
     tell: >-
       `kubectl get pods -A --field-selector=status.phase=Failed -o
       custom-columns=POD:.metadata.name,MSG:.status.message` shows "Pod was
-      terminated in response to imminent node shutdown" on every row.
+      terminated in response to imminent node shutdown" on every row. A
+      Completed pod owned by a ReplicaSet rather than a Job is the same
+      leftover.
     fix: >-
       Harmless. `kubectl delete pods -A --field-selector=status.phase=Failed`
-      clears them; it touches only pods that already stopped.
-    diagnosed: 2026-09-29, 18 of them after two shutdowns in one day
+      clears the Failed ones; the Succeeded ones need picking out by owner,
+      since a Job's finished pods are Succeeded too. Both touch only pods that
+      already stopped.
+    diagnosed: 2026-09-29, 49 of them - 18 Failed, 31 Succeeded - from
+      shutdowns since 2026-09-19

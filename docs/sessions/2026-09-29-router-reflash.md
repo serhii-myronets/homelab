@@ -55,8 +55,9 @@ showed it, and a screenshot of the form confirmed it.
 Switched with `kubectl config use-context beelink`.
 
 flux.home returned 503 once, just after the address change, and 200 on the
-next check. 18 pods sat in Error: every one "terminated in response to
-imminent node shutdown", left from shutdowns since 2026-09-19. See traps.yaml.
+next check. 49 pods were dead: 18 in Error and 31 Completed, every one
+stopped for a node shutdown since 2026-09-19 and replaced. They were deleted,
+leaving 39 running and one finished Job. See traps.yaml.
 
 ## Where it stands
 
