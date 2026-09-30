@@ -16,3 +16,5 @@ resources:
   - system/security/external-secrets/ks.yaml
   - system/security/home-ca/ks.yaml
   - system/storage/openebs/ks.yaml
+
+  - system/observability/ks.yaml

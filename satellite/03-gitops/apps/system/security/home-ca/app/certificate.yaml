@@ -12,6 +12,7 @@ spec:
     name: home-ca
   dnsNames:
     - headlamp.home
+    - grafana.home
   duration: 8760h
   renewBefore: 720h
   usages:
