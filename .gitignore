@@ -18,6 +18,7 @@
 /satellite/01-talos/talosconfig
 /satellite/01-talos/kubeconfig
 /satellite/01-talos/secrets.yaml
+/satellite/02-platform/prepare-hook/initial-secret.yaml
 !/satellite/01-talos/.terraform.lock.hcl
 
 # Personal Claude Code permissions; not the repository's business.
