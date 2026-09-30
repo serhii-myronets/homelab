@@ -17,6 +17,12 @@ spec:
       labels:
         app: flaresolverr
     spec:
+      # On worker-1, away from controlplane's memory: nothing ties it to the
+      # HDDs, and its Chromium peaks are the kind that node runs short on.
+      nodeSelector:
+        kubernetes.io/hostname: worker-1
+      tolerations:
+        - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
       containers:
         - name: flaresolverr
           image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
