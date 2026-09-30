@@ -26,8 +26,9 @@ machine:
       registerWithTaints:
         - {key: homelab/satellite, value: "true", effect: NoSchedule}
 ---
-# A fixed name, not a generated one: workloads are pinned to it.
+# A fixed name, not a generated one: workloads and volumes are pinned to it.
+# Numbered, so a second worker - a VM on Proxmox, say - needs no rename.
 apiVersion: v1alpha1
 kind: HostnameConfig
 auto: "off"
-hostname: satellite
+hostname: worker-1

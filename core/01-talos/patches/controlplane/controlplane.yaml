@@ -1,6 +1,10 @@
 machine:
   install:
-    disk: /dev/nvme1n1
+    # By serial. The name moves between boots: the system disk was nvme1n1
+    # until the rebuild of 2026-09-30 found it at nvme0n1, with the WD and
+    # every volume on it at nvme1n1. The generator still writes its default
+    # `disk: /dev/sda` - an HDD here - and no patch can blank it; that is
+    # harmless only because diskSelector "always has priority over disk".
     diskSelector:
       serial: MQ49W66504526
   # One role, from one namespace: the nightly job in etcd-backup may take an
