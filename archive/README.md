@@ -18,7 +18,7 @@ archived continuously to Cloudflare R2 and a base backup at 04:00 with 30 day
 retention, under `s3://homelab-backups/cnpg`, series `postgres-v2`. It was
 built for Paperless and switched off before Paperless existed: the database
 held 7.8 MB and no table of its own. See
-[`decisions/0019`](../../../docs/decisions/0019-beelink-backups-to-r2.md).
+[`decisions/0019`](../docs/decisions/0019-beelink-backups-to-r2.md).
 
 To restore it, move its `components/` into the corresponding active
 component directory and convert its archived `applications/` into Flux
@@ -69,7 +69,7 @@ resources under `apps/`. Validate the build before committing.
 Then add `pulse.home` back to the `home-ca` certificate. Its agent token
 is still in Infisical at `/pulse/AGENT_TOKEN`, and a new server will not
 accept it - mint another after the administrator account exists. Two of
-its lessons stayed in [`traps.yaml`](../../../docs/traps.yaml): a probe
+its lessons stayed in [`traps.yaml`](../docs/traps.yaml): a probe
 that cannot reach what it probes, and what happens when an operator and
 its work are deleted in one move.
 

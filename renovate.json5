@@ -48,9 +48,9 @@
 
   packageRules: [
     {
-      // archive/ is deployed by nothing - core-docker/ still carries the old
-      // machine's compose files on floating tags. A rule rather than
-      // ignorePaths, which config:recommended's own ignorePaths replaces.
+      // archive/ is deployed by nothing, so its versions are not worth a pull
+      // request. A rule rather than ignorePaths, which config:recommended's
+      // own ignorePaths replaces.
       matchFileNames: ["archive/**"],
       enabled: false,
     },
