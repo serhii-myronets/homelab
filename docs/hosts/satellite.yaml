@@ -127,6 +127,13 @@ platform:
     endpoints, CoreDNS, kube-state-metrics, node-exporter and the stack's own
     - once vmalert had finished rolling. Its pods hold about 780 MiB; the node
     kept 3.6 GB available. core writes nothing here yet.
+  logs: >-
+    VictoriaLogs (vlsingle) keeping 30 days on a 50Gi lvm claim, fed by
+    vlagent reading every pod's log from the node; Grafana's VictoriaLogs
+    datasource and plugin answer healthy. Lines carry kubernetes.* fields but
+    no cluster field yet - it has to come with core's vlagent, so the two can
+    be told apart. Talos's own service and kernel logs are not collected.
+  grafana_access: grafana.home, by an exact rewrite on the router; LAN only
   bootstrap_restarts: >-
     kube-controller-manager and kube-scheduler show 3 restarts each, all from
     the first minutes, when the API server behind KubePrism was not up yet.
