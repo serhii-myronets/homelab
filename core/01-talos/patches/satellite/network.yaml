@@ -1,0 +1,20 @@
+# The same shape as the Beelink's: a bridge named br0, so Cilium's devices,
+# direct routing and L2 announcements name one interface on every node. One
+# cable here, where the Beelink bridges two. Static, never from the router's
+# DHCP - see docs/decisions/0028.
+apiVersion: v1alpha1
+kind: BridgeConfig
+name: br0
+hardwareAddr: 84:39:4c:00:25:fc
+links:
+  - enp1s0
+up: true
+addresses:
+  - address: 192.168.8.11/24
+routes:
+  - gateway: 192.168.8.1
+---
+apiVersion: v1alpha1
+kind: ResolverConfig
+nameservers:
+  - address: 192.168.8.1

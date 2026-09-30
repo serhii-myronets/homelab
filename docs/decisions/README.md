@@ -43,6 +43,7 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0031](0031-core-and-satellite.md) | The cluster is core; the old box is satellite | accepted | naming, core, satellite, repository, flux |
 | [0032](0032-satellite-watches-core.md) | satellite becomes a second Talos cluster that watches core | accepted | satellite, talos, observability, backup, gitops |
 | [0033](0033-satellite-signs-with-an-intermediate.md) | satellite signs .home with an intermediate of home-ca | accepted | satellite, tls, cert-manager, home-ca, infisical |
+| [0034](0034-satellite-joins-core.md) | satellite becomes a worker in core rather than a cluster of its own | accepted | satellite, core, talos, observability, memory |
 
 Open items, shortest path first:
 [0008](0008-nothing-tells-anyone-when-something-breaks.md) is a

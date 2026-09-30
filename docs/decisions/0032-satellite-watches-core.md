@@ -2,7 +2,7 @@
 id: "0032"
 title: satellite becomes a second Talos cluster that watches core
 date: 2026-09-29
-status: accepted
+status: superseded   # by 0034, on 2026-09-30
 tags: [satellite, talos, observability, backup, gitops, naming]
 hosts: [satellite, core]
 ---
