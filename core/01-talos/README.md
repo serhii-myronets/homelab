@@ -16,7 +16,7 @@ nodes: the Beelink as the control plane and satellite as a worker.
 storage and swap. The provider lock file is committed.
 
 satellite's first configuration goes to its maintenance address, passed once
-as `-var satellite_bootstrap_endpoint=<address>`; every later apply reaches it
+as `-var worker_1_bootstrap_endpoint=<address>`; every later apply reaches it
 at 192.168.8.11. It carries the taint `homelab/satellite=true:NoSchedule`,
 set by the kubelet when it registers, so only what tolerates it runs there.
 
