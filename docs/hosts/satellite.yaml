@@ -118,6 +118,15 @@ platform:
     core's machine identity, shared: it reads all of prod. See the
     02-platform README for what that costs.
   memory_after_platform: 1.85 GB used of 7.7, 5.5 available
+  observability: >-
+    victoria-metrics-k8s-stack 0.93.0, restored from the archive on
+    2026-09-30 as the metrics hub: VMSingle keeping three months on a 100Gi
+    lvm claim, vmagent labelling its series cluster=satellite, vmalert and
+    Alertmanager with the chart's rules and no receiver yet, Grafana at
+    grafana.home only. First scrape: every target up - apiserver, four kubelet
+    endpoints, CoreDNS, kube-state-metrics, node-exporter and the stack's own
+    - once vmalert had finished rolling. Its pods hold about 780 MiB; the node
+    kept 3.6 GB available. core writes nothing here yet.
   bootstrap_restarts: >-
     kube-controller-manager and kube-scheduler show 3 restarts each, all from
     the first minutes, when the API server behind KubePrism was not up yet.
