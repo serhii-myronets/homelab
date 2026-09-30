@@ -31,14 +31,15 @@ spec:
       # holds both, so its routes carry that weight.
       unsafeUseServiceAccountToken: true
       sessionTTL: 86400
+      # The flag, not the KUBECONFIG variable: in-cluster, Headlamp ignores the
+      # variable and logs an empty kubeconfig path.
+      extraArgs:
+        - -kubeconfig=/etc/headlamp/kubeconfig/config
 
     clusterRoleBinding:
       create: true
       clusterRoleName: cluster-admin
 
-    env:
-      - name: KUBECONFIG
-        value: /etc/headlamp/kubeconfig/config
     volumes:
       - name: kubeconfig
         secret: {secretName: headlamp-kubeconfig}
