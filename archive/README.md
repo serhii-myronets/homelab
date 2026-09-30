@@ -30,32 +30,12 @@ keeps writing to the same series. That is safe only while the cluster it
 recovers from is gone. Its one secret, the R2 key pair, is read from Infisical
 at `/backups/R2`; nothing here has to be pasted back by hand.
 
-## observability — the VictoriaMetrics k8s stack
+## observability — restored
 
-Ran on 2026-09-20 for an evening: victoria-metrics-k8s-stack 0.93.0, with
-VMSingle keeping a month on a 20Gi `lvm` claim, vmagent over 17 targets,
-vmalert and Alertmanager carrying the chart's rules, Grafana open without a
-sign-in at `grafana.home`, kube-state-metrics and node-exporter. It settled
-at 1006Mi and 82 millicores and grew about 382MiB a day.
-
-It was replaced by Pulse rather than outgrown. Nothing here was wrong: Pulse
-watches Proxmox and Docker as well as this cluster, and sends its own alerts,
-which is the open half of
-[`decisions/0008`](../../../docs/decisions/0008-nothing-tells-anyone-when-something-breaks.md)
-that this stack never closed - its Alertmanager had rules and no recipient.
-What is given up is a month of history against seven days, and arbitrary
-queries against fixed dashboards.
-
-To restore it, move its `components/` into the corresponding active
-component directory and convert its archived `applications/` into Flux
-resources under `apps/`. Validate the build before committing.
-
-Then add `grafana.home` back to the `home-ca` certificate. Four of its
-lessons outlived it and stayed in
-[`traps.yaml`](../../../docs/traps.yaml): a chart that mints a secret while
-it renders, a release name that overflows a label, the apiserver paying for
-its own metrics, and Talos keeping the controller manager and the scheduler
-to itself.
+The VictoriaMetrics k8s stack that ran on core for an evening on
+2026-09-20 came back on 2026-09-30 as satellite's metrics hub, in
+`../satellite/03-gitops/apps/system/observability/`, with its lessons kept in
+the values there. Git holds the archived form.
 
 ## pulse — the Pulse hub and its Kubernetes agent
 
