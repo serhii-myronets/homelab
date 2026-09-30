@@ -40,11 +40,11 @@ data "talos_machine_configuration" "controlplane" {
   talos_version      = "v1.13"
   kubernetes_version = local.kubernetes_version
   config_patches = [
-    file("${path.module}/patches/controlplane.yaml"),
-    file("${path.module}/patches/network.yaml"),
-    file("${path.module}/patches/cilium.yaml"),
-    file("${path.module}/patches/storage.yaml"),
-    file("${path.module}/patches/swap.yaml"),
+    file("${path.module}/patches/controlplane/controlplane.yaml"),
+    file("${path.module}/patches/controlplane/network.yaml"),
+    file("${path.module}/patches/common/cilium.yaml"),
+    file("${path.module}/patches/controlplane/storage.yaml"),
+    file("${path.module}/patches/controlplane/swap.yaml"),
     yamlencode({ machine = { install = {
       disk  = ""
       image = "factory.talos.dev/metal-installer/${local.schematic}:${local.talos_version}"
@@ -62,10 +62,10 @@ data "talos_machine_configuration" "satellite" {
   talos_version      = "v1.13"
   kubernetes_version = local.kubernetes_version
   config_patches = [
-    file("${path.module}/patches/cilium.yaml"),
-    file("${path.module}/patches/satellite/node.yaml"),
-    file("${path.module}/patches/satellite/network.yaml"),
-    file("${path.module}/patches/satellite/swap.yaml"),
+    file("${path.module}/patches/common/cilium.yaml"),
+    file("${path.module}/patches/worker/node.yaml"),
+    file("${path.module}/patches/worker/network.yaml"),
+    file("${path.module}/patches/worker/swap.yaml"),
     yamlencode({ machine = { install = {
       image = "factory.talos.dev/metal-installer/${local.schematic}:${local.talos_version}"
     } } })
@@ -96,10 +96,10 @@ resource "talos_machine_configuration_apply" "satellite" {
   client_configuration        = talos_machine_secrets.cluster.client_configuration
   machine_configuration_input = data.talos_machine_configuration.satellite.machine_configuration
   on_destroy                  = { reset = false, graceful = true, reboot = false }
+  # Not ignore_changes on node and endpoint: that kept the maintenance address
+  # in state for good, and every later apply went to it and hung. See traps.
   lifecycle {
     prevent_destroy = true
-    # The endpoint changes once, from the maintenance address to satellite_ip.
-    ignore_changes = [node, endpoint]
   }
 }
 

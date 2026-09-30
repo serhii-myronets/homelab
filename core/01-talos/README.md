@@ -9,11 +9,18 @@ terraform plan
 terraform apply
 ```
 
-`main.tf` pins the Talos, Kubernetes and provider versions. `patches/` holds
-the installation, scheduling, network and storage configuration. The provider
-lock file is committed.
+`main.tf` pins the Talos, Kubernetes and provider versions and renders two
+nodes: the Beelink as the control plane and satellite as a worker.
+`patches/common/` applies to both, `patches/controlplane/` to the Beelink and
+`patches/worker/` to satellite - each machine's install disk, network,
+storage and swap. The provider lock file is committed.
 
-`patches/storage.yaml` leaves the 500 GB WD NVMe unclaimed: it is one LVM
+satellite's first configuration goes to its maintenance address, passed once
+as `-var satellite_bootstrap_endpoint=<address>`; every later apply reaches it
+at 192.168.8.11. It carries the taint `homelab/satellite=true:NoSchedule`,
+set by the kubelet when it registers, so only what tolerates it runs there.
+
+`patches/controlplane/storage.yaml` leaves the 500 GB WD NVMe unclaimed: it is one LVM
 volume group for OpenEBS LVM LocalPV, created by a Job in `03-gitops` because
 this provider's configuration contract has no LVMVolumeGroupConfig. See
 `docs/decisions/0019`.

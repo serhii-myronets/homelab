@@ -1378,3 +1378,44 @@ traps:
       key locally, sign it with the root, and store key and chain as ordinary
       Infisical secrets for cert-manager's CA issuer - decisions/0033.
     diagnosed: 2026-09-30, building satellite's certificates
+
+  - id: ignore-changes-pins-the-maintenance-address
+    applies_to: [terraform, talos, satellite]
+    symptom: >-
+      A later `terraform apply` of a node's configuration sits in "Still
+      modifying..." and never reaches the node, although the node answers at
+      its real address.
+    cause: >-
+      The first apply went to the node's maintenance address, and
+      `lifecycle { ignore_changes = [node, endpoint] }` then kept that address
+      in state for good. Every later apply went to a DHCP address nothing
+      answers any more.
+    tell: >-
+      `terraform state show talos_machine_configuration_apply.<name>` shows the
+      maintenance address in node and endpoint.
+    fix: >-
+      No ignore_changes on node and endpoint: coalesce the one-time variable
+      with the real address, so the plan moves them once the variable is
+      dropped. The satellite cluster of 2026-09-29 had the same bug, which is
+      why an apply to it hung there.
+    diagnosed: 2026-09-30, tainting satellite as core's worker
+
+  - id: talos-cannot-taint-its-own-worker
+    applies_to: [talos, kubernetes, satellite]
+    symptom: >-
+      machine.nodeTaints on a worker lands in the machine configuration and in
+      a NodeTaintSpec, but the Kubernetes node never shows the taint.
+    cause: >-
+      On a worker Talos applies taints with the node's own kubelet
+      credentials, and the NodeRestriction admission plugin forbids a node to
+      change its taints. The controller logs `node "satellite" is not allowed
+      to modify taints` and retries for ever.
+    tell: >-
+      `talosctl logs controller-runtime` on the worker, NodeApplyController
+      failing with that message.
+    fix: >-
+      Set the taint through the kubelet instead -
+      `machine.kubelet.extraConfig.registerWithTaints` - which applies when the
+      node registers; for a node already registered, delete the Node object
+      and restart the kubelet so it registers again.
+    diagnosed: 2026-09-30, tainting satellite
