@@ -70,9 +70,20 @@ nics:
   - {name: wlo1, state: absent}     # Talos has no Wi-Fi support
 
 platform:
-  cni: none yet                    # Cilium comes from 02-platform; until then
-                                   # the node is NotReady and CoreDNS Pending
   scheduling: control-plane enabled
+  releases:                        # from satellite/02-platform, 2026-09-29
+    - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
+    - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
+    - {name: flux-operator, namespace: flux-system, chart: 0.60.0, status: deployed}
+  flux: v2.9.5 - source, kustomize, helm and notification controllers; nothing to sync yet
+  infisical: >-
+    core's machine identity, shared: it reads all of prod. See the
+    02-platform README for what that costs.
+  memory_after_platform: 1.85 GB used of 7.7, 5.5 available
+  bootstrap_restarts: >-
+    kube-controller-manager and kube-scheduler show 3 restarts each, all from
+    the first minutes, when the API server behind KubePrism was not up yet.
+    None since.
 
 config:
   talos: satellite/01-talos/
