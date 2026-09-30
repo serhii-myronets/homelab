@@ -52,8 +52,9 @@ not_rebuilt:
     VLAN 10 (10.1.1.0/24 on lan1), its interface and the homelabzone firewall
     zone were LuCI-made and went with the reflash. Proxmox still expects
     10.1.1.100 behind 10.1.1.1, so it is unreachable until they return.
-  reservations: core (84:39:4C:00:25:FC -> .100) and F8:89:D2:5B:E3:1B -> .110;
-    paused by the owner. core holds .100 from the pool for now, not by right.
+  reservations: satellite (84:39:4C:00:25:FC -> .100) and F8:89:D2:5B:E3:1B ->
+    .110; paused by the owner. satellite holds .100 from the pool for now, not
+    by right.
 
 vpn: WireGuard only. Tailscale ships with the firmware but is not used;
   tailscaled is not running.
@@ -62,7 +63,7 @@ dns:
   resolver: >-
     dnsmasq on port 53 forwards everything to AdGuard Home on 127.0.0.1:3053
     (noresolv). AdGuard's own web UI answers on port 3000.
-  rewrite: "*.home -> 192.168.8.15"    # the Beelink Gateway
+  rewrite: "*.home -> 192.168.8.15"    # core's Gateway
 
 dhcp:
   pools:
@@ -70,7 +71,7 @@ dhcp:
   reservations:
     - {mac: "78:55:36:08:CD:FE", ip: 192.168.8.10, host: talos-lqh-j5o}
   reservations_note: >-
-    The Beelink no longer needs its reservation — its address is static in
+    core no longer needs its reservation — its address is static in
     Talos (decisions/0028); it stays so the router names the machine.
 
 zones:
@@ -98,8 +99,8 @@ wan_input_allowed:                 # everything else is dropped
 
 samba: >-
   The router serves no shares: samba4 carries only its global section and smbd
-  is not running. The shares seen on the LAN are the Beelink's — see
-  hosts/beelink.yaml, services.samba.
+  is not running. The shares seen on the LAN are core's — see
+  hosts/core.yaml, services.samba.
 
 wireguard_server:
   status: enabled

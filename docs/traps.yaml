@@ -1221,7 +1221,7 @@ traps:
   - id: helmfile-diff-applies-the-prepare-hook
     applies_to: [helmfile, talos, kubernetes]
     symptom: >-
-      `helmfile diff` in core-talos/02-platform changes the cluster, although
+      `helmfile diff` in core/02-platform changes the cluster, although
       its name promises a preview.
     cause: >-
       Helmfile runs `prepare` hooks before every command, diff included, and

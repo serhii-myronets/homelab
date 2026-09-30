@@ -140,4 +140,4 @@ the commit. It is in [traps](../traps.yaml).
 An ssh tunnel to reach the preview as a secure origin failed too: core's
 sshd carries `AllowTcpForwarding no`, so `ssh -L` opens a local listener that
 goes nowhere and times out without an error. That is now in
-[hosts/core](../hosts/core.yaml).
+[hosts/core](../hosts/satellite.yaml).

@@ -7,7 +7,7 @@ tags: [ideas, services, backlog, homelab]
 # Services to consider next
 
 Ideas, not commitments. What is deployed is in
-[hosts/beelink.yaml](hosts/beelink.yaml).
+[hosts/core.yaml](hosts/core.yaml).
 
 | Service | Why try it | Where |
 |---|---|---|

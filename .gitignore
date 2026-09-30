@@ -2,14 +2,14 @@
 */.terraform
 **.lock.hcl
 
-/core-talos/01-talos/.terraform/
-/core-talos/01-talos/*.tfstate*
-/core-talos/01-talos/*.tfplan
-/core-talos/01-talos/crash*.log
-/core-talos/01-talos/secrets.yaml
-/core-talos/02-platform/prepare-hook/initial-secret.yaml
-/core-talos/03-gitops/system/*/charts/
-!/core-talos/01-talos/.terraform.lock.hcl
+/core/01-talos/.terraform/
+/core/01-talos/*.tfstate*
+/core/01-talos/*.tfplan
+/core/01-talos/crash*.log
+/core/01-talos/secrets.yaml
+/core/02-platform/prepare-hook/initial-secret.yaml
+/core/03-gitops/system/*/charts/
+!/core/01-talos/.terraform.lock.hcl
 
 # Personal Claude Code permissions; not the repository's business.
 .claude/settings.local.json

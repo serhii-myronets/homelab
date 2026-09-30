@@ -4,17 +4,22 @@ Four machines:
 
 | | | Deployed from here |
 |---|---|---|
-| **core** | the one nothing else may depend on — services, files, backups | yes, out of `core/` |
+| **core** | where the services and their data live — everything depends on it; Talos on the Beelink | yes, out of `core/` |
+| **satellite** | watches core and keeps copies — nothing may depend on it; the old OpenMediaVault box, to be rebuilt on Talos | not yet |
 | **proxmox** | built and destroyed on purpose — Talos, Terraform | no — only a `tools/` installer, by hand |
 | **router** | the boundary with the internet — routing, DNS, firewall, VPN | no, and never over ssh |
-| **beelink** | gradual future replacement for core — Talos on bare metal | yes, out of `core-talos/` |
+
+Machines are named for their role, not their hardware. Until 2026-09-29
+`core` meant the OpenMediaVault box, now `satellite`, and the Talos cluster
+was `beelink` in `core-talos/`; sessions and decisions from before then use
+the old names.
 
 The repository has two halves and the split is the point. `core/` is
-*executable*: compose files, the bootstrap and the backup job, deployed onto
-one machine. `docs/` is *descriptive*: what all three machines are, why, and
-what has already gone wrong. Changing one should rarely mean changing the
-other. `tools/` is the exception both halves needed: installers that run on a
-host Portainer does not deploy to, run by hand and reconciled by nobody.
+*executable*: Talos configuration, the platform bootstrap and the Flux tree,
+deployed onto one cluster. `docs/` is *descriptive*: what every machine is,
+why, and what has already gone wrong. Changing one should rarely mean changing
+the other. `tools/` is the exception both halves needed: installers run by
+hand on a host nothing deploys to, reconciled by nobody.
 
 **Read [`docs/index.yaml`](docs/index.yaml) first.** It maps a question to the
 one file that answers it, so a lookup costs one read rather than a search.
@@ -23,24 +28,25 @@ Before debugging anything that should work, check
 
 | Path | |
 |---|---|
-| `core/<stack>/docker-compose.yaml` | one directory per stack |
-| `core/bootstrap.sh` | bare host → Portainer running; idempotent |
-| `core/backup/` | restic script, installer, systemd units |
+| `core/01-talos/` | Terraform for the node; its state and `secrets.yaml` are local and ignored |
+| `core/02-platform/` | Helmfile bootstrap, applied by hand |
+| `core/03-gitops/` | everything Flux reconciles |
 | `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
 | `archive/` | setups switched off but kept whole; nothing reconciles it |
 
 Each half carries its own README: the root one describes the repository,
-`core/README.md` is the operational manual, `docs/README.md` indexes the facts,
+`core/README.md` and the READMEs under it are the operational manual, `docs/README.md` indexes the facts,
 and a `tools/<name>/README.md` covers only how to run that one installer.
 A procedure belongs in one of those, never in two.
 
 ## Access
 
-All three take the key at `~/.ssh/id_ed25519`:
+core has no shell: `talosctl -n 192.168.8.10` and `kubectl`. The rest take
+the key at `~/.ssh/id_ed25519`:
 
 ```bash
-ssh root@192.168.8.100   # core
+ssh root@192.168.8.100   # satellite, until it is rebuilt on Talos
 ssh root@10.1.1.100      # proxmox
 ssh root@192.168.8.1     # router — read-only, see rules
 ```
@@ -67,10 +73,12 @@ describe fixes as UI steps for a human. See
 rebooting a host and destroying a Proxmox guest are the user's call, not a
 step in a plan.
 
-**Moving anything under `core/` has consequences off the repository.** Four
-Portainer stacks store a compose path, and the systemd backup unit stores an
-absolute path to `core/backup/backup.sh`. Rename a directory here and both go
-stale — say so, and say which.
+**Moving anything under `core/` has consequences off the repository.** Every
+Flux Kustomization stores its path, and the root one in `03-gitops/flux.yaml`
+is applied by hand, so the cluster keeps the old path until someone applies it
+again. Check with `flux diff kustomization root --path <new>` before pushing,
+and move ignored files - Terraform state, `secrets.yaml` - with their
+directory and their `.gitignore` lines.
 
 **Commits carry one author.** No `Co-Authored-By` trailer, no "Generated
 with" line, no agent named anywhere in a commit message, a tag or a pull
@@ -92,8 +100,9 @@ that still matters has already graduated into `docs/`, a decision, or a trap.
 
 ## Validating
 
-Compose files: `docker compose config`. The Caddyfile: `caddy validate` in a
-throwaway container on the NAS, since there is no Docker daemon locally. YAML
-under `docs/` must parse; front matter must carry `tags`.
+Flux trees: `flux diff kustomization <name> --path <dir>` against the live
+cluster. Talos configuration: `talosctl validate --strict`, then an
+`apply-config --dry-run`. YAML under `docs/` must parse; front matter must
+carry `tags`.
 
 Comments earn their place by saying something the code does not.

@@ -1,10 +1,10 @@
 # Turned off, kept whole
 
-Setups that ran on the Beelink and were switched off because nothing needed
-them yet. Their historical Argo manifests are retained unchanged as reference.
+Setups that were switched off because nothing needed them yet - most of them
+ran on the Beelink, in what is now `core/`. Their historical Argo manifests are retained unchanged as reference.
 
-Flux reads `../core-talos/03-gitops/apps/`, not this directory, and this
-sits outside `core-talos/` entirely because nothing here is deployed. Moving an archived Argo Application
+Flux reads `../core/03-gitops/apps/`, not this directory, and this
+sits outside `core/` entirely because nothing here is deployed. Moving an archived Argo Application
 into the active tree does not restore it: convert it to a Flux Kustomization
 and, for charts, a HelmRepository/HelmRelease first. Preserve chart values,
 secret references, storage protection and restore settings during conversion.
@@ -90,7 +90,7 @@ service was not worth its roughly 700 MiB of RAM. Flux deletes the empty 20 GiB
 claim and its dynamically provisioned volume with the application.
 
 The manifests are preserved in `paperless/`. To restore it, move that directory
-back to `core-talos/03-gitops/apps/services/`, add its `ks.yaml` to the root
+back to `core/03-gitops/apps/services/`, add its `ks.yaml` to the root
 apps Kustomization, and add `paperless.home` to the local certificate. Validate
 the build before committing. Its Infisical entries remain at `/paperless`.
 
@@ -108,7 +108,20 @@ built on the `backed-up-volume` component, whose ReplicationDestination fills
 a new claim from R2 before the application starts - so restoring the
 application restores the budget.
 
-To restore it, move `actual/` back to `core-talos/03-gitops/apps/services/`,
+To restore it, move `actual/` back to `core/03-gitops/apps/services/`,
 add its `ks.yaml` to the root apps Kustomization, and add `actual.home` to the
 local certificate. Validate the build before committing. Its only secret is
 the shared R2 key pair in Infisical at `/backups/R2`.
+
+## core-docker — the old OpenMediaVault box's Docker stacks
+
+Everything Portainer deployed onto the machine at `192.168.8.100`, then called
+core and now `satellite`: one directory per stack, the bootstrap and the restic
+backup job. Every container stopped on 2026-09-19 once its replacement ran on
+the Beelink; the directory moved here from `core/` on 2026-09-29, when that
+name went to the cluster. The machine is to be wiped and rebuilt on Talos, so
+nothing is expected to come back from here.
+
+Paths inside still say `core/` - its own README, the compose comments and
+`backup/install.sh` - because they describe where it lived. Its stacks and
+their secrets are listed in `../docs/services.yaml`.

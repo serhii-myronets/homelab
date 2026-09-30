@@ -1,19 +1,13 @@
 # homelab
 
-Home infrastructure, with a gradual migration to Talos.
+Home infrastructure: one Talos cluster that runs the services, a lab that is
+built and destroyed on purpose, and a router at the boundary.
 
-**[`core/`](core/)** is executable — the Docker stacks, the bootstrap and the
-backup job for the OpenMediaVault box at `192.168.8.100`. Portainer deploys
-the regular stacks from this repository; exceptional deployment details are
-recorded in `docs/services.yaml`. Start at
-[`core/README.md`](core/README.md) to build the machine from nothing or to
-restore it.
-
-**[`core-talos/`](core-talos/)** is the future replacement for core on the
-ME Pro. `01-talos/` holds its Terraform-managed Talos configuration,
-`02-platform/` installs the initial Cilium, External Secrets and Flux
-releases, and `03-gitops/` holds the Flux-managed cluster and service
-configuration.
+**[`core/`](core/)** is executable — the cluster where the services and their
+data live, Talos on the Beelink ME Pro at `192.168.8.10`. `01-talos/` holds its
+Terraform-managed Talos configuration, `02-platform/` installs the initial
+Cilium, External Secrets and Flux releases, and `03-gitops/` holds everything
+Flux reconciles. Start at [`core/README.md`](core/README.md).
 
 **[`docs/`](docs/)** is descriptive — what all machines are, how they are
 wired together, and what has already gone wrong. Facts as YAML, one file per
@@ -22,21 +16,15 @@ it is deployed anywhere. Start at [`docs/index.yaml`](docs/index.yaml), which
 maps a question to the one file that answers it.
 
 **[`tools/`](tools/)** is executable too, but nothing deploys it. Each
-directory installs something on a host by hand — currently the Pulse agents
-on core and Proxmox, plus Tailscale on Proxmox — because it lands outside a
-Portainer-managed container. A rebuilt host needs its installer run again.
+directory installs something on a host by hand, outside any cluster. A rebuilt
+host needs its installer run again.
 
 **[`archive/`](archive/)** is neither: setups that worked and were switched
-off, kept whole so they can be brought back rather than rebuilt from memory.
-Nothing reads it — Flux reconciles `core-talos/03-gitops/apps/` and stops
-there — and its README says what each one was and why it went.
+off, kept whole so they can be brought back rather than rebuilt from memory —
+among them `core-docker/`, the Docker stacks of the old OpenMediaVault box,
+now `satellite`. Nothing reads it — Flux reconciles `core/03-gitops/apps/` and
+stops there — and its README says what each one was and why it went.
 
-Changing one half should rarely mean changing the other.
-
-| | | Deployed from here |
-|---|---|---|
-| the OpenMediaVault box | services, files, backups — the one nothing else may depend on | yes, out of `core/` |
-| the Proxmox host | built and destroyed on purpose: Talos, Terraform | no — only a `tools/` installer, by hand |
-| the router | routing, DNS, firewall, VPN — the boundary with the internet | no, and never over ssh |
-
-[`AGENTS.md`](AGENTS.md) is the entry point for coding agents.
+Changing one half should rarely mean changing the other. The machines and
+their roles are in [`AGENTS.md`](AGENTS.md), which is also the entry point for
+coding agents.
