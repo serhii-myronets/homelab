@@ -1,0 +1,5 @@
+# Identities satellite uses to reach into core, and nothing else.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: satellite-access

@@ -32,6 +32,7 @@ resources:
   - system/security/cert-manager/ks.yaml
   - system/security/external-secrets/ks.yaml
   - system/security/home-ca/ks.yaml
+  - system/security/satellite-access/ks.yaml
 
   # The namespace is listed before the two controllers that share it and
   # belongs to neither, so it has no directory either. snapshot-controller is
