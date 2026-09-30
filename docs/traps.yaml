@@ -1359,3 +1359,22 @@ traps:
       Pass the path as `config.extraArgs: [-kubeconfig=<path>]` in the chart's
       values. The log then shows a "Proxy setup" line for every context.
     diagnosed: 2026-09-30, showing core in satellite's Headlamp
+
+  - id: infisical-free-plan-refuses-external-intermediates
+    applies_to: [infisical, pki, tls, satellite]
+    symptom: >-
+      An intermediate CA created in Infisical's Certificate Manager stays in
+      pending-certificate: importing the certificate an external root signed
+      for its CSR fails.
+    cause: >-
+      A plan restriction, not a format problem: "Failed to import an
+      externally signed certificate for this intermediate CA due to plan
+      restriction. Upgrade plan to use externally signed intermediate CAs."
+      Creating the CA and fetching its CSR both work on the free plan, so the
+      wall appears only at the last step.
+    tell: The import-certificate call returns 400 with that message.
+    fix: >-
+      Either pay, or keep the intermediate outside Infisical PKI: generate its
+      key locally, sign it with the root, and store key and chain as ordinary
+      Infisical secrets for cert-manager's CA issuer - decisions/0033.
+    diagnosed: 2026-09-30, building satellite's certificates
