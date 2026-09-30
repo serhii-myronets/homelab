@@ -6,11 +6,13 @@ by hand with Helmfile, pinned to the kubeconfig context `satellite` - the
 prepare hook's `kubectl` included, so a wrong current context fails rather
 than lands on core.
 
-1. Give satellite its own Infisical machine identity, never core's: Universal
-   Auth, in project `homelab-ixx-o`, with a role that reads `prod` under
-   `/satellite` and nothing else. Copy `prepare-hook/initial-secret.yaml.example`
-   to `prepare-hook/initial-secret.yaml` and fill in its client ID and secret,
-   base64-encoded. The file is ignored by Git.
+1. Put an Infisical machine identity in `prepare-hook/initial-secret.yaml`,
+   copied from the example with its client ID and secret base64-encoded; the
+   file is ignored by Git. satellite uses core's identity, by the owner's
+   choice on 2026-09-29: it reads all of `prod` in `homelab-ixx-o`, so a
+   satellite broken into gives away every secret in the house, and revoking it
+   stops both clusters. A separate identity, reading only `/satellite`, would
+   close both - it was offered and set aside as not worth it yet.
 2. Install the three releases. The hook applies the `external-secrets`
    namespace, the Gateway API CRDs and that credential first; the node turns
    Ready once Cilium runs:
