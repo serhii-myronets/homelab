@@ -15,6 +15,14 @@ identity:
   role: core
   cluster: beelink                 # the Talos cluster name, kept from before the rename
   node: talos-lqh-j5o
+  rename_at_rebuild: >-
+    Both names become core only when the node is rebuilt. All 18 OpenEBS LVM
+    volumes are pinned to the node by openebs.io/nodename=talos-lqh-j5o, a
+    PV field that cannot change, so a new hostname on this node leaves every
+    service with a database unschedulable; only the six HDD volumes, which
+    select a node label, would follow. A rebuild restores the claims from R2
+    through VolSync anyway. Local kubeconfig and talosconfig contexts can be
+    named core at any time.
   access:
     talos: talosctl --nodes 192.168.8.10
     kubernetes_context: admin@beelink
