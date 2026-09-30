@@ -13,9 +13,14 @@ subnets:
   - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1, enabled: no}
   - {cidr: 10.1.0.0/24, use: wireguard clients, gateway: 10.1.0.1}
 
+address_plan:                      # the LAN in tens, set 2026-09-29
+  core: 192.168.8.10-19            # node .10, load balancer .15-.19
+  satellite: 192.168.8.20-29       # node .20 once rebuilt; now DHCP .100
+  dhcp_pool: 192.168.8.100-249
+
 load_balancers:
-  cilium_beelink:
-    range: 192.168.8.15-192.168.8.20
+  cilium_core:
+    range: 192.168.8.15-192.168.8.19  # .20 left the pool for satellite
     announced_by: core
     interface: br0
 

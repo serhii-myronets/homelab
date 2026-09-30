@@ -18,7 +18,7 @@ variable "bootstrap_endpoint" {
 
 locals {
   cluster_name       = "satellite"
-  node_ip            = "192.168.8.11"
+  node_ip            = "192.168.8.20"
   talos_version      = "v1.14.1"
   kubernetes_version = "1.37.0"
   # The same image as core's: i915 and intel-ucode, both generic Intel.
@@ -44,6 +44,7 @@ data "talos_machine_configuration" "controlplane" {
   config_patches = [
     file("${path.module}/patches/controlplane.yaml"),
     file("${path.module}/patches/network.yaml"),
+    file("${path.module}/patches/cilium.yaml"),
     file("${path.module}/patches/storage.yaml"),
     file("${path.module}/patches/swap.yaml"),
     yamlencode({ machine = { install = {

@@ -55,9 +55,17 @@ What it is for, in the order it is likely to be built:
 
 Its own secrets, never core's - shared ones would let either cluster's
 credentials into the other. The same image schematic as core. A static
-192.168.8.11 and the fixed hostname `satellite`. The system disk and the ORICO
-are chosen by serial, because `sda` and `sdb` swap between boots. The ORICO is
-split into `observability` (400 GiB) and `backups` (the rest), so growing logs
-cannot take the backups' room. Swap behind zswap and the EPHEMERAL cap are set
-before the first boot, which on core took a wipe. Flannel, not Cilium: no load
-balancer, no Gateway.
+192.168.8.20 and the fixed hostname `satellite`: the LAN is laid out in tens,
+core in .10-.19 with its load balancer at .15-.19, satellite in .20-.29. The
+system disk is chosen by serial, because `sda` and `sdb` swap between boots.
+Swap behind zswap and the EPHEMERAL cap are set before the first boot, which
+on core took a wipe.
+
+The same platform as core, not a lighter one. Cilium rather than flannel,
+although it costs about 400 MiB of the 7.6 GB: a canary must run what core
+runs to find its problems first, and Grafana or Gatus are then exposed through
+the same Gateway and HTTPRoutes. The whole ORICO is one LVM volume group under
+OpenEBS LVM LocalPV rather than two fixed Talos volumes: each claim is a thin
+logical volume with a hard size, which keeps logs from taking the backups'
+room without guessing the split in advance. Thin pools let claims add up to
+more than the disk, so they must not.
