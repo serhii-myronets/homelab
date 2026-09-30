@@ -6,5 +6,8 @@ resources:
   - helm-repositories.yaml
 
   - system/network/gateway-system/ks.yaml
+
+  # A HelmRelease with no manifests beside it, applied by the root directly.
+  - system/platform/metrics-server.yaml
   - system/security/external-secrets/ks.yaml
   - system/storage/openebs/ks.yaml
