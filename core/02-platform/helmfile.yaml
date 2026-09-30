@@ -1,8 +1,8 @@
-# Pinned to the kubeconfig context `core`, hook included: with satellite in
-# the same kubeconfig, whichever context is current would otherwise get core's
-# platform.
+# Pinned to the kubeconfig context Terraform generates, `admin@core`, hook
+# included: the hook runs plain kubectl, which would otherwise use whatever
+# context is current.
 helmDefaults:
-  kubeContext: core
+  kubeContext: admin@core
 
 repositories:
   - name: cilium
@@ -14,7 +14,7 @@ hooks:
   - events: [ "prepare" ]
     showlogs: true
     command: "kubectl"
-    args: [ "--context", "core", "apply", "-k", "./prepare-hook/", "--server-side" ]
+    args: [ "--context", "admin@core", "apply", "-k", "./prepare-hook/", "--server-side" ]
 
 releases:
   - name: cilium

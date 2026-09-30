@@ -13,10 +13,10 @@
   ignoreDeps: ["https://github.com/serhii-myronets/homelab.git"],
 
   kubernetes: {
-    managerFilePatterns: ["/^(core|satellite)/03-gitops/(apps|components)/.+\\.ya?ml$/"],
+    managerFilePatterns: ["/^core/03-gitops/(apps|components)/.+\\.ya?ml$/"],
   },
   flux: {
-    managerFilePatterns: ["/^(core|satellite)/03-gitops/(apps|components)/.+\\.ya?ml$/"],
+    managerFilePatterns: ["/^core/03-gitops/(apps|components)/.+\\.ya?ml$/"],
   },
 
   customManagers: [
@@ -24,14 +24,14 @@
       // The three-part version only: the data source's two-part
       // talos_version is the machine configuration contract, not a release.
       customType: "regex",
-      managerFilePatterns: ["/^(core|satellite)/01-talos/main\\.tf$/"],
+      managerFilePatterns: ["/^core/01-talos/main\\.tf$/"],
       matchStrings: ['talos_version\\s*=\\s*"(?<currentValue>v\\d+\\.\\d+\\.\\d+)"'],
       depNameTemplate: "siderolabs/talos",
       datasourceTemplate: "github-releases",
     },
     {
       customType: "regex",
-      managerFilePatterns: ["/^(core|satellite)/01-talos/main\\.tf$/"],
+      managerFilePatterns: ["/^core/01-talos/main\\.tf$/"],
       matchStrings: ['kubernetes_version\\s*=\\s*"(?<currentValue>\\d+\\.\\d+\\.\\d+)"'],
       depNameTemplate: "kubernetes/kubernetes",
       datasourceTemplate: "github-releases",
@@ -39,7 +39,7 @@
     },
     {
       customType: "regex",
-      managerFilePatterns: ["/^(core|satellite)/02-platform/prepare-hook/kustomization\\.yaml$/"],
+      managerFilePatterns: ["/^core/02-platform/prepare-hook/kustomization\\.yaml$/"],
       matchStrings: ["gateway-api/releases/download/(?<currentValue>v[\\d.]+)/"],
       depNameTemplate: "kubernetes-sigs/gateway-api",
       datasourceTemplate: "github-releases",
@@ -107,7 +107,7 @@
       // Helmfile releases are applied by hand: one pull request each.
       matchManagers: ["helmfile"],
       prBodyNotes: [
-        "Merging does not deploy this. Apply it with Helmfile from each cluster's `02-platform/` - satellite first, then core.",
+        "Merging does not deploy this. Apply it from `core/02-platform/` with Helmfile.",
       ],
     },
     {
@@ -123,7 +123,7 @@
       matchDepNames: ["siderolabs/talos", "kubernetes/kubernetes"],
       dependencyDashboardApproval: true,
       prBodyNotes: [
-        "Changing this version does not upgrade the node. Follow the upgrade procedure in the cluster's `01-talos/README.md` - satellite first, then core.",
+        "Changing this version does not upgrade the node. Follow the upgrade procedure in `core/01-talos/README.md`.",
       ],
     },
     {

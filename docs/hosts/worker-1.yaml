@@ -1,0 +1,64 @@
+# worker-1 — core's second node, on the old OpenMediaVault box: called core
+# until 2026-09-29, then satellite, a Talos cluster of its own for a day, and a
+# worker in core since 2026-09-30 (decisions/0034). Nothing runs here unless it
+# tolerates the node's taint; today that is Cilium alone.
+# Verified 2026-09-30.
+
+meta:
+  host: worker-1
+  updated: 2026-09-30
+  tags: [worker-1, satellite, core, talos, hardware, storage]
+
+identity:
+  hostname: worker-1               # fixed in the configuration, not generated
+  ip: 192.168.8.11                 # static in Talos, on br0 over enp1s0
+  cluster: core
+  role: worker
+  taint: homelab/satellite=true:NoSchedule   # set by the kubelet at registration
+  access:
+    talos: talosctl -n 192.168.8.11 -e 192.168.8.10
+    kubernetes_context: admin@core
+  config: core/01-talos, patches/common and patches/worker; resource worker_1
+
+hardware:
+  cpu: {model: Intel Celeron J4125, cores: 4, ghz: 2.0}   # SSE4.2, no AVX
+  ram_gb: 7.6
+  gpu: Intel UHD 600
+
+disks:                             # sda and sdb swap between boots, so both
+                                   # are chosen by what ends their WWID
+  - model: M.2 SSD 128GB
+    serial: GSMB2092400746
+    serial_note: >-
+      Talos reports no serial for either SATA disk, only a WWID ending in it;
+      see traps.yaml.
+    role: Talos system disk - EPHEMERAL 103 GB (capped at 96 GiB), swap 8 GiB
+    smart: {health: passed, reallocated: 0, pending: 0, erase_fails: 0,
+            power_on_hours: 16707}    # 2026-09-29, under Debian
+  - model: ORICO
+    serial: UB202412065113
+    size: 2.0 TB
+    role: >-
+      An LVM physical volume with volume group ssd and thin pool ssd_thinpool,
+      made for the satellite cluster; its logical volumes belonged to that
+      cluster and are orphaned now. OpenEBS does not see it: its node plugin
+      does not tolerate the taint, so no pod of it runs here.
+    link: 3.0 Gb/s of 6.0           # the drive is SATA 3.0; the cable or port
+                                   # holds it at half speed
+    smart: {health: passed, reallocated: 0, uncorrectable: 0, power_on_hours: 12193}  # 2026-09-29
+
+swap:
+  size: 8 GiB
+  zswap: {enabled: true, max_pool_percent: 20}
+  kubelet: LimitedSwap
+
+memory: 0.7 GB used of 7.7, 6.7 available - as a cluster of its own it held 4.1
+
+nics:
+  - {name: br0, addr: 192.168.8.11/24, ports: [enp1s0]}
+  - {name: enp1s0, mac: "84:39:4c:00:25:fc", state: up}
+  - {name: enp2s0, state: down}     # spare wired
+  - {name: wlo1, state: absent}     # Talos has no Wi-Fi support
+
+daemonsets_here: [cilium, cilium-envoy]   # intel-gpu-plugin and OpenEBS's node
+                                          # plugin stop at the taint

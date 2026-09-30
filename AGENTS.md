@@ -1,18 +1,19 @@
 # Working in this repository
 
-Four machines:
+One cluster on two machines, a lab and a router:
 
 | | | Deployed from here |
 |---|---|---|
-| **core** | where the services and their data live — everything depends on it; Talos on the Beelink | yes, out of `core/` |
-| **satellite** | watches core and keeps copies — nothing may depend on it; Talos on the old OpenMediaVault box | yes, out of `satellite/` |
+| **core** | the cluster where the services and their data live — everything depends on it. Nodes `controlplane` (the Beelink) and `worker-1` (the old OpenMediaVault box) | yes, out of `core/` |
 | **proxmox** | built and destroyed on purpose — Talos, Terraform | no — only a `tools/` installer, by hand |
 | **router** | the boundary with the internet — routing, DNS, firewall, VPN | no, and never over ssh |
 
-Machines are named for their role, not their hardware. Until 2026-09-29
-`core` meant the OpenMediaVault box, now `satellite`, and the Talos cluster
-was `beelink` in `core-talos/`; sessions and decisions from before then use
-the old names.
+Machines are named for their role, not their hardware. Names moved twice:
+until 2026-09-29 `core` meant the OpenMediaVault box and the Talos cluster
+was `beelink` in `core-talos/`; that box was then `satellite`, a cluster of
+its own for a day, and since 2026-09-30 is `worker-1`, when the cluster was
+rebuilt as `core` with a node `controlplane`. Sessions and decisions use the
+names of their day.
 
 The repository has two halves and the split is the point. `core/` is
 *executable*: Talos configuration, the platform bootstrap and the Flux tree,
@@ -31,9 +32,6 @@ Before debugging anything that should work, check
 | `core/01-talos/` | Terraform for the node; its state and `secrets.yaml` are local and ignored |
 | `core/02-platform/` | Helmfile bootstrap, applied by hand |
 | `core/03-gitops/` | everything Flux reconciles |
-| `satellite/01-talos/` | Terraform for satellite, the same shape as core's |
-| `satellite/02-platform/` | its Helmfile bootstrap, pinned to the `satellite` context |
-| `satellite/03-gitops/` | everything Flux reconciles on satellite |
 | `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
 | `archive/` | setups switched off but kept whole; nothing reconciles it |
@@ -45,12 +43,12 @@ A procedure belongs in one of those, never in two.
 
 ## Access
 
-core and satellite have no shell. The local kubeconfig names their contexts
-`core` and `satellite`; name one on every command, since both sit in the same
-file - `kubectl --context core`, `talosctl -n 192.168.8.10` for core,
-`talosctl --context satellite -n 192.168.8.20` for satellite. Each cluster's
-`02-platform/helmfile.yaml` is pinned to its context. The rest take the key at
-`~/.ssh/id_ed25519`:
+core's nodes have no shell: `kubectl --context admin@core`, and
+`talosctl -n 192.168.8.10` or `-n 192.168.8.11 -e 192.168.8.10` for
+controlplane or worker-1. Both configs come straight from
+`terraform output` in `core/01-talos`, contexts included, and
+`core/02-platform/helmfile.yaml` is pinned to `admin@core`. The rest take the
+key at `~/.ssh/id_ed25519`:
 
 ```bash
 ssh root@10.1.1.100      # proxmox

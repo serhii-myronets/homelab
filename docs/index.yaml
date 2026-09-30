@@ -6,18 +6,18 @@
 #
 # The machines are named for what they are for, not for what they run:
 #   core       where the services and data live   192.168.8.10   Talos, Beelink ME Pro
-#   satellite  watches core, keeps copies         192.168.8.20   Talos, the old OMV box
+#   worker-1   core's second node                 192.168.8.11   Talos, the old OMV box
 #   proxmox    built and destroyed on purpose     10.1.1.100     Proxmox VE
 #   router     the boundary with the internet     192.168.8.1    GL.iNet
 #
-# Renamed on 2026-09-29: core was the OpenMediaVault box, now satellite, and
-# the Talos cluster on the Beelink was beelink, in core-talos/. Sessions and
-# decisions from before that date use the old names; its Talos cluster is still
-# called beelink inside.
+# Renamed twice: on 2026-09-29 core stopped meaning the OpenMediaVault box and
+# the Beelink's cluster left core-talos/; on 2026-09-30 the cluster was rebuilt
+# as core, nodes controlplane and worker-1 (the old box, satellite for a day).
+# Sessions and decisions use the names of their day.
 #
 # One half is deployed from here: core/ onto core, through Flux. tools/ holds
 # installers run by hand, reconciled by nobody, and archive/ holds setups
-# switched off but kept whole, read by nothing - satellite's old Docker stacks
+# switched off but kept whole, read by nothing - the old box's Docker stacks
 # among them.
 
 meta:
@@ -30,9 +30,9 @@ files:
       core - the Beelink ME Pro at 192.168.8.10: the Talos node, its disks,
       and every service now running in the homelab. The busiest file here.
     tags: [core, beelink, talos, kubernetes, bare-metal, storage, services]
-  - path: docs/hosts/satellite.yaml
-    holds: satellite - Talos on the old OpenMediaVault box at 192.168.8.20 - hardware, disks, access
-    tags: [satellite, talos, hardware, storage]
+  - path: docs/hosts/worker-1.yaml
+    holds: worker-1 - core's second node, the old OpenMediaVault box at 192.168.8.11 - hardware, disks, taint
+    tags: [worker-1, satellite, talos, hardware, storage]
   - path: docs/hosts/proxmox.yaml
     holds: hypervisor at 10.1.1.100 - hardware, guests, spare capacity
     tags: [proxmox, hypervisor, lab]
@@ -45,10 +45,6 @@ files:
   - path: docs/backups.yaml
     holds: restic repositories, schedule, what is and is not covered
     tags: [backup, restic, disaster-recovery]
-  - path: docs/services.yaml
-    holds: satellite's stopped Docker stacks and their secrets - rollback material only
-    tags: [satellite, docker, rollback, secrets]
-    read_when: something has to be started on satellite again
   - path: docs/service-ideas.md
     holds: the shortlist of services not yet built, and where each might go
     tags: [ideas, services, backlog]
@@ -77,13 +73,13 @@ answers:                     # question -> file, so a lookup costs one read
   which hostname serves what: docs/hosts/core.yaml, local_access and public_access
   what can reach what: docs/network.yaml, then hosts/router.yaml
   why is this failing: docs/traps.yaml
-  how do I start satellite's old stack again: docs/services.yaml
 
 rules:                       # the full set is in AGENTS.md
   - Verify against the live host before writing a fact down. Two documentation
     errors found on 2026-09-06 were both stale claims that read as true.
   - Do not edit the router's own uci config. See decisions/0007.
-  - Secrets are never committed. docs/services.yaml lists their paths only.
+  - Secrets are never committed; Infisical holds them, and ExternalSecrets
+    name only their paths.
   - A fact belongs in exactly one file. README.md is procedures for a human and
     does not restate these tables.
   - New failure mode -> traps.yaml. Choice with a rejected alternative ->

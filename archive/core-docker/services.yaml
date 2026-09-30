@@ -1,14 +1,8 @@
-# satellite's Docker stacks - the old OpenMediaVault box, called core until
-# 2026-09-29. Every container below was stopped on 2026-09-19 once its
-# replacement reached the Beelink, and the compose files now sit under
-# archive/core-docker/. What is actually running is in hosts/core.yaml.
-#
-# The machine was rebuilt on Talos on 2026-09-29, so none of this can start
-# there again. The data these stacks used is on the ORICO disk until that is
-# wiped; after that this file is history.
-#
-# This file is rollback material. Read it when something has to be started on
-# satellite again - not otherwise.
+# The Docker stacks of the old OpenMediaVault box - core until 2026-09-29,
+# then satellite, now core's node worker-1. Every container below was stopped
+# on 2026-09-19 once its replacement ran on the Beelink; the box has run Talos
+# since 2026-09-29, so none of this can start there again. History, kept
+# beside the compose files it describes - what runs is in docs/hosts/.
 
 meta:
   updated: 2026-09-20

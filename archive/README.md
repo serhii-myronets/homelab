@@ -30,12 +30,23 @@ keeps writing to the same series. That is safe only while the cluster it
 recovers from is gone. Its one secret, the R2 key pair, is read from Infisical
 at `/backups/R2`; nothing here has to be pasted back by hand.
 
-## observability — restored
+## observability — the VictoriaMetrics k8s stack, twice
 
-The VictoriaMetrics k8s stack that ran on core for an evening on
-2026-09-20 came back on 2026-09-30 as satellite's metrics hub, in
-`../satellite/03-gitops/apps/system/observability/`, with its lessons kept in
-the values there. Git holds the archived form.
+Ran on core for an evening on 2026-09-20, and again on 2026-09-30 for a day as
+the metrics and log hub of satellite, a cluster of its own on the old
+OpenMediaVault box: victoria-metrics-k8s-stack 0.93.0 with VMSingle keeping
+three months, VictoriaLogs with vlagent collecting every pod's log, vmalert,
+Alertmanager on a 1Gi claim for its silences, and Grafana at grafana.home.
+Every target came up, logs flowed, and the stack held about 1 GiB. It went
+when satellite stopped being a cluster and became core's worker-1
+(decisions/0034); the lessons of both runs are in the comments of
+`app/helmrelease.yaml`.
+
+To bring it back on core, on worker-1: tolerate the taint
+`homelab/satellite=true:NoSchedule` and select the node `worker-1` in its
+values; give OpenEBS's node plugin the same toleration, so the ORICO's volume
+group `ssd` is seen; add a StorageClass for `ssd` beside core's `lvm`; point
+`ks.yaml` at wherever it lands, and add `grafana.home` to core's certificate.
 
 ## pulse — the Pulse hub and its Kubernetes agent
 
@@ -96,7 +107,7 @@ the shared R2 key pair in Infisical at `/backups/R2`.
 ## core-docker — the old OpenMediaVault box's Docker stacks
 
 Everything Portainer deployed onto the machine at `192.168.8.100`, then called
-core and now `satellite`: one directory per stack, the bootstrap and the restic
+core and now core's node `worker-1`: one directory per stack, the bootstrap and the restic
 backup job. Every container stopped on 2026-09-19 once its replacement ran on
 the Beelink; the directory moved here from `core/` on 2026-09-29, when that
 name went to the cluster. The machine is to be wiped and rebuilt on Talos, so
@@ -104,4 +115,4 @@ nothing is expected to come back from here.
 
 Paths inside still say `core/` - its own README, the compose comments and
 `backup/install.sh` - because they describe where it lived. Its stacks and
-their secrets are listed in `../docs/services.yaml`.
+their secrets are listed in `core-docker/services.yaml`.

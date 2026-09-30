@@ -52,3 +52,10 @@ interface on both nodes, the hostname satellite, 8 GiB of swap behind zswap
 with EPHEMERAL capped before the install, and dm_thin_pool for the ORICO's
 thin pool. The first apply goes to satellite's maintenance address after
 `talosctl reset`.
+
+## What followed, the same day
+
+core itself was rebuilt so that no node kept a generated name: the cluster
+became `core`, the Beelink `controlplane` and satellite `worker-1`. The
+observability stack went back to the archive rather than onto worker-1 for
+now, and satellite's own tree left the repository.

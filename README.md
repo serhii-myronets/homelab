@@ -22,7 +22,7 @@ host needs its installer run again.
 **[`archive/`](archive/)** is neither: setups that worked and were switched
 off, kept whole so they can be brought back rather than rebuilt from memory —
 among them `core-docker/`, the Docker stacks of the old OpenMediaVault box,
-now `satellite`. Nothing reads it — Flux reconciles `core/03-gitops/apps/` and
+now core's node `worker-1`. Nothing reads it — Flux reconciles `core/03-gitops/apps/` and
 stops there — and its README says what each one was and why it went.
 
 Changing one half should rarely mean changing the other. The machines and
