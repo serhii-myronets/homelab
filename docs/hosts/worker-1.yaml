@@ -39,10 +39,11 @@ disks:                             # sda and sdb swap between boots, so both
     serial: UB202412065113
     size: 2.0 TB
     role: >-
-      An LVM physical volume with volume group ssd and thin pool ssd_thinpool,
-      made for the satellite cluster; its logical volumes belonged to that
-      cluster and are orphaned now. OpenEBS does not see it: its node plugin
-      does not tolerate the taint, so no pod of it runs here.
+      Empty since 2026-09-30: the satellite cluster's volume group ssd, its
+      thin pool and three volumes were removed and the LVM label wiped, from a
+      privileged pod, since the volume group held the disk and talosctl could
+      not wipe it. Whatever uses it next makes the volume group again - and
+      needs OpenEBS's node plugin to tolerate the taint first.
     link: 3.0 Gb/s of 6.0           # the drive is SATA 3.0; the cable or port
                                    # holds it at half speed
     smart: {health: passed, reallocated: 0, uncorrectable: 0, power_on_hours: 12193}  # 2026-09-29
