@@ -1,7 +1,7 @@
 # worker-1 — core's second node, on the old OpenMediaVault box: called core
 # until 2026-09-29, then satellite, a Talos cluster of its own for a day, and a
 # worker in core since 2026-09-30 (decisions/0034). Nothing runs here unless it
-# tolerates the node's taint; today that is Cilium alone.
+# tolerates the node's taint; today that is Cilium and OpenEBS's node plugin.
 # Verified 2026-09-30.
 
 meta:
@@ -14,7 +14,8 @@ identity:
   ip: 192.168.8.11                 # static in Talos, on br0 over enp1s0
   cluster: core
   role: worker
-  taint: homelab/satellite=true:NoSchedule   # set by the kubelet at registration
+  taint: homelab/dedicated=worker-1:NoSchedule   # set by the kubelet at registration;
+                                                 # renamed from homelab/satellite with kubectl
   access:
     talos: talosctl -n 192.168.8.11 -e 192.168.8.10
     kubernetes_context: admin@core
@@ -39,11 +40,9 @@ disks:                             # sda and sdb swap between boots, so both
     serial: UB202412065113
     size: 2.0 TB
     role: >-
-      Empty since 2026-09-30: the satellite cluster's volume group ssd, its
-      thin pool and three volumes were removed and the LVM label wiped, from a
-      privileged pod, since the volume group held the disk and talosctl could
-      not wipe it. Whatever uses it next makes the volume group again - and
-      needs OpenEBS's node plugin to tolerate the taint first.
+      LVM volume group ssd, a 1.77 TiB thin pool for OpenEBS LVM LocalPV
+      behind the StorageClass lvm-worker-1, made by the Job ssd-thinpool on
+      2026-09-30.
     link: 3.0 Gb/s of 6.0           # the drive is SATA 3.0; the cable or port
                                    # holds it at half speed
     smart: {health: passed, reallocated: 0, uncorrectable: 0, power_on_hours: 12193}  # 2026-09-29
@@ -61,5 +60,5 @@ nics:
   - {name: enp2s0, state: down}     # spare wired
   - {name: wlo1, state: absent}     # Talos has no Wi-Fi support
 
-daemonsets_here: [cilium, cilium-envoy]   # intel-gpu-plugin and OpenEBS's node
-                                          # plugin stop at the taint
+daemonsets_here: [cilium, cilium-envoy, openebs-lvm-localpv-node]
+                                          # intel-gpu-plugin stops at the taint
