@@ -26,7 +26,7 @@ back it up outside the repository, and never delete it while the node lives.
 
    ```bash
    talosctl -n <address> get links --insecure   # enp1s0 must exist
-   talosctl -n <address> get disks --insecure   # serials GSMB2092400746, UB202412065113
+   talosctl -n <address> get disks --insecure   # WWIDs ending GSMB2092400746, UB202412065113
    ```
 
 3. Apply, pointing the first apply at the maintenance address. The node
@@ -52,6 +52,7 @@ back it up outside the repository, and never delete it while the node lives.
    ```bash
    terraform output -raw talosconfig > talosconfig
    talosctl config merge talosconfig
+   talosctl config context beelink   # merge makes satellite current; keep core's
    terraform output -raw kubeconfig > kubeconfig
    KUBECONFIG=~/.kube/config:kubeconfig kubectl config view --flatten > /tmp/kubeconfig.merged \
      && mv /tmp/kubeconfig.merged ~/.kube/config && chmod 600 ~/.kube/config

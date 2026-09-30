@@ -1,8 +1,10 @@
 machine:
   install:
-    # By serial: sda and sdb swap places between boots on this machine.
+    # Not by name: sda and sdb swap places between boots on this machine. Not
+    # by serial either: Talos reports none for these SATA disks, only a WWID
+    # that ends in it, padded with runs of spaces - hence the glob.
     diskSelector:
-      serial: GSMB2092400746
+      wwid: "*GSMB2092400746"
 cluster:
   allowSchedulingOnControlPlanes: true
   # Carried from core: limits well above use, only so that Talos's OOM
