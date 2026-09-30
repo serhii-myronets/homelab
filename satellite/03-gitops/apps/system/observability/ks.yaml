@@ -1,0 +1,18 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: observability
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 1m
+  sourceRef:
+    kind: GitRepository
+    name: homelab
+  path: ./satellite/03-gitops/apps/system/observability/app
+  prune: true
+  wait: true
+  timeout: 15m
+  # VMSingle's claim needs the lvm class.
+  dependsOn:
+  - name: openebs-classes
