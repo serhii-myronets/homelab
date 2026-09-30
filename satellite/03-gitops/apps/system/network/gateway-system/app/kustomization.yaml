@@ -1,9 +1,7 @@
-# The address pool and its announcement only. The Gateway itself waits for
-# the first service to publish: it needs a certificate and a name under which
-# the router sends clients here rather than to core.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
   - cilium-lb-pool.yaml
   - l2-announcement-policy.yaml
+  - gateway.yaml
