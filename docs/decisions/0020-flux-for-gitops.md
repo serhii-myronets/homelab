@@ -26,6 +26,4 @@ version updates. Headlamp is not an alerting system, so this does not close
 [0008](0008-nothing-tells-anyone-when-something-breaks.md).
 
 Bootstrap and health-check procedures live in the
-[GitOps README](../../core/03-gitops/README.md). The cutover and its
-validation are recorded in the
-[migration session](../sessions/2026-09-21-finish-flux-migration.md).
+[GitOps README](../../core/03-gitops/README.md).

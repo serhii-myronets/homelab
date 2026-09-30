@@ -1,454 +1,175 @@
-# core — where the services and their data live, and what everything else in
-# the house depends on. A Talos cluster deployed from core/, rebuilt on
-# 2026-09-30 under the names it has now: control plane on a Beelink ME Pro,
-# described here, and worker-1 on the old OpenMediaVault box
-# (hosts/worker-1.yaml). Called beelink until then.
-# Hardware verified 2026-09-19; the rebuild verified 2026-09-30.
+# core — the cluster where the services and their data live, and what
+# everything else in the house depends on. Talos, deployed from core/, on two
+# nodes: controlplane on a Beelink ME Pro, described here, and worker-1 on the
+# old OpenMediaVault box (hosts/worker-1.yaml).
+#
+# What runs - images, charts, versions, resources - is in core/03-gitops and
+# only there; Renovate moves it. This file holds what the manifests cannot
+# say: why, how it behaves, and where it bites.
+# Verified 2026-09-30, after the rebuild.
 
 meta:
   host: core
   updated: 2026-09-30
-  tags: [core, controlplane, beelink, talos, kubernetes, bare-metal, storage]
+  tags: [core, controlplane, talos, kubernetes, bare-metal, storage, services]
 
 identity:
-  model: Beelink ME Pro
-  ip: 192.168.8.10
-  vlan: 1
-  role: core
   cluster: core
-  node: controlplane               # fixed; was the generated talos-lqh-j5o
-  nodes: [controlplane, worker-1]
-  rebuilt: >-
-    2026-09-30: reset (STATE and EPHEMERAL only), reinstalled under the fixed
-    names and bootstrapped empty; Flux rebuilt everything and every service's
-    claim came back from R2 through VolSync. The names had to change this way:
-    each OpenEBS volume is pinned to its node by name, a field that cannot be
-    edited. The old cluster's logical volumes stayed on the WD as a fallback.
+  node: controlplane               # fixed hostname; every OpenEBS volume is
+                                   # pinned to its node by name
+  model: Beelink ME Pro
+  ip: 192.168.8.10                 # static in Talos, decisions/0028
   access:
-    talos: talosctl --nodes 192.168.8.10
-    kubernetes_context: admin@core   # as terraform output writes it
-
-os:
-  distribution: Talos Linux 1.14.1
-  kubernetes: 1.37.0
-  kernel: 6.18.51-talos
-  virtualised: false
+    talos: talosctl -n 192.168.8.10
+    kubernetes_context: admin@core # as `terraform output` writes it
+  rebuilt: >-
+    2026-09-30, under fixed names: reset of STATE and EPHEMERAL only, a new
+    bootstrap, Flux rebuilt everything and VolSync restored every service's
+    claim from R2. The HDDs' user volumes survived untouched.
 
 hardware:
   cpu: {model: Intel N95, cores: 4, threads: 4}
-  ram_gb: 12
+  ram_gb: 12                       # the constraint; see decisions/0029
+  gpu: Intel UHD (Alder Lake-N), Quick Sync, shared by three pods
 
-disks:
-  - dev: nvme0n1
-    model: WDS500G1X0E-00AFY0
+disks:                             # names swap between boots: select by serial
+  - model: WDS500G1X0E-00AFY0
     serial: "204390442013"
-    size: 500G
-    transport: nvme
-    wwid: eui.e8238fa6bf530001001b444a46596260
-    role: >-
-      One LVM volume group, nvme, with a 442 GB thin pool; OpenEBS LVM
-      LocalPV gives each claim a thin logical volume with snapshots
-  - dev: nvme1n1
-    model: 128GB SSD
+    role: LVM volume group nvme, 442 GB thin pool for OpenEBS LVM LocalPV
+  - model: 128GB SSD (Maxio MAP1202, no DRAM)
     serial: MQ49W66504526
-    size: 128G
-    transport: nvme
-    controller: Maxio MAP1202 (PCI 1e4b:1202), no DRAM, 8 MB host memory buffer
+    role: Talos system disk - EPHEMERAL capped at 100 GiB, 16 GiB swap behind zswap
+  - model: ST10000DM0004 (2x 10 TB)
+    wwid: [naa.5000c500c754eee9, naa.5000c500c7482270]
     role: >-
-      Talos system disk: EFI, META, STATE, EPHEMERAL capped at 100 GiB, and a
-      16 GiB swap partition behind zswap since 2026-09-29; see decisions/0029
-  # The kernel names the two NVMe drives in either order from boot to boot;
-  # match them by serial, never by nvme0 or nvme1. Both read healthy on
-  # 2026-09-29: no critical warnings or media errors, 0% and 1% worn. The WD
-  # sits on one PCIe lane, the system disk on two.
-  - dev: sda
-    model: ST10000DM0004-1Z
-    size: 10T
-    transport: sata
-    rotational: true
-    wwid: naa.5000c500c754eee9
-    role: Talos XFS user volume hdd-a at /var/mnt/hdd-a, static PV media-hdd-a
-  - dev: sdb
-    model: ST10000DM0004-1Z
-    size: 10T
-    transport: sata
-    rotational: true
-    wwid: naa.5000c500c7482270
-    role: Talos XFS user volume hdd-b at /var/mnt/hdd-b, static PV media-hdd-b
+      Talos XFS user volumes hdd-a and hdd-b at /var/mnt/hdd-a and hdd-b,
+      reached through static PVs that select the node label
+      homelab/media-hdd. A reinstall reuses them; never reset with user
+      disks wiped (decisions/0016).
 
 network:
-  bridge: br0
-  address: 192.168.8.10/24
-  addressing: static in Talos, no DHCP - see decisions/0028
+  bridge: br0 over enp3s0 (router) and enp2s0 (a desktop downlink)
   gateway: 192.168.8.1
-  resolver: 192.168.8.1
-  ports:
-    - {name: enp3s0, role: router uplink}
-    - {name: enp2s0, role: monitor and desktop downlink}
-  cilium_device: br0
+  load_balancer: Cilium L2 announcements from the pool 192.168.8.15-19
+  addresses:
+    - {ip: 192.168.8.15, what: the Gateway}
+    - {ip: 192.168.8.16, what: qBittorrent, ports: [8080]}
+    - {ip: 192.168.8.17, what: Jellyfin, ports: [8096]}
 
 platform:
-  scheduling: control-plane enabled
-  cni: Cilium with kube-proxy replacement and BPF masquerading
-  load_balancer_ips:
-    - {ip: 192.168.8.15, service: gateway-system/cilium-gateway-main-gateway}
-    - {ip: 192.168.8.16, service: torrent/torrent, ports: [8080, 3000]}
-    - {ip: 192.168.8.17, service: jellyfin/jellyfin, port: 8096}
-  releases:
-    - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
-    - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
-    - {name: flux-operator, namespace: flux-system, chart: 0.60.0, app: v0.60.0, status: deployed}
-  gitops:
-    controller: Flux, installed and sized by the Flux Operator's FluxInstance
-    flux: v2.9.5, upgraded by the operator within the 2.9.x range
-    enabled: [source-controller, kustomize-controller, helm-controller, notification-controller]
-    ui: flux.home and flux.serhii.link, anonymous and read-only, served by the operator pod on 9080
-    bootstrap: core/03-gitops/README.md
-    decision: docs/decisions/0020-flux-for-gitops.md, docs/decisions/0021-flux-operator-for-the-web-interface.md
-  gitops_components:
-    - {name: metrics-server, namespace: kube-system, chart: 3.14.0, app: 0.9.0, status: deployed}
-    - {name: openebs, namespace: openebs, chart: 4.6.0, status: deployed}
-    - {name: volumes, pvs: [samba-hdd-a, samba-hdd-b, torrent-hdd-a, jellyfin-hdd-a, library-hdd-a], status: deployed}
-    - {name: cert-manager, namespace: cert-manager, chart: v1.21.2, status: deployed}
-    - {name: snapshot-controller, namespace: storage, chart: 5.3.0, app: v8.6.0, status: deployed}
-    - {name: volsync, namespace: storage, chart: 0.16.0, status: deployed}
-    - {name: samba, namespace: samba, status: deployed}
-    - {name: torrent, namespace: torrent, status: deployed}
-    - {name: intel-gpu, namespace: kube-system, plugin: "intel-gpu-plugin 0.37.0", resource: "gpu.intel.com/i915", shared_by: 3, status: deployed}
-    - {name: jellyfin, namespace: jellyfin, status: deployed}
-    - {name: library, namespace: library, status: deployed}
-    - {name: cloudflared, namespace: cloudflared, image: "cloudflare/cloudflared:2026.9.1", replicas: 1, status: deployed}
-    - {name: external-dns, namespace: external-dns, chart: 1.22.0, app: 0.22.0, status: deployed}
-    - {name: sure, namespace: sure, image: "ghcr.io/we-promise/sure:0.7.5-alpha.10", status: deployed}
-    - {name: uptime-kuma, namespace: uptime-kuma, image: "louislam/uptime-kuma:2.5.5-rootless", status: deployed}
-  local_access:
-    names: [jellyfin.home, tv.home, seerr.home, immich.home, sure.home, kuma.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, flux.home, ca.home]
-    gateway: >-
-      192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
-      *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
-      clear, and *.home on 443 with home-tls.
-    certificate: >-
-      One certificate lists every HTTPS .home service. tv.home is deliberately
-      absent: it is plain HTTP for a television whose trust store is not ours
-      to write. cert-manager creates and renews the certificate from the
-      cluster's own authority; devices trust its root from ca.home/root.crt.
-    note: >-
-      The router now sends every *.home name here, so core's remaining ones
-      (omv, portainer, homepage, pulse, proxmox, proxmenux) answer 404 until
-      they move or get a route.
-  public_access:
-    tunnel: {name: beelink, id: 2150274f-5bd6-4826-b46f-16992d9f8293, managed: locally, config: core/03-gitops/apps/system/network/cloudflared/app/config.yaml}
-    secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
-    dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
-    auth: Cloudflare Access covers every serhii.link name, including new ones
-    published: [flux.serhii.link, jellyfin.serhii.link, torrent.serhii.link,
-                prowlarr.serhii.link, radarr.serhii.link, seerr.serhii.link, sonarr.serhii.link,
-                sure.serhii.link]
-    other_tunnels:
-      - {name: core, id: 324ac876-9f30-45a4-8872-e2331398e411, managed: remotely, serves: core's hostnames}
-      - {name: wildcard-tunnel, id: aa04f37f-025a-4dbb-8a06-87acf29ff7a2, managed: locally, kept_for: a future Proxmox cluster, secret: Infisical /cloudflared/credentials.json}
-  jellyfin:
-    address: 192.168.8.17:8096 (LoadBalancer)
-    television: >-
-      tv.home, on port 80 without TLS, added 2026-09-20. A television's
-      trust store is not ours to write to, so it can neither follow the
-      redirect on jellyfin.home nor accept the home authority behind it.
-      A second name rather than an exemption for the first, so every device
-      that can do TLS still does; tv.home is deliberately not on the
-      certificate. The password crosses the LAN in the clear either way -
-      the alternative was the address above, typed with its port.
-    image: "jellyfin/jellyfin:12.1.20260915-010956"
-    user: "1000:1000"
-    gpu: Quick Sync through the Intel iHD driver 26.2.4
-    config: claim data on the lvm class, backed up hourly
-    cache: claim cache on the lvm class, never backed up
-    media: >-
-      One read-only mount: /var/mnt/hdd-a/media as /library, the hard-link
-      library Sonarr and Radarr build. The seeding directory was mounted
-      beside it until the migration finished on 2026-09-20.
-    libraries: >-
-      Two, Movies at /library/movies and TV at /library/tv, named after the
-      directories they read. The mixed Kids library is gone: age is
-      metadata, not a folder, and each title is now a film or a series on
-      its own. Read-only, so deleting anything is Sonarr's or Radarr's job -
-      which also means SaveLocalMetadata and SaveSubtitlesWithMedia must
-      stay off on both, or a scan spends itself on write errors.
-    migrated: >-
-      core's 12.0 library and watch history on 2026-09-19, upgraded to 12.1.
-      Watch history was lost again on 2026-09-20 when the libraries moved to
-      /library: Jellyfin identifies an item by its path, and every path
-      changed.
-    legacy_auth: >-
-      EnableLegacyAuthorization is on in system.xml. Jellyseerr still sends
-      X-Emby-Authorization, which Jellyfin 12 answers with 400.
-  torrent:
-    address: 192.168.8.16 (LoadBalancer)
-    ports: {qbittorrent: 8080}
-    containers:
-      - {name: gluetun, image: "qmcgaw/gluetun:v3.41.3", role: "NordVPN WireGuard, Netherlands, native sidecar"}
-      - {name: qbittorrent, image: "ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475", interface: tun0}
-    downloads: >-
-      /var/mnt/hdd-a/torrents, mounted both as /downloads, the path the
-      migrated torrents carry in their resume data, and inside /data, the
-      path Sonarr and Radarr also use.
-    config: claim data on the lvm class, backed up hourly
-    cache: 200Gi lvm claim for incomplete downloads, never backed up
-    ui: >-
-      qBittorrent's own, at torrent.home and torrent.serhii.link since
-      2026-09-20. Flood held those names and was removed: a second interface
-      onto the same client, for 153 MiB.
-    vpn: >-
-      gluetun to NordVPN over WireGuard since 2026-09-20, in the Netherlands.
-      It was OpenVPN, which cost 1.5 of four cores to carry 1.7 MiB/s: this
-      traffic is millions of tiny packets - 8 million outbound peer
-      acknowledgements of about 73 bytes against 14 million inbound - and
-      OpenVPN pays per packet, in user space. WireGuard is built into the
-      Talos kernel; measured afterwards at 5.5 MiB/s for 1-5 millicores.
-      qBittorrent binds to the tunnel by name, and that name is tun0 under
-      both protocols - see traps.yaml. Some NordVPN endpoints accept a
-      WireGuard connection and carry nothing, so gluetun hunts for a live
-      one; its liveness probe allows ten minutes for that, because a
-      restart mid-hunt is what turns it into an outage.
-    seeding: >-
-      Stops at ratio 2 or 14 days, whichever comes first. Stopping rather
-      than deleting is deliberate: it is what tells Sonarr and Radarr the
-      seeding is finished, and they then remove the torrent with its file.
-    resolver: >-
-      Every container resolves through gluetun, inside the tunnel. One name
-      is answered before that: retracker.local, which Toloka's torrents
-      announce to and which gluetun's resolver drops in silence - see
-      traps.yaml. A hostAliases entry pins it to 127.0.0.1.
-    vpn_secret: >-
-      Infisical /nordvpn - WIREGUARD_PRIVATE_KEY in use, OPENVPN_USER and
-      OPENVPN_PASSWORD kept so one value here reverts the protocol.
-    webui_auth: none from 192.168.8.0/24 and the pod network
-    migrated: 55 torrents from core on 2026-09-19, seeding without a recheck
-  vaultwarden:
-    role: household password vault, compatible with Bitwarden browser and mobile clients
-    image: "vaultwarden/server:1.37.3"
-    data: >-
-      The SQLite database, its write-ahead log, attachments and configuration
-      share one 2Gi LVM claim, copied hourly to R2 at minute 25. One snapshot
-      keeps the database and its log consistent.
-    names: [vault.home]
-    access: >-
-      Local HTTPS only. No public route exists: Cloudflare Access's browser
-      gate is not a transparent transport for Bitwarden mobile or extension
-      clients.
-    registration: open locally while the household creates its initial accounts
-    built: 2026-09-22, from a fresh vault
-  uptime_kuma:
-    role: local availability checks, outage history and notification delivery
-    image: "louislam/uptime-kuma:2.5.5-rootless"
-    names: [kuma.home]
-    data: >-
-      Kuma's SQLite database holds its monitors, notification channels and
-      history. Its 2Gi LVM claim is copied to R2 hourly at minute 30; the
-      initial source backup completed on 2026-09-22.
-    scope: >-
-      Runs on the Beelink by the owner's choice. It can observe its services,
-      Gateway and router, but cannot report that the Beelink itself has gone
-      down; decision 0022 records the boundary.
-    access: local HTTPS only; no public route
-    built: 2026-09-22, from a fresh database
-  sure:
-    role: household finance dashboard, budgets, net worth and bank connections
-    image: "ghcr.io/we-promise/sure:0.7.5-alpha.10"
-    containers:
-      - {name: postgres, image: "docker.io/library/postgres:16", role: financial records}
-      - {name: redis, image: "docker.io/library/redis:8.4", role: Sidekiq queue; ephemeral}
-      - {name: web, image: "ghcr.io/we-promise/sure:0.7.5-alpha.10", port: 3000, role: Rails UI}
-      - {name: worker, image: "ghcr.io/we-promise/sure:0.7.5-alpha.10", role: scheduled provider sync}
-    names: [sure.home, sure.serhii.link]
-    version: >-
-      A prerelease on purpose: linking an investment-only brokerage through
-      Plaid needs we-promise/sure#3271, which no stable release carries.
-      Renovate ignores unstable versions, so 0.7.5 is a manual step.
-    providers: >-
-      Plaid covers all four institutions - Chase, Bank of America, Wells Fargo
-      and a Webull brokerage - on its free Trial plan, which allows ten Items
-      and never returns a slot once one is used. Eight are spent, one per
-      institution per person; re-authorising an existing connection costs
-      nothing, deleting and re-adding costs a slot for ever. Market data comes
-      from Twelve Data with Yahoo Finance beside it, both chosen in the UI;
-      Yahoo alone refused a single ticker on the first request.
-    household: >-
-      One family, two members. Accounts are private to their owner and shared
-      one by one through account_shares, which carries separate switches for
-      visibility, editing and whether the account counts in the other person's
-      totals. An admin sees everything regardless.
-    data: >-
-      Postgres and Rails attachments share one 5Gi LVM claim, copied to R2
-      hourly at minute 40. One snapshot captures both together. Infisical
-      holds the database password, Rails secret and three Active Record
-      encryption keys; bank-provider tokens are encrypted at rest.
-    access: >-
-      sure.home locally and sure.serhii.link behind Cloudflare Access since
-      2026-09-23. The public name exists because Plaid will not accept a
-      redirect it cannot reach over public TLS; accounts are linked from it,
-      and Sure takes the redirect from whichever host the browser used. No
-      Access exemption for Plaid's webhook, so provider updates arrive by
-      polling. See decisions/0026.
-    setup: Create the first owner account in Sure, then add a provider from its UI.
-    measured: 704Mi RAM and 29m CPU at idle after initial migration, on 2026-09-22
-    built: 2026-09-22, from a fresh database; four institutions linked 2026-09-23
-  library:
-    role: finds and organises what Jellyfin plays; one pod, four programs
-    containers:
-      - {name: prowlarr, image: "ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161", port: 9696, role: indexers}
-      - {name: sonarr, image: "ghcr.io/linuxserver/sonarr:4.0.20.3014-ls325", port: 8989, role: series}
-      - {name: radarr, image: "ghcr.io/linuxserver/radarr:6.4.4.10685-ls317", port: 7878, role: films}
-      - {name: seerr, image: "ghcr.io/seerr-team/seerr:v3.4.1", port: 5055, role: requests}
-    config: one claim data on the lvm class, a directory each, backed up hourly
-    disk: >-
-      /var/mnt/hdd-a whole, mounted as /data. A download lands in
-      /data/torrents under its category and the library in /data/media is a
-      hard link to it, so organising a release cannot break its torrent and
-      costs no space. Since 2026-09-20 the old collection has only the
-      library's name: its torrents were deleted once everything was
-      imported, leaving /data/torrents holding the two category directories
-      and whatever is still seeding.
-    names: [seerr.home, prowlarr.home, sonarr.home, radarr.home]
-    published: >-
-      All four also answer under serhii.link since 2026-09-22. Seerr has its
-      own sign-in against Jellyfin accounts; the three *arr have none, because
-      AUTH__REQUIRED is DisabledForLocalAddresses and the pod only ever sees
-      the Gateway's address, so Cloudflare Access is their only gate.
-    one_pod: >-
-      The OpenEBS LVM driver mounts a volume into one pod only, so the four
-      cannot be separate Deployments sharing the configuration claim.
-    profiles: >-
-      Two each, English and Ukrainian, chosen when a title is added. Each
-      scores its language 500 and requires 200, so the language is a
-      requirement: the profile waits for a translation rather than taking
-      the wrong one. Quality runs from SDTV to Bluray-1080p.
-    cleanup: >-
-      Both remove a completed download from qBittorrent once it has finished
-      seeding, together with its file, leaving only the library's hard link.
-      Deleting anything on purpose is done here, never in Jellyfin, which
-      would remove the link, free nothing and have the episode fetched
-      again.
-    requests: >-
-      Jellyseerr is the only one meant to be opened day to day: it takes a
-      title, works out whether Radarr or Sonarr owns it, and asks on the
-      viewer's behalf. Sign-in is a Jellyfin account, and a per-account
-      override sets which quality profile that person's requests use, so
-      one household asks in two languages without switching anything. The
-      project renamed itself Seerr and moved to seerr-team/seerr;
-      ghcr.io/fallenbagel/jellyseerr took its last release, 2.7.3, on
-      2025-08-14, so its newest tag reads current and is not. The local name
-      followed on 2026-09-22 and is seerr.home; only the subPath holding its
-      configuration and database still reads jellyseerr, because renaming it
-      would hand Seerr an empty directory. Signing in needs Jellyfin's
-      EnableLegacyAuthorization: 3.4.1 asks the API with the Authorization
-      header but its sign-in route still sends X-Emby-Authorization, which
-      Jellyfin 12 answers with 400.
-    flaresolverr: >-
-      Its own pod, stateless. Passes the Cloudflare challenge for the
-      indexers tagged with it, currently RuTracker and EZTV. It starts a
-      Chromium per request in flight and limits nothing itself, so its
-      ceiling is set by how many tagged indexers Prowlarr can search at
-      once - both of them, which is what OOMKilled it at 1Gi. 2Gi since
-      2026-09-20; it idles at about 110Mi.
+  bootstrap: >-
+    Cilium, External Secrets and the Flux Operator by Helmfile from
+    core/02-platform, then the FluxInstance and core/03-gitops/flux.yaml by
+    hand; everything else is Flux. See each directory's README.
+  flux_ui: flux.home and flux.serhii.link, anonymous and read-only (decisions/0021)
+  storage: >-
+    StorageClass lvm: thin volumes on the nvme group, controlplane only.
+    Only a pod that tolerates worker-1's taint can use worker-1, and OpenEBS's
+    node plugin does not yet, so nothing is stored there.
+  secrets: >-
+    Infisical, project homelab, environment prod, through one
+    ClusterSecretStore. The machine credential is the one hand-placed secret:
+    core/02-platform/prepare-hook/initial-secret.yaml, local and ignored.
+  memory: >-
+    Every application pod has a memory limit, init containers included,
+    except Immich's machine learning - so it is the one pod Talos's OOM
+    controller kills when the node runs short (traps.yaml). Requests reserve
+    most of the node; a new service has little room left on controlplane.
+
+access:
+  local: >-
+    *.home resolves to the Gateway through the router's wildcard. HTTP
+    redirects to HTTPS; the exceptions are ca.home, where a device fetches
+    the root it does not trust yet, and tv.home, plain HTTP for a television
+    whose trust store is not ours to write.
+  certificate: >-
+    One certificate lists every HTTPS .home name - a new route needs its
+    name added there. It is signed by home-ca, a root that lives in
+    Infisical /home-ca (valid to 2036-09-17, renewed by nothing) and is
+    served at ca.home/root.crt.
+  public: >-
+    *.serhii.link through the Cloudflare tunnel beelink, locally managed from
+    core/03-gitops/apps/system/network/cloudflared. external-dns publishes a
+    proxied CNAME per HTTPRoute under serhii.link, as owner beelink.
+    Cloudflare Access guards every name, including new ones.
+
+services:
   immich:
-    role: the household's photographs - upload, search, faces
-    added: 2026-09-20
-    names: [immich.home]          # local only; not published
-    pods:
-      - {name: server, image: "ghcr.io/immich-app/immich-server:v3.2.2", port: 2283}
-      - {name: machine-learning, image: "ghcr.io/immich-app/immich-machine-learning:v3.2.2-openvino", port: 3003, gpu: "gpu.intel.com/i915: 1"}
-      - {name: postgres, image: "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0", port: 5432}
-      - {name: valkey, image: "docker.io/valkey/valkey:9", port: 6379}
-    four_pods: >-
-      Not one: each of the three with a volume needs its own, because the
-      OpenEBS LVM driver mounts a volume into a single pod. Valkey has none
-      and could share, but keeping it apart costs nothing.
-    database: >-
-      Not a stock Postgres. Immich stores image and face embeddings as
-      vectors and searches over them, which needs VectorChord; the image is
-      the pair Immich pins and tests for this release. Crossing a Postgres
-      major means a dump and restore, so the tag's 14 is deliberate.
+    names: [immich.home]                     # never published
     storage: >-
-      Photographs in /var/mnt/hdd-a/photos, mounted as /data. Postgres on the
-      lvm class as the claim `data`, so it goes to R2 hourly - the half that
-      cannot be rebuilt from the originals. The model cache is its own claim
-      and is never backed up.
-    originals_not_backed_up: >-
-      Decided on 2026-09-20: the photographs have no second copy, on one disk
-      with no mirror, until the library has a size worth pricing against R2 at
-      about $0.015 per GB per month. They are the only irreplaceable data in
-      the house, so this is the open risk, not an oversight.
-    gpu: >-
-      Face detection and search run on the Intel iGPU through OpenVINO, and
-      since 2026-09-26 the server transcodes video on it through QSV. The
-      device plugin advertises three slots and all three are now taken:
-      Jellyfin, machine learning and the server. They never queue for a
-      slot, but they share the silicon, so work in one slows the others.
-    secret: >-
-      /immich/DB_PASSWORD in Infisical, read by the ExternalSecret immich-db.
-      Postgres initialises its data directory once with whatever password it
-      first sees, so changing it later means changing it inside the database.
+      Originals on hdd-a under photos/, with no second copy anywhere - the
+      largest open gap (backups.yaml). Postgres on an lvm claim, backed up
+      hourly; the model cache is its own claim and never backed up.
+    database: >-
+      Immich's own Postgres image with VectorChord; the major version is
+      pinned on purpose, since crossing one needs a dump and restore.
+    gpu: machine learning through OpenVINO, video transcoding through QSV
+  jellyfin:
+    names: [jellyfin.home, jellyfin.serhii.link, tv.home]
+    media: >-
+      hdd-a's media/ read-only as /library: Movies and TV. Deleting is Sonarr's
+      and Radarr's job; SaveLocalMetadata and SaveSubtitlesWithMedia must stay
+      off, or scans spend themselves on write errors.
+    legacy_auth: EnableLegacyAuthorization on - Seerr still sends X-Emby-Authorization
+  torrent:
+    names: [torrent.home, torrent.serhii.link]
+    vpn: >-
+      gluetun to NordVPN over WireGuard, the Netherlands; qBittorrent binds to
+      tun0. Some endpoints accept WireGuard and carry nothing, so gluetun
+      hunts, and its probe allows ten minutes for that. Key in Infisical
+      /nordvpn.
+    downloads: >-
+      hdd-a's torrents/, as /downloads and inside /data, the path the *arr
+      share; incomplete downloads on a 200Gi cache claim, never backed up.
+    seeding: >-
+      Stops at ratio 2 or 14 days; stopping is what tells Sonarr and Radarr
+      to remove the torrent with its file.
+    resolver: retracker.local pinned to 127.0.0.1, since gluetun drops it
+  library:
+    names: [seerr.home, prowlarr.home, sonarr.home, radarr.home, and each under serhii.link]
+    shape: >-
+      One pod for Prowlarr, Sonarr, Radarr and Seerr, sharing one claim - the
+      LVM driver mounts a volume into one pod only. FlareSolverr apart,
+      stateless.
+    disk: >-
+      hdd-a whole as /data; the library is hard links into torrents/, so
+      organising costs no space and breaks no torrent.
+    profiles: English and Ukrainian, each requiring its language
+    gate: >-
+      Seerr signs in against Jellyfin; the three *arr have no sign-in, since
+      they see only the Gateway's address, so Cloudflare Access is their gate.
+  sure:
+    names: [sure.home, sure.serhii.link]
+    version: a prerelease on purpose, for Plaid investment links; Renovate skips it
+    providers: >-
+      Plaid's Trial plan, ten Items and a slot never returned - eight are
+      spent. Re-authorise a connection, never delete and re-add it.
+    public: >-
+      sure.serhii.link exists because Plaid redirects only to public TLS
+      (decisions/0026); no Access exemption for its webhook, so updates come
+      by polling.
+  vaultwarden:
+    names: [vault.home]                      # local only
+    why_local: Cloudflare Access is not a transport Bitwarden clients can pass
+  uptime_kuma:
+    names: [kuma.home]
+    limit: runs on core, so it cannot report core itself down (decisions/0022)
   samba:
+    address: 192.168.8.10, host network, Beelink.local
     auth: guest
-    shares:
-      - {name: media, path: /var/mnt/hdd-a/media}        # the library
-      - {name: torrents, path: /var/mnt/hdd-a/torrents}  # what is seeding
-      - {name: scan, path: /var/mnt/hdd-b/scan}
-      - {name: hdd-b, path: /var/mnt/hdd-b}
-      - {name: photos, path: /var/mnt/hdd-a/photos/library, read_only: true}  # Immich originals
-    migrated: 89 document files from core on 2026-09-19
-    owner: "1000:1000"         # shared with every media application
-    modes: {files: "0664", directories: "0775"}
-    address: 192.168.8.10 (host network), Beelink.local
-    discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
-    pod_security: the samba namespace alone enforces privileged, for the host network
+    shares: [media, torrents, scan, hdd-b, photos (read-only)]
+    owner: "1000:1000, shared with every media application"
   headlamp:
-    role: a console for this cluster - browse objects, read logs
     names: [headlamp.home, headlamp.serhii.link]
     auth: >-
-      None, with cluster-admin behind it, chosen knowingly by the owner on
-      2026-09-20; headlamp.serhii.link is behind Cloudflare Access, headlamp.home
-      has no gate at all. It spent a day on the satellite cluster and came back
-      on 2026-09-30.
-  node_labels: {homelab/media-hdd: "true"}
-  storage:
-    classes:
-      - {name: lvm, provisioner: local.csi.openebs.io, volgroup: nvme, thin: yes, fsType: xfs}
-    snapshot_class: lvm
-    thin_pool: nvme_thinpool, 442 GB, created by the nvme-thinpool job
-    note: >-
-      The group and pool are made by that job, not by Talos: the Talos
-      Terraform provider speaks the v1.13 contract, which has no
-      LVMVolumeGroupConfig.
-  backups:
-    target: Cloudflare R2, bucket homelab-backups
-    secrets: Infisical /backups/R2
-    postgres: >-
-      None running. CloudNativePG, the Barman Cloud plugin and a shared
-      Postgres worked here on 2026-09-19 and were removed the same day,
-      because no application needed a database yet; the setup is kept whole
-      in archive/database at the repository root. Its backups stay in R2 under
-      cnpg/postgres-v2, with a completed base backup, and the archived
-      Cluster bootstraps from them.
-    volumes: >-
-      VolSync, hourly from a thin snapshot, each service on its own minute.
-      Keeps 24 hourly, 7 daily, 4 weekly and 3 monthly. Each service's data
-      claim restores itself from R2 on an empty cluster; which services are
-      covered is in backups.yaml.
-    not_backed_up: [media on the HDDs, caches]
-  deferred: [strimzi, hubble-ui]
-  archived: >-
-    Two monitors ran here on 2026-09-20 and neither stayed: the
-    VictoriaMetrics stack, then Pulse. Both are whole under
-    archive/ at the repository root, with why each went written beside it.
-    Paperless followed on 2026-09-22 after a fresh, empty trial; its manifests
-    are under archive/paperless/ and its 20Gi volume was deliberately deleted.
+      None, with cluster-admin behind it - the owner's choice. headlamp.home
+      has no gate at all; anyone on the LAN has full control of the cluster.
 
 config:
   talos: core/01-talos/
   platform: core/02-platform/
   gitops: core/03-gitops/
-  secret_paths:
+  local_only:                      # ignored by Git; back them up elsewhere
+    - core/01-talos/terraform.tfstate
     - core/01-talos/secrets.yaml
     - core/02-platform/prepare-hook/initial-secret.yaml
-  note: Both secret files are local and ignored by Git.

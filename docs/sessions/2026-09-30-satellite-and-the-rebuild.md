@@ -69,6 +69,18 @@ having been caches; the ORICO's volume group, from a privileged pod on
 worker-1 after `talosctl wipe disk` refused a disk LVM held; the satellite
 tunnel; and `/satellite` and `/cloudflared/satellite` in Infisical.
 
+## The documentation pass
+
+The repository was then cut down for a fresh agent: traps for things that
+can no longer happen (Tailscale, Argo CD, Pulse, Caddy, the satellite
+cluster's Headlamp) went, eight of 67; core.yaml lost what the manifests
+already say - images, versions, migration history - and halved; backups.yaml
+lost the old box's restic job; decisions and sessions about retired setups
+left the tree for git history; the FluxInstance dropped the Argo field-manager
+patches this cluster never needed. AGENTS.md now carries the habits the day
+paid for: plan to a file before a Terraform apply, dry-run Talos, never print
+a secret, and zsh's two traps.
+
 Still open:
 - OpenEBS's node plugin and intel-gpu do not run on worker-1: they do not
   tolerate its taint. Whatever goes there next needs that first.

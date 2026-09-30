@@ -1,15 +1,15 @@
 # Turned off, kept whole
 
-Setups that were switched off because nothing needed them yet - most of them
-ran on the Beelink, in what is now `core/`. Their historical Argo manifests are retained unchanged as reference.
+Setups that worked on core and were switched off because nothing needed them
+yet. Flux reads `../core/03-gitops/apps/`, not this directory, and Renovate
+skips it, so versions here are as they were left - review them before
+bringing anything back.
 
-Flux reads `../core/03-gitops/apps/`, not this directory, and this
-sits outside `core/` entirely because nothing here is deployed. Moving an archived Argo Application
-into the active tree does not restore it: convert it to a Flux Kustomization
-and, for charts, a HelmRepository/HelmRelease first. Preserve chart values,
-secret references, storage protection and restore settings during conversion.
-Renovate excludes these archived definitions, so review their versions before
-reactivating them.
+Some are Flux already (`ks.yaml` beside `app/`) and move back into
+`core/03-gitops/apps/` as they are. `database` and `pulse` are still Argo CD
+Applications and need converting to a Flux Kustomization and, for charts, a
+HelmRelease first - keeping their values, secret references, storage
+protection and restore settings.
 
 ## database — CloudNativePG, the Barman Cloud plugin and a shared Postgres
 
@@ -103,16 +103,3 @@ To restore it, move `actual/` back to `core/03-gitops/apps/services/`,
 add its `ks.yaml` to the root apps Kustomization, and add `actual.home` to the
 local certificate. Validate the build before committing. Its only secret is
 the shared R2 key pair in Infisical at `/backups/R2`.
-
-## core-docker — the old OpenMediaVault box's Docker stacks
-
-Everything Portainer deployed onto the machine at `192.168.8.100`, then called
-core and now core's node `worker-1`: one directory per stack, the bootstrap and the restic
-backup job. Every container stopped on 2026-09-19 once its replacement ran on
-the Beelink; the directory moved here from `core/` on 2026-09-29, when that
-name went to the cluster. The machine is to be wiped and rebuilt on Talos, so
-nothing is expected to come back from here.
-
-Paths inside still say `core/` - its own README, the compose comments and
-`backup/install.sh` - because they describe where it lived. Its stacks and
-their secrets are listed in `core-docker/services.yaml`.

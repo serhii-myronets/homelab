@@ -1,5 +1,5 @@
-# Applied once, by hand, the way root.yaml was for Argo CD. Everything else
-# arrives through it.
+# Applied once, by hand, after 02-platform. Everything else arrives through
+# it; a change to this file needs applying again.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:

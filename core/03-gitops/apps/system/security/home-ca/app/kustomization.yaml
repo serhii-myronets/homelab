@@ -5,8 +5,8 @@ resources:
   - certificate.yaml
   - ca-server.yaml
 configMapGenerator:
-  # The only resource in this directory without a namespace of its own. Argo
-  # CD supplied one from the Application; Flux applies what the build says.
+  # The only resource in this directory without a namespace of its own, so it
+  # is given one here: Flux applies exactly what the build says.
   - name: ca-server
     namespace: cert-manager
     files:

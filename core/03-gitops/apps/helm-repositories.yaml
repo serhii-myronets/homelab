@@ -1,10 +1,8 @@
 # Every upstream chart this cluster is allowed to install from, in one file.
 #
-# Argo CD had this as `AppProject.sourceRepos` and the migration lost it; a
-# HelmRelease could name any URL it liked. This brings the list back: a chart
-# can only come from a HelmRepository that exists, and they all exist here.
-# Adding a source is a visible line in a diff rather than a field buried in a
-# component.
+# A chart can only come from a HelmRepository that exists, and they all exist
+# here: adding a source is a visible line in a diff rather than a field buried
+# in a component.
 #
 # They live in flux-system and are referenced across namespaces, which
 # helm-controller allows because multitenancy lockdown is off - see

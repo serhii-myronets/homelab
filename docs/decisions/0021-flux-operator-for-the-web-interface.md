@@ -34,9 +34,9 @@ Flux state directly rather than parsing `kubectl`.
 
 Everything in `controlplaneio-fluxcd` is AGPL-3.0, including the interface.
 ControlPlane sells an enterprise distribution with CVE SLAs and support, which
-is a different product and not installed here. This matters because
-[0013](0013-pulse-replaces-glances.md) was reversed for exactly the opposite
-reason - features behind a paywall - and that objection does not apply.
+is a different product and not installed here. That matters: an earlier
+monitor, Pulse, was dropped for keeping features behind a paywall, and that
+objection does not apply here.
 
 The interface is anonymous on `flux.home` and, behind Cloudflare Access, on
 `flux.serhii.link`. Without authentication it is read-only and cannot read

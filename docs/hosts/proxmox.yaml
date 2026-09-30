@@ -1,103 +1,50 @@
-# The hypervisor. Clusters get built and destroyed here, so nothing
-# that needs to stay up lives on it.
-# Hardware verified 2026-09-06; monitoring verified 2026-09-12.
+# The hypervisor and lab: clusters get built and destroyed here, so nothing
+# that must stay up lives on it.
+#
+# Unreachable since the router's reflash on 2026-09-28: it still expects
+# 10.1.1.100 behind VLAN 10 at 10.1.1.1, which the router no longer has.
+# Everything below was last verified on 2026-09-12 and waits on the choice
+# between a flat LAN and a rebuilt VLAN.
 
 meta:
   host: proxmox
-  updated: 2026-09-12
-  tags: [proxmox, hypervisor, lab, talos, terraform, tailscale]
+  updated: 2026-09-30
+  tags: [proxmox, hypervisor, lab, talos, terraform]
 
 identity:
   hostname: proxmox
-  ip: 10.1.1.100
-  vlan: 10
-  role: lab
+  ip: 10.1.1.100                   # VLAN 10, not routed at present
   ssh: root@10.1.1.100             # key at ~/.ssh/id_ed25519
   api_without_login: >-
-    http://10.1.1.100:8008/api/* — ProxMenux Monitor answers unauthenticated,
-    which is the quickest way to hardware and guest facts.
+    http://10.1.1.100:8008/api/* - ProxMenux Monitor answers unauthenticated,
+    the quickest way to hardware and guest facts.
+  deployed_from_here: no           # its Terraform lives elsewhere
 
-os:
-  distribution: Proxmox VE 9.2.18
-  cluster: standalone              # not a Proxmox cluster
-  users: [root@pam, pulse@pve]
-  monitoring_token:
-    id: "pulse@pve!monitor"
-    role: PVEAuditor
-    privilege_separation: true
+os: {distribution: Proxmox VE 9.2.18, cluster: standalone}
 
 hardware:
-  cpu: {model: Intel Core i9-12900HK, cores: 14, threads: 20, ghz_max: 5.0}
-  ram_gb: 62
-  ram_used_gb: 28
-  gpu: Intel Iris Xe (Alder Lake-P GT2)   # QuickSync, well ahead of the NAS
+  cpu: {model: Intel Core i9-12900HK, cores: 14, threads: 20}
+  ram_gb: 62                       # about 28 in use, 2026-09-12
+  gpu: Intel Iris Xe, Quick Sync
 
 disks:
-  - dev: nvme0n1
-    model: Samsung SSD 980 PRO 2TB
-    size: 1.8T
-    power_on_hours: 4688
-    written_tb: 45.3                # ~232 GB a day
-    rated_tbw: 1200                 # Samsung's endurance spec for this model
-    wear_percent: 7                 # the controller's own estimate, which
-                                    # runs ahead of 45.3/1200 because it counts
-                                    # write amplification
-    available_spare_percent: 100    # no reallocation has been needed at all
-    media_errors: 0
-    temperature_c: 53
-    projected: >-
-      At the current rate the rated endurance is reached in roughly seven
-      years, and that figure is a warranty threshold rather than a failure
-      point. Wear is not the thing to watch on this disk.
-    write_sources: >-
-      Seven VMs run continuously. Talos control-plane etcd fsyncs constantly,
-      Terraform create/destroy cycles rewrite whole VM disks, and Proxmox
-      writes its own RRD statistics without pause.
+  - model: Samsung SSD 980 PRO 2TB
+    role: local-lvm (1.67 TB thin, 3% used) and /var/lib/vz (94 GB)
+    health: 7% worn, no media errors, no reallocation (2026-09-12)
 
-storage:
-  - {name: local-lvm, type: lvmthin, size: 1.67T, used_percent: 3.3}
-  - {name: local, type: dir, path: /var/lib/vz, size: 94G}
-
-backups: none                      # no vzdump jobs configured
+guests: >-
+  Seven VMs on 2026-09-12, two Talos clusters: talos-controlplane-01 with
+  talos-worker-01..03, and control-plane with worker01..02. Allocation exceeds
+  physical memory, fine at the use seen then. No vzdump schedule: the guests
+  are rebuilt from Terraform.
 
 nics:
-  - {name: enp2s0, state: up, role: vmbr0 bridge port}
-  - {name: enp3s0, state: down, note: unconfigured and uncabled}
-
-iommu: disabled                    # no intel_iommu in cmdline; PCI passthrough
-                                   # would need that plus a reboot
-
-tailscale:
-  installed: false
-  removed: 2026-09-12
-  verification: Package, local state and tailscale0 removed; LAN SSH remains available.
-
-monitoring:
-  pulse_agent: enabled
-  installer: tools/pulse-agent/install.sh
-  proxmox_inventory: read by the Pulse server through the PVEAuditor API token
-
-guests:
-  - {vmid: 100, name: talos-controlplane-01, ram_gb: 6}
-  - {vmid: 101, name: talos-worker-02, ram_gb: 16}
-  - {vmid: 102, name: talos-worker-03, ram_gb: 16}
-  - {vmid: 103, name: talos-worker-01, ram_gb: 16}
-  - {vmid: 111, name: control-plane, ram_gb: 4}
-  - {vmid: 112, name: worker01, ram_gb: 4}
-  - {vmid: 113, name: worker02, ram_gb: 4}
-
-note_ram: >-
-  Allocation exceeds physical RAM, which is fine while real use sits near
-  28 GB, but there is less headroom than the total suggests.
-
-spare_capacity:                    # what a consolidation could use
-  sata_controller: "00:17.0 Alder Lake-P AHCI, free"
-  nic: "enp3s0 — needs a cable before it is of any use"
-  free_storage: 1.6T on local-lvm
+  - {name: enp2s0, role: vmbr0, cabled to the router's lan1}
+  - {name: enp3s0, role: spare, uncabled}
 
 risks:
   - >-
-    65 of 115 power cycles were unsafe shutdowns. More than half the time this
-    machine loses power without flushing, which threatens etcd and guest
-    filesystems long before disk wear becomes relevant. Worth a UPS, or finding
-    out what is cutting the power.
+    65 of 115 power cycles were unsafe shutdowns: more than half the time it
+    loses power without flushing, which threatens etcd and guest filesystems
+    long before disk wear does. A UPS, or finding what cuts the power, comes
+    before anything here is meant to last.
