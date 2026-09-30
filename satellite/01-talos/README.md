@@ -6,8 +6,9 @@ secrets and its own state. Nothing here may reach core.
 
 `main.tf` pins the Talos, Kubernetes and provider versions and the image
 schematic, which is core's. `patches/` holds the install disk and control
-plane limits, the static address and hostname, the two data volumes, and
-swap. The provider lock file is committed.
+plane limits, the static address and hostname, Cilium in place of the default
+CNI and kube-proxy, the thin-pool module for LVM, and swap. The provider lock
+file is committed.
 
 `terraform.tfstate` and the generated `talosconfig` and `kubeconfig` are
 plaintext local files ignored by Git. The state holds the cluster's secrets:
@@ -29,7 +30,7 @@ back it up outside the repository, and never delete it while the node lives.
    ```
 
 3. Apply, pointing the first apply at the maintenance address. The node
-   installs, reboots onto 192.168.8.11, and is bootstrapped there:
+   installs, reboots onto 192.168.8.20, and is bootstrapped there:
 
    ```bash
    terraform init
@@ -37,13 +38,13 @@ back it up outside the repository, and never delete it while the node lives.
    ```
 
 4. Wipe the ORICO disk, which still carries the old machine's ext4 partition;
-   Talos provisions `observability` and `backups` only in free space. This
-   destroys its data - find its current name first, since `sda` and `sdb`
-   swap between boots:
+   the job in 03-gitops that makes it a volume group retries until the disk is
+   empty and never erases it itself. This destroys its data - find its current
+   name first, since `sda` and `sdb` swap between boots:
 
    ```bash
-   talosctl -n 192.168.8.11 get disks
-   talosctl -n 192.168.8.11 wipe disk <name> --drop-partition
+   talosctl -n 192.168.8.20 get disks
+   talosctl -n 192.168.8.20 wipe disk <name> --drop-partition
    ```
 
 5. Add the client configuration beside core's rather than over it:
@@ -57,6 +58,7 @@ back it up outside the repository, and never delete it while the node lives.
    ```
 
    The contexts are `satellite` for Talos and `admin@satellite` for Kubernetes.
+   Until Cilium is installed from `02-platform/`, the node stays NotReady.
 
 Upgrades follow Talos's own procedure, not a changed version string. Upgrade
 satellite first and core after, so that satellite finds the problems.

@@ -1,38 +1,9 @@
-# The ORICO SSD holds all of satellite's data, split in two so that logs
-# growing without bound cannot take the room the backup copies need.
-# VictoriaMetrics and VictoriaLogs carry retention limits of their own.
-# Talos provisions only free space, so the disk's old ext4 partition has to be
-# wiped first - by hand, once.
-apiVersion: v1alpha1
-kind: UserVolumeConfig
-name: observability
-provisioning:
-  diskSelector:
-    match: disk.serial == "UB202412065113"
-  minSize: 400GiB
-  maxSize: 400GiB
-filesystem:
-  type: xfs
----
-apiVersion: v1alpha1
-kind: UserVolumeConfig
-name: backups
-provisioning:
-  diskSelector:
-    match: disk.serial == "UB202412065113"
-  minSize: 1TiB
-  grow: true
-filesystem:
-  type: xfs
----
+# The ORICO SSD is left whole to OpenEBS LVM LocalPV, as core's WD NVMe is: a
+# volume group and a thin pool, made by a Job in 03-gitops because the v1.13
+# contract has no LVMVolumeGroupConfig. Every claim is a thin logical volume
+# with a hard size of its own, so logs cannot take the backups' room. Talos
+# must not claim the disk.
 machine:
-  kubelet:
-    extraMounts:
-      - source: /var/mnt/observability
-        destination: /var/mnt/observability
-        type: bind
-        options: [bind, rshared, rw]
-      - source: /var/mnt/backups
-        destination: /var/mnt/backups
-        type: bind
-        options: [bind, rshared, rw]
+  kernel:
+    modules:
+      - name: dm_thin_pool
