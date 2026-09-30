@@ -1,0 +1,29 @@
+machine:
+  install:
+    # By serial: sda and sdb swap places between boots on this machine.
+    diskSelector:
+      serial: GSMB2092400746
+cluster:
+  allowSchedulingOnControlPlanes: true
+  # Carried from core: limits well above use, only so that Talos's OOM
+  # controller never picks the control plane - it scores zero any pod whose
+  # every container has a limit. Sized for this node's 7.6 GB. See traps.yaml.
+  apiServer:
+    resources:
+      requests: {cpu: 200m, memory: 512Mi}
+      limits: {memory: 1536Mi}
+  controllerManager:
+    resources:
+      requests: {cpu: 50m, memory: 256Mi}
+      limits: {memory: 512Mi}
+    # One control plane, so no rival to elect a leader against; with it on, a
+    # node short of memory lets the lease lapse and the process exits, as it
+    # did on core on 2026-09-29.
+    extraArgs:
+      leader-elect: "false"
+  scheduler:
+    resources:
+      requests: {cpu: 10m, memory: 64Mi}
+      limits: {memory: 256Mi}
+    extraArgs:
+      leader-elect: "false"

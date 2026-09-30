@@ -1,0 +1,27 @@
+# Swap behind zswap, as on core, but set before the first boot: a cap on
+# EPHEMERAL only applies when the volume is created, which on core cost a wipe
+# and an etcd recovery. See docs/decisions/0029.
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  maxSize: 96GiB
+---
+apiVersion: v1alpha1
+kind: SwapVolumeConfig
+name: swap
+provisioning:
+  diskSelector:
+    match: system_disk
+  minSize: 8GiB
+  maxSize: 8GiB
+---
+apiVersion: v1alpha1
+kind: ZswapConfig
+maxPoolPercent: 20
+---
+machine:
+  kubelet:
+    extraConfig:
+      memorySwap:
+        swapBehavior: LimitedSwap
