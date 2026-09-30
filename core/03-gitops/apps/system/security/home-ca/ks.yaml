@@ -13,3 +13,4 @@ spec:
   prune: true
   dependsOn:
   - name: cert-manager
+  - name: external-secrets-config
