@@ -16,6 +16,29 @@ reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 ---
+# The same on worker-1's ORICO. Only a pod that tolerates worker-1's taint can
+# use it; allowedTopologies keeps the scheduler from placing one elsewhere,
+# where the provisioner would find no `ssd` group.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: lvm-worker-1
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+provisioner: local.csi.openebs.io
+parameters:
+  storage: lvm
+  volgroup: ssd
+  thinProvision: "yes"
+  fsType: xfs
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+allowedTopologies:
+  - matchLabelExpressions:
+      - key: openebs.io/nodename
+        values: [worker-1]
+---
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshotClass
 metadata:
