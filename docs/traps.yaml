@@ -1419,3 +1419,25 @@ traps:
       node registers; for a node already registered, delete the Node object
       and restart the kubelet so it registers again.
     diagnosed: 2026-09-30, tainting satellite
+
+  - id: nvme-names-swap-under-the-install-disk
+    applies_to: [talos, core, disks]
+    symptom: >-
+      Nothing yet - the danger was caught. After a reset the Beelink's two
+      NVMe drives came up with their names swapped: the system disk at
+      nvme0n1, and the WD holding every OpenEBS volume at nvme1n1, the very
+      name the configuration gave as the install disk.
+    cause: >-
+      Device names follow probe order, not identity. The configuration named
+      /dev/nvme1n1 beside a diskSelector by serial; and the Talos generator
+      always writes its own default `disk: /dev/sda` (an HDD here), which no
+      patch can blank - an empty string merges as nothing.
+    tell: >-
+      `talosctl get disks --insecure` in maintenance mode: compare the serial
+      beside each name with the one the configuration selects.
+    fix: >-
+      Select the install disk by serial or WWID only, never by name; it is
+      safe only because diskSelector "always has priority over disk", as the
+      Talos reference puts it. Check the rendered install section before the
+      first apply of a reinstall.
+    diagnosed: 2026-09-30, rebuilding core

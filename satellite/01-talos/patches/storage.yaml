@@ -1,9 +1,0 @@
-# The ORICO SSD is left whole to OpenEBS LVM LocalPV, as core's WD NVMe is: a
-# volume group and a thin pool, made by a Job in 03-gitops because the v1.13
-# contract has no LVMVolumeGroupConfig. Every claim is a thin logical volume
-# with a hard size of its own, so logs cannot take the backups' room. Talos
-# must not claim the disk.
-machine:
-  kernel:
-    modules:
-      - name: dm_thin_pool

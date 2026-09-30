@@ -41,8 +41,8 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0029](0029-swap-on-the-system-disk.md) | Swap on the system disk, behind zswap | accepted | beelink, talos, swap, zswap, memory, ephemeral |
 | [0030](0030-nightly-etcd-backup-with-restic.md) | Back etcd up nightly with talosctl and restic, not talos-backup | accepted | beelink, talos, etcd, backup, restic, r2 |
 | [0031](0031-core-and-satellite.md) | The cluster is core; the old box is satellite | accepted | naming, core, satellite, repository, flux |
-| [0032](0032-satellite-watches-core.md) | satellite becomes a second Talos cluster that watches core | accepted | satellite, talos, observability, backup, gitops |
-| [0033](0033-satellite-signs-with-an-intermediate.md) | satellite signs .home with an intermediate of home-ca | accepted | satellite, tls, cert-manager, home-ca, infisical |
+| [0032](0032-satellite-watches-core.md) | satellite becomes a second Talos cluster that watches core | superseded | satellite, talos, observability, backup, gitops |
+| [0033](0033-satellite-signs-with-an-intermediate.md) | satellite signs .home with an intermediate of home-ca | superseded | satellite, tls, cert-manager, home-ca, infisical |
 | [0034](0034-satellite-joins-core.md) | satellite becomes a worker in core rather than a cluster of its own | accepted | satellite, core, talos, observability, memory |
 
 Open items, shortest path first:

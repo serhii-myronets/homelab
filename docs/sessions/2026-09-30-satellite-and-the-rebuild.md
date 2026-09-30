@@ -1,0 +1,72 @@
+---
+date: 2026-09-30
+title: satellite as a cluster, then a worker, and core rebuilt under fixed names
+tags: [satellite, core, talos, rebuild, volsync, observability, tls, naming, traps]
+hosts: [core, satellite, worker-1, router]
+---
+
+# satellite as a cluster, then a worker, and core rebuilt under fixed names
+
+## A second cluster, built in a day
+
+The old OpenMediaVault box became satellite, its own Talos cluster, to watch
+core and keep copies (0032). It got its own Terraform, platform and Flux
+tree; OpenEBS LVM over the whole ORICO; a Gateway at .21 with its own
+Cloudflare tunnel and an external-dns that owned its records as satellite; one
+Headlamp showing both clusters through an `edit` account on core; and the
+VictoriaMetrics stack from the archive, with VictoriaLogs added.
+
+Several things failed on the way. Infisical PKI was the first choice for
+satellite's certificates and its free plan refused the last step, importing
+an intermediate signed by home-ca; a locally made, name-constrained
+intermediate replaced it (0033). Headlamp in-cluster ignored KUBECONFIG and
+wanted `-kubeconfig`. The first install was refused because Talos reports no
+serial for these SATA disks. An apply of a raised apiserver limit hung in
+"Still modifying": `ignore_changes` on node and endpoint had pinned the
+maintenance address in state, so it went to a DHCP address nothing answered.
+The node also rebooted during that attempt and came back with the old
+configuration; why was never established - its logs went with the reboot.
+
+## Back into core
+
+With the cluster built, the arithmetic was plain: 1.9 GiB of satellite's 7.6
+went on its own platform, and the glue between two clusters kept growing.
+The owner judged the independence not worth it - a T7 on the router for
+copies and an outside heartbeat for alerts were enough - and satellite joined
+core as a worker (0034). Its route and DNS record were released first, while
+its external-dns could still delete them; Headlamp went back to core.
+`machine.nodeTaints` failed on the worker - NodeRestriction forbids a node to
+taint itself - so the taint moved to the kubelet's registerWithTaints, and
+the Node was deleted to register again.
+
+## core rebuilt
+
+core's node still had the generated name talos-lqh-j5o, and all 18 of its
+OpenEBS volumes were pinned to it by a field that cannot change. So the
+cluster was rebuilt: `core`, nodes `controlplane` and `worker-1`. Before the
+reset, home-ca moved into Infisical - it had existed only in the cluster, and
+a rebuild would have minted a new root for every device - a manual VolSync
+backup ran for all seven services, and an etcd snapshot went to the Mac.
+
+In maintenance mode the NVMe names had swapped, and the configuration still
+named nvme1n1 - now the WD with every volume - as the install disk. The
+Talos reference confirmed diskSelector takes priority; the name was removed
+anyway. After the reset, bootstrap, Helmfile and Flux, all seven services
+came back from R2 within two minutes of each other, Immich with its 7,264
+assets. The old logical volumes stayed on the WD as a fallback.
+
+The kubeconfig Terraform handed out still said beelink: the resource keeps
+what it generated in state and nothing in it had changed. `-replace` made a
+new one.
+
+## Left
+
+- 25 orphaned logical volumes on the WD, from the old cluster, and the
+  satellite cluster's volumes on the ORICO - the fallback, until the owner has
+  checked the services.
+- The satellite tunnel in Cloudflare, `/satellite` and `/cloudflared/satellite`
+  in Infisical: nothing uses them.
+- OpenEBS's node plugin and intel-gpu do not run on worker-1: they do not
+  tolerate its taint. Whatever goes there next needs that first.
+- The router: a T7 behind restic's append-only rest-server, node-exporter,
+  and a watcher that reports to healthchecks.io - planned, not built.

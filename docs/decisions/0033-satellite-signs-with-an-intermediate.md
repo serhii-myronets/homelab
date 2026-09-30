@@ -2,7 +2,7 @@
 id: "0033"
 title: satellite signs .home with an intermediate of home-ca
 date: 2026-09-30
-status: accepted
+status: superseded   # by 0034: satellite stopped being a cluster
 tags: [satellite, tls, cert-manager, home-ca, infisical, pki]
 hosts: [satellite, core]
 ---

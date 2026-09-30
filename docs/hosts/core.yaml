@@ -1,31 +1,32 @@
 # core — where the services and their data live, and what everything else in
-# the house depends on. Talos on a Beelink ME Pro, deployed from core/. Called
-# beelink until 2026-09-29, and its Talos cluster still is.
-# Hardware verified 2026-09-19; GitOps and routes verified 2026-09-22.
+# the house depends on. A Talos cluster deployed from core/, rebuilt on
+# 2026-09-30 under the names it has now: control plane on a Beelink ME Pro,
+# described here, and worker-1 on the old OpenMediaVault box
+# (hosts/worker-1.yaml). Called beelink until then.
+# Hardware verified 2026-09-19; the rebuild verified 2026-09-30.
 
 meta:
   host: core
   updated: 2026-09-30
-  tags: [core, beelink, talos, kubernetes, bare-metal, storage]
+  tags: [core, controlplane, beelink, talos, kubernetes, bare-metal, storage]
 
 identity:
   model: Beelink ME Pro
   ip: 192.168.8.10
   vlan: 1
   role: core
-  cluster: beelink                 # the Talos cluster name, kept from before the rename
-  node: talos-lqh-j5o
-  rename_at_rebuild: >-
-    Both names become core only when the node is rebuilt. All 18 OpenEBS LVM
-    volumes are pinned to the node by openebs.io/nodename=talos-lqh-j5o, a
-    PV field that cannot change, so a new hostname on this node leaves every
-    service with a database unschedulable; only the six HDD volumes, which
-    select a node label, would follow. A rebuild restores the claims from R2
-    through VolSync anyway. Local kubeconfig and talosconfig contexts can be
-    named core at any time.
+  cluster: core
+  node: controlplane               # fixed; was the generated talos-lqh-j5o
+  nodes: [controlplane, worker-1]
+  rebuilt: >-
+    2026-09-30: reset (STATE and EPHEMERAL only), reinstalled under the fixed
+    names and bootstrapped empty; Flux rebuilt everything and every service's
+    claim came back from R2 through VolSync. The names had to change this way:
+    each OpenEBS volume is pinned to its node by name, a field that cannot be
+    edited. The old cluster's logical volumes stayed on the WD as a fallback.
   access:
     talos: talosctl --nodes 192.168.8.10
-    kubernetes_context: core         # generated as admin@beelink, renamed locally
+    kubernetes_context: admin@core   # as terraform output writes it
 
 os:
   distribution: Talos Linux 1.14.1
@@ -402,10 +403,13 @@ platform:
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: the samba namespace alone enforces privileged, for the host network
   headlamp:
-    moved: >-
-      To satellite on 2026-09-30, with both names; it shows core through an
-      account in core's satellite-access namespace bound to edit. See
-      hosts/satellite.yaml.
+    role: a console for this cluster - browse objects, read logs
+    names: [headlamp.home, headlamp.serhii.link]
+    auth: >-
+      None, with cluster-admin behind it, chosen knowingly by the owner on
+      2026-09-20; headlamp.serhii.link is behind Cloudflare Access, headlamp.home
+      has no gate at all. It spent a day on the satellite cluster and came back
+      on 2026-09-30.
   node_labels: {homelab/media-hdd: "true"}
   storage:
     classes:
