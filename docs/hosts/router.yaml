@@ -64,6 +64,13 @@ dns:
     dnsmasq on port 53 forwards everything to AdGuard Home on 127.0.0.1:3053
     (noresolv). AdGuard's own web UI answers on port 3000.
   rewrite: "*.home -> 192.168.8.15"    # core's Gateway
+  adguard_api: >-
+    AdGuard Home listens on 0.0.0.0:3000, but GL.iNet guards it with its own
+    admin session: /control/* answers 401 and / redirects to the router's
+    login, while AdGuard's own config.yaml has users: []. So nothing can drive
+    it with AdGuard credentials - external-dns's AdGuard webhooks included -
+    without adding a user to that file over ssh, which decisions/0007 rules
+    out and the firmware would likely undo. Verified 2026-09-29.
 
 dhcp:
   pools:
