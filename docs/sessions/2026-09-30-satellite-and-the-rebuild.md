@@ -82,7 +82,9 @@ paid for: plan to a file before a Terraform apply, dry-run Talos, never print
 a secret, and zsh's two traps.
 
 Still open:
-- OpenEBS's node plugin and intel-gpu do not run on worker-1: they do not
-  tolerate its taint. Whatever goes there next needs that first.
+- intel-gpu does not run on worker-1: it does not tolerate the taint, now
+  homelab/dedicated=worker-1. OpenEBS's node plugin does, and the ORICO is
+  the ssd thin pool behind lvm-worker-1 - empty, waiting for metrics and
+  logs and a local copy of Immich's originals.
 - The router: a T7 behind restic's append-only rest-server, node-exporter,
   and a watcher that reports to healthchecks.io - planned, not built.

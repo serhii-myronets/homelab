@@ -1229,8 +1229,10 @@ traps:
     fix: >-
       Set the taint through the kubelet instead -
       `machine.kubelet.extraConfig.registerWithTaints` - which applies when the
-      node registers; for a node already registered, delete the Node object
-      and restart the kubelet so it registers again.
+      node registers. On a node already registered, change the taint with
+      `kubectl taint` as admin too - done when homelab/satellite became
+      homelab/dedicated=worker-1 - or delete the Node object and restart the
+      kubelet so it registers again.
     diagnosed: 2026-09-30, tainting satellite
 
   - id: nvme-names-swap-under-the-install-disk
@@ -1254,3 +1256,23 @@ traps:
       Talos reference puts it. Check the rendered install section before the
       first apply of a reinstall.
     diagnosed: 2026-09-30, rebuilding core
+
+  - id: terraform-console-renders-the-configuration-already-applied
+    applies_to: [terraform, talos]
+    symptom: >-
+      A patch under core/01-talos is changed and `terraform plan` shows the
+      node's configuration changing, but `talosctl apply-config --dry-run`
+      of the configuration rendered through `terraform console` reports "No
+      changes".
+    cause: >-
+      terraform console evaluates data sources from state, as the last apply
+      left them, not from the patch files on disk. It hands back the
+      configuration the node already has.
+    fix: >-
+      Take the configuration from the saved plan instead, into a file and
+      never onto the screen: `terraform show -json <plan> | jq -r
+      '.resource_changes[] | select(.address ==
+      "talos_machine_configuration_apply.<name>") |
+      .change.after.machine_configuration_input'`. Then validate --strict and
+      dry-run that file, and delete it.
+    diagnosed: 2026-09-30, renaming worker-1's taint

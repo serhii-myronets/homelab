@@ -18,8 +18,10 @@ storage and swap. The provider lock file is committed.
 
 worker-1's first configuration goes to its maintenance address, passed once
 as `-var worker_1_bootstrap_endpoint=<address>`; every later apply reaches it
-at 192.168.8.11. It carries the taint `homelab/satellite=true:NoSchedule`,
+at 192.168.8.11. It carries the taint `homelab/dedicated=worker-1:NoSchedule`,
 set by the kubelet when it registers, so only what tolerates it runs there.
+The kubelet sets it only at registration: on a registered node, change it
+with `kubectl taint` as well.
 
 `patches/controlplane/storage.yaml` leaves the 500 GB WD NVMe unclaimed: it is one LVM
 volume group for OpenEBS LVM LocalPV, created by a Job in `03-gitops` because

@@ -43,9 +43,8 @@ when satellite stopped being a cluster and became core's worker-1
 `app/helmrelease.yaml`.
 
 To bring it back on core, on worker-1: tolerate the taint
-`homelab/satellite=true:NoSchedule` and select the node `worker-1` in its
-values; give OpenEBS's node plugin the same toleration, so the ORICO's volume
-group `ssd` is seen; add a StorageClass for `ssd` beside core's `lvm`; point
+`homelab/dedicated=worker-1:NoSchedule` and select the node `worker-1` in
+its values; move its claims from `lvm` to `lvm-worker-1`, the ORICO; point
 `ks.yaml` at wherever it lands, and add `grafana.home` to core's certificate.
 
 ## pulse — the Pulse hub and its Kubernetes agent

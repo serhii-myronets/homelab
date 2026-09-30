@@ -63,9 +63,10 @@ platform:
     hand; everything else is Flux. See each directory's README.
   flux_ui: flux.home and flux.serhii.link, anonymous and read-only (decisions/0021)
   storage: >-
-    StorageClass lvm: thin volumes on the nvme group, controlplane only.
-    Only a pod that tolerates worker-1's taint can use worker-1, and OpenEBS's
-    node plugin does not yet, so nothing is stored there.
+    Two StorageClasses of thin volumes, each bound to one node: lvm on
+    controlplane's nvme group, lvm-worker-1 on worker-1's ssd group. A pod
+    on lvm-worker-1 must tolerate worker-1's taint. Nothing crosses between
+    nodes except over the network - the HDDs are controlplane's alone.
   secrets: >-
     Infisical, project homelab, environment prod, through one
     ClusterSecretStore. The machine credential is the one hand-placed secret:
