@@ -86,7 +86,18 @@ platform:
     name: satellite
     id: 970ef69a-1a26-4869-8977-abf74db554a5
     credentials: Infisical prod /cloudflared/satellite/TUNNEL_CREDENTIALS
-    state: created 2026-09-29, nothing runs it yet
+    state: >-
+      run by cloudflared in satellite/03-gitops since 2026-09-29, four
+      connections to the edge; every *.serhii.link name reaching it goes to
+      satellite's Gateway
+  gateway: >-
+    main-gateway at 192.168.8.21, fixed through its infrastructure annotation;
+    one plain-HTTP listener for *.serhii.link, the tunnel's. No .home listener
+    until a certificate comes from Infisical PKI.
+  external_dns: >-
+    txtOwnerId satellite, never beelink, on core's Cloudflare token from
+    /cloudflared/beelink/API_TOKEN. On its first run it changed nothing and
+    all nine of core's public names still resolved.
   infisical: >-
     core's machine identity, shared: it reads all of prod. See the
     02-platform README for what that costs.
