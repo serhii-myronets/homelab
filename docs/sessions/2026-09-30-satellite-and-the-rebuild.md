@@ -61,11 +61,15 @@ new one.
 
 ## Left
 
-- 25 orphaned logical volumes on the WD, from the old cluster, and the
-  satellite cluster's volumes on the ORICO - the fallback, until the owner has
-  checked the services.
-- The satellite tunnel in Cloudflare, `/satellite` and `/cloudflared/satellite`
-  in Infisical: nothing uses them.
+Cleaned the same evening, once the services had come back: the 18 old
+cluster's volumes on the WD - listed as whatever no PV and no LVMVolume
+named, which also caught the seven LVMSnapshots VolSync's restores had just
+made; those stayed (0024) - leaving the thin pool at 1%, most of the old use
+having been caches; the ORICO's volume group, from a privileged pod on
+worker-1 after `talosctl wipe disk` refused a disk LVM held; the satellite
+tunnel; and `/satellite` and `/cloudflared/satellite` in Infisical.
+
+Still open:
 - OpenEBS's node plugin and intel-gpu do not run on worker-1: they do not
   tolerate its taint. Whatever goes there next needs that first.
 - The router: a T7 behind restic's append-only rest-server, node-exporter,
