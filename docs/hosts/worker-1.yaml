@@ -25,7 +25,7 @@ identity:
 hardware:
   cpu: {model: Intel Celeron J4125, cores: 4, ghz: 2.0}   # SSE4.2, no AVX
   ram_gb: 7.6
-  gpu: Intel UHD 600
+  gpu: Intel UHD 600               # wrong answers from Immich's face detector
 
 disks:                             # sda and sdb swap between boots, so both
                                    # are chosen by what ends their WWID
@@ -61,4 +61,6 @@ nics:
   - {name: enp2s0, state: down}     # spare wired
   - {name: wlo1, state: absent}     # Talos has no Wi-Fi support
 
-daemonsets_here: [cilium, cilium-envoy, openebs-lvm-localpv-node, intel-gpu-plugin]
+daemonsets_here: [cilium, cilium-envoy, openebs-lvm-localpv-node]
+                                          # intel-gpu-plugin stops at the taint on
+                                          # purpose: traps.yaml, uhd-600-finds-no-faces
