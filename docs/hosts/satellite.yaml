@@ -122,7 +122,8 @@ platform:
     victoria-metrics-k8s-stack 0.93.0, restored from the archive on
     2026-09-30 as the metrics hub: VMSingle keeping three months on a 100Gi
     lvm claim, vmagent labelling its series cluster=satellite, vmalert and
-    Alertmanager with the chart's rules and no receiver yet, Grafana at
+    Alertmanager with the chart's rules and no receiver yet - its silences
+    and send log on a 1Gi claim, not the chart's emptyDir - Grafana at
     grafana.home only. First scrape: every target up - apiserver, four kubelet
     endpoints, CoreDNS, kube-state-metrics, node-exporter and the stack's own
     - once vmalert had finished rolling. Its pods hold about 780 MiB; the node
