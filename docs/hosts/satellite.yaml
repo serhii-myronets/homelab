@@ -110,9 +110,10 @@ platform:
     (cluster-admin), core through a kubeconfig an ExternalSecret builds from
     Infisical prod /satellite/CORE_HEADLAMP_TOKEN and CORE_CA - an account in
     core's satellite-access namespace bound to edit plus cluster-wide reads.
-    Routed as headlamp.home on satellite's Gateway, which answers 200 over
-    HTTPS; the router still sends that name to core until it has an exact
-    rewrite to 192.168.8.21. core's own Headlamp stays until then.
+    headlamp.home, by an exact rewrite on the router, and
+    headlamp.serhii.link through satellite's tunnel behind Cloudflare Access,
+    whose record external-dns now holds as owner satellite. core's own
+    Headlamp was removed on 2026-09-30.
   infisical: >-
     core's machine identity, shared: it reads all of prod. See the
     02-platform README for what that costs.

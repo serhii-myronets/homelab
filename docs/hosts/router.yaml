@@ -64,6 +64,12 @@ dns:
     dnsmasq on port 53 forwards everything to AdGuard Home on 127.0.0.1:3053
     (noresolv). AdGuard's own web UI answers on port 3000.
   rewrite: "*.home -> 192.168.8.15"    # core's Gateway
+  rewrites_exact:                      # satellite's names, one each
+    - "headlamp.home -> 192.168.8.21"
+  rewrite_precedence: >-
+    An exact rewrite outranks the wildcard: with both in place,
+    headlamp.home answers 192.168.8.21 and every other .home name
+    192.168.8.15. Verified 2026-09-30.
   adguard_api: >-
     AdGuard Home listens on 0.0.0.0:3000, but GL.iNet guards it with its own
     admin session: /control/* answers 401 and / redirects to the router's
