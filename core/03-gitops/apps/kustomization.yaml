@@ -23,6 +23,8 @@ resources:
   - system/network/external-dns/ks.yaml
   - system/network/gateway-system/ks.yaml
 
+  - system/observability/ks.yaml
+
   # Two that need no directory of their own: a HelmRelease with no manifests
   # beside it, and one that carries its own upstream source.
   - system/platform/intel-gpu.yaml

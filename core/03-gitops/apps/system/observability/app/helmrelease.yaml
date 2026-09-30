@@ -28,10 +28,13 @@ spec:
       - paths: ["/data"]
         target: {kind: Secret, name: grafana}
   values:
-    # Last ran as the metrics and log hub of the satellite cluster, for a day
-    # on 2026-09-30, after an evening on core on 2026-09-20 - every lesson in
-    # the comments below was paid for in one of the two. See archive/README.md
-    # for what bringing it back onto worker-1 takes.
+    # Third run: an evening on core on 2026-09-20, a day as the hub of the
+    # satellite cluster, and from 2026-09-30 on worker-1 - every lesson in the
+    # comments below was paid for in one of the first two.
+    #
+    # Everything but the two DaemonSets is pinned to worker-1, off
+    # controlplane's memory (decisions/0035); node-exporter tolerates every
+    # taint by default, vlagent is given worker-1's below.
     global:
       # The label the chart's rules and dashboards group by.
       clusterLabel: cluster
@@ -67,16 +70,20 @@ spec:
       # That is not worth a certificate that cannot hold still.
       admissionWebhooks:
         enabled: false
+      nodeSelector: {kubernetes.io/hostname: worker-1}
+      tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
       resources:
         requests: {cpu: 25m, memory: 96Mi}
         limits: {memory: 256Mi}
 
     vmsingle:
       spec:
-        # Three months, for two clusters; the ORICO's thin pool has room to spare.
+        # Three months; the ORICO's thin pool has room to spare.
         retentionPeriod: "3"
+        nodeSelector: {kubernetes.io/hostname: worker-1}
+        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         storage:
-          storageClassName: lvm
+          storageClassName: lvm-worker-1
           resources:
             requests: {storage: 100Gi}
         # Observational data with a one-month life: no VolSync source points
@@ -97,10 +104,12 @@ spec:
         # lever on both memory and disk here, and nothing in this cluster
         # changes fast enough to need the other half.
         scrapeInterval: 30s
-        # Every series says which cluster it came from; core's agent will write
-        # here with cluster=core.
+        # Every series says which cluster it came from, as the chart's
+        # dashboards expect.
         externalLabels:
-          cluster: satellite
+          cluster: core
+        nodeSelector: {kubernetes.io/hostname: worker-1}
+        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         resources:
           requests: {cpu: 50m, memory: 128Mi}
           limits: {memory: 384Mi}
@@ -111,6 +120,8 @@ spec:
     # this stack is worth on the first day.
     vmalert:
       spec:
+        nodeSelector: {kubernetes.io/hostname: worker-1}
+        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         resources:
           requests: {cpu: 25m, memory: 64Mi}
           limits: {memory: 192Mi}
@@ -120,10 +131,12 @@ spec:
         # Silences and the log of what was already sent live here; on the
         # chart's emptyDir they vanished with every restart, so a silenced
         # alert came back and a sent one could go out again.
+        nodeSelector: {kubernetes.io/hostname: worker-1}
+        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         storage:
           volumeClaimTemplate:
             spec:
-              storageClassName: lvm
+              storageClassName: lvm-worker-1
               resources:
                 requests: {storage: 1Gi}
         resources:
@@ -132,21 +145,23 @@ spec:
 
     grafana:
       # Fixed, so the HTTPRoute beside this file does not depend on what the
-      # Argo application happens to be called.
+      # release happens to be called.
       fullnameOverride: grafana
+      nodeSelector: {kubernetes.io/hostname: worker-1}
+      tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
       # Grafana's own metrics were 24,616 series, a fifth of everything stored,
       # and their largest family was which feature flags are switched on.
       # Whether Grafana is alive is already answered by kube-state-metrics.
       vmScrape:
         enabled: false
-      # No sign-in. grafana.home is open to the LAN and grafana.serhii.link sits
-      # behind Cloudflare Access, as Headlamp does. Anyone who reaches it gets
+      # No sign-in. grafana.home is open to the LAN and published nowhere else
+      # (httproute.yaml). Anyone who reaches it gets
       # Admin, which includes editing the alerting rules, so this is a statement
       # about who reaches it, not about Grafana.
       #
       # An admin account still exists underneath, because the chart insists on
       # one. Its password is minted fresh on every render, which is why the
-      # application ignores that secret rather than rewriting it each sync.
+      # release ignores that secret rather than rewriting it each sync.
       grafana.ini:
         auth:
           disable_login_form: true
@@ -177,6 +192,8 @@ spec:
           limits: {memory: 128Mi}
 
     kube-state-metrics:
+      nodeSelector: {kubernetes.io/hostname: worker-1}
+      tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
       resources:
         requests: {cpu: 25m, memory: 48Mi}
         limits: {memory: 192Mi}
@@ -187,14 +204,16 @@ spec:
         limits: {memory: 96Mi}
 
     # Logs, since 2026-09-30, once the metrics half had been measured here.
-    # VictoriaLogs keeps a month; vlagent reads every pod's log from the node
-    # and writes it here. core's own vlagent will write here too.
+    # VictoriaLogs keeps a month; vlagent reads every pod's log from each node
+    # and writes it here.
     vlsingle:
       enabled: true
       spec:
         retentionPeriod: "30d"
+        nodeSelector: {kubernetes.io/hostname: worker-1}
+        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         storage:
-          storageClassName: lvm
+          storageClassName: lvm-worker-1
           resources:
             requests: {storage: 50Gi}
         resources:
@@ -205,9 +224,23 @@ spec:
       spec:
         k8sCollector:
           enabled: true
+        # A DaemonSet, on both nodes: tolerated on worker-1, not pinned to it.
+        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         resources:
           requests: {cpu: 25m, memory: 64Mi}
           limits: {memory: 256Mi}
+
+    # vmalert's datasource once logs are on: the chart adds this proxy by itself,
+    # routing rule queries to VMSingle or VLSingle. Helm merges these keys into
+    # the chart's spec, whose routing stays as it is.
+    internal:
+      vmauth:
+        spec:
+          nodeSelector: {kubernetes.io/hostname: worker-1}
+          tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 128Mi}
 
     # Talos binds the controller manager and the scheduler to localhost, and
     # serves etcd only to clients holding its certificate, so none of the three
