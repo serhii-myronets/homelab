@@ -5,3 +5,4 @@ resources:
   - cilium-lb-pool.yaml
   - l2-announcement-policy.yaml
   - gateway.yaml
+  - home-redirect.yaml

@@ -1,7 +1,7 @@
 # satellite's own Gateway, so its services stay reachable when core is down.
-# Only the public listener for now: the tunnel speaks plain HTTP to it and
-# Cloudflare holds the certificate at its edge. Local names under .home come
-# with a certificate from Infisical PKI.
+# The tunnel speaks plain HTTP to the public listener, and Cloudflare holds
+# that certificate at its edge. Local names are HTTPS, signed by satellite's
+# intermediate of home-ca.
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -22,6 +22,25 @@ spec:
       protocol: HTTP
       port: 80
       hostname: "*.serhii.link"
+      allowedRoutes:
+        namespaces:
+          from: All
+    # Local names typed without a scheme land here and are sent to HTTPS; only
+    # this namespace may attach, as on core.
+    - name: http-home
+      protocol: HTTP
+      port: 80
+      hostname: "*.home"
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.home"
+      tls:
+        certificateRefs:
+          - {name: home-tls}
       allowedRoutes:
         namespaces:
           from: All
