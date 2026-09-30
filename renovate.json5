@@ -13,10 +13,10 @@
   ignoreDeps: ["https://github.com/serhii-myronets/homelab.git"],
 
   kubernetes: {
-    managerFilePatterns: ["/^core/03-gitops/(apps|components)/.+\\.ya?ml$/"],
+    managerFilePatterns: ["/^(core|satellite)/03-gitops/(apps|components)/.+\\.ya?ml$/"],
   },
   flux: {
-    managerFilePatterns: ["/^core/03-gitops/(apps|components)/.+\\.ya?ml$/"],
+    managerFilePatterns: ["/^(core|satellite)/03-gitops/(apps|components)/.+\\.ya?ml$/"],
   },
 
   customManagers: [

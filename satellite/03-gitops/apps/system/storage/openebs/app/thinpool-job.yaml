@@ -1,0 +1,43 @@
+# As on core: the v1.13 contract has no LVMVolumeGroupConfig, so the ORICO SSD
+# becomes a volume group here instead. By id, since sda and sdb swap places.
+# OpenEBS would also size a missing thin pool to the first claim and share it
+# with every later one, so the pool is created once, over nearly the whole
+# group; the rest stays free for its metadata.
+#
+# Every step is skipped when it is already done, and nothing here erases a
+# disk: on a disk that still holds partitions, pvcreate fails and the job
+# retries until the disk is wiped by hand.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ssd-thinpool
+  namespace: openebs
+spec:
+  backoffLimit: 30
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: lvm
+          image: docker.io/openebs/lvm-driver:1.10.1
+          command:
+            - sh
+            - -c
+            # No `set -e`: each step tests for its own result, and the shell
+            # would exit on the first check that finds nothing yet.
+            - >-
+              DISK=/dev/disk/by-id/ata-ORICO_UB202412065113;
+              vgs ssd || { pvs "$DISK" || pvcreate "$DISK"; vgcreate ssd "$DISK"; };
+              lvs ssd/ssd_thinpool ||
+              lvcreate --type thin-pool --extents 95%FREE --name ssd_thinpool ssd;
+              vgs ssd; lvs ssd
+          env:
+            # No udev inside the container.
+            - {name: DM_DISABLE_UDEV, value: "1"}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - {name: dev, mountPath: /dev}
+      volumes:
+        - name: dev
+          hostPath: {path: /dev}
