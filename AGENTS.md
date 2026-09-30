@@ -33,6 +33,7 @@ Before debugging anything that should work, check
 | `core/03-gitops/` | everything Flux reconciles |
 | `satellite/01-talos/` | Terraform for satellite, the same shape as core's |
 | `satellite/02-platform/` | its Helmfile bootstrap, pinned to the `satellite` context |
+| `satellite/03-gitops/` | everything Flux reconciles on satellite |
 | `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
 | `archive/` | setups switched off but kept whole; nothing reconciles it |

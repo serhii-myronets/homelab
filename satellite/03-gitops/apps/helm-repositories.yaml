@@ -1,0 +1,7 @@
+# Every upstream chart satellite may install from, as on core.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata: {name: openebs, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://openebs.github.io/openebs

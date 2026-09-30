@@ -1,0 +1,10 @@
+# Everything satellite runs, in one list; the root applies these pointers and
+# nothing else, as on core.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - helm-repositories.yaml
+
+  - system/network/gateway-system/ks.yaml
+  - system/security/external-secrets/ks.yaml
+  - system/storage/openebs/ks.yaml
