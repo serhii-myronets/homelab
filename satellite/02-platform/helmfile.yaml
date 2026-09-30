@@ -1,8 +1,8 @@
-# Pinned to the kubeconfig context `core`, hook included: with satellite in
-# the same kubeconfig, whichever context is current would otherwise get core's
-# platform.
+# The same releases and versions as core's, so that satellite runs every
+# upgrade first. Pinned to the kubeconfig context `satellite`, hook included:
+# the hook runs kubectl, which would otherwise use whatever context is current.
 helmDefaults:
-  kubeContext: core
+  kubeContext: satellite
 
 repositories:
   - name: cilium
@@ -14,7 +14,7 @@ hooks:
   - events: [ "prepare" ]
     showlogs: true
     command: "kubectl"
-    args: [ "--context", "core", "apply", "-k", "./prepare-hook/", "--server-side" ]
+    args: [ "--context", "satellite", "apply", "-k", "./prepare-hook/", "--server-side" ]
 
 releases:
   - name: cilium
@@ -33,9 +33,6 @@ releases:
     values:
       - values/external-secrets-values.yaml
 
-  # The operator installs and sizes the Flux controllers itself, from the
-  # FluxInstance in flux-instance.yaml; this release is only the operator. It
-  # replaced the community flux2 chart on 2026-09-22 - see decisions/0021.
   - name: flux-operator
     namespace: flux-system
     chart: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator

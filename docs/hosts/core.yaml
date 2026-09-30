@@ -25,7 +25,7 @@ identity:
     named core at any time.
   access:
     talos: talosctl --nodes 192.168.8.10
-    kubernetes_context: admin@beelink
+    kubernetes_context: core         # generated as admin@beelink, renamed locally
 
 os:
   distribution: Talos Linux 1.14.1

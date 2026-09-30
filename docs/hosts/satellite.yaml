@@ -17,7 +17,7 @@ identity:
   cluster: satellite
   access:
     talos: talosctl --context satellite -n 192.168.8.20
-    kubernetes_context: admin@satellite
+    kubernetes_context: satellite    # generated as admin@satellite, renamed locally
   context_note: >-
     talosctl config merge makes the merged context current, so after merging
     satellite's the default talosctl context became satellite and commands

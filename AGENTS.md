@@ -32,6 +32,7 @@ Before debugging anything that should work, check
 | `core/02-platform/` | Helmfile bootstrap, applied by hand |
 | `core/03-gitops/` | everything Flux reconciles |
 | `satellite/01-talos/` | Terraform for satellite, the same shape as core's |
+| `satellite/02-platform/` | its Helmfile bootstrap, pinned to the `satellite` context |
 | `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
 | `archive/` | setups switched off but kept whole; nothing reconciles it |
@@ -43,9 +44,11 @@ A procedure belongs in one of those, never in two.
 
 ## Access
 
-core and satellite have no shell: `talosctl -n 192.168.8.10` and `kubectl`
-for core, `talosctl --context satellite -n 192.168.8.20` and
-`kubectl --context admin@satellite` for satellite. The rest take the key at
+core and satellite have no shell. The local kubeconfig names their contexts
+`core` and `satellite`; name one on every command, since both sit in the same
+file - `kubectl --context core`, `talosctl -n 192.168.8.10` for core,
+`talosctl --context satellite -n 192.168.8.20` for satellite. Each cluster's
+`02-platform/helmfile.yaml` is pinned to its context. The rest take the key at
 `~/.ssh/id_ed25519`:
 
 ```bash

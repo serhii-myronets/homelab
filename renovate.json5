@@ -39,7 +39,7 @@
     },
     {
       customType: "regex",
-      managerFilePatterns: ["/^core/02-platform/prepare-hook/kustomization\\.yaml$/"],
+      managerFilePatterns: ["/^(core|satellite)/02-platform/prepare-hook/kustomization\\.yaml$/"],
       matchStrings: ["gateway-api/releases/download/(?<currentValue>v[\\d.]+)/"],
       depNameTemplate: "kubernetes-sigs/gateway-api",
       datasourceTemplate: "github-releases",
@@ -107,7 +107,7 @@
       // Helmfile releases are applied by hand: one pull request each.
       matchManagers: ["helmfile"],
       prBodyNotes: [
-        "Merging does not deploy this. Apply it from `core/02-platform/` with Helmfile.",
+        "Merging does not deploy this. Apply it with Helmfile from each cluster's `02-platform/` - satellite first, then core.",
       ],
     },
     {

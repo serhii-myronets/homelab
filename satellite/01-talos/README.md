@@ -58,7 +58,12 @@ back it up outside the repository, and never delete it while the node lives.
      && mv /tmp/kubeconfig.merged ~/.kube/config && chmod 600 ~/.kube/config
    ```
 
-   The contexts are `satellite` for Talos and `admin@satellite` for Kubernetes.
+   Terraform names the Kubernetes context `admin@satellite`; rename it, since
+   `02-platform/helmfile.yaml` is pinned to `satellite`:
+
+   ```bash
+   kubectl config rename-context admin@satellite satellite
+   ```
    Until Cilium is installed from `02-platform/`, the node stays NotReady.
 
 Upgrades follow Talos's own procedure, not a changed version string. Upgrade
