@@ -1,0 +1,7 @@
+# A fixed name, not a generated one: every OpenEBS volume is pinned to its
+# node by name, so the name must survive a reinstall. Numbered, so a second
+# worker - a VM on Proxmox, say - needs no rename.
+apiVersion: v1alpha1
+kind: HostnameConfig
+auto: "off"
+hostname: worker-1
