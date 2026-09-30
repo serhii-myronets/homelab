@@ -5,7 +5,7 @@
 
 meta:
   host: core
-  updated: 2026-09-29
+  updated: 2026-09-30
   tags: [core, beelink, talos, kubernetes, bare-metal, storage]
 
 identity:
@@ -121,7 +121,7 @@ platform:
     - {name: sure, namespace: sure, image: "ghcr.io/we-promise/sure:0.7.5-alpha.10", status: deployed}
     - {name: uptime-kuma, namespace: uptime-kuma, image: "louislam/uptime-kuma:2.5.5-rootless", status: deployed}
   local_access:
-    names: [jellyfin.home, tv.home, seerr.home, immich.home, sure.home, kuma.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, headlamp.home, flux.home, ca.home]
+    names: [jellyfin.home, tv.home, seerr.home, immich.home, sure.home, kuma.home, vault.home, torrent.home, prowlarr.home, sonarr.home, radarr.home, flux.home, ca.home]
     gateway: >-
       192.168.8.15. Four listeners: *.serhii.link on 80 for the tunnel,
       *.home on 80 redirecting to HTTPS, ca.home and tv.home on 80 in the
@@ -140,7 +140,7 @@ platform:
     secrets: Infisical /cloudflared/beelink (TUNNEL_CREDENTIALS, API_TOKEN)
     dns: external-dns, proxied CNAME per HTTPRoute under serhii.link, txtOwnerId beelink
     auth: Cloudflare Access covers every serhii.link name, including new ones
-    published: [flux.serhii.link, headlamp.serhii.link, jellyfin.serhii.link, torrent.serhii.link,
+    published: [flux.serhii.link, jellyfin.serhii.link, torrent.serhii.link,
                 prowlarr.serhii.link, radarr.serhii.link, seerr.serhii.link, sonarr.serhii.link,
                 sure.serhii.link]
     other_tunnels:
@@ -402,29 +402,10 @@ platform:
     discovery: Bonjour (avahi), WS-Discovery (wsdd2) and NetBIOS (nmbd)
     pod_security: the samba namespace alone enforces privileged, for the host network
   headlamp:
-    role: a console for this cluster - browse objects, read logs
-    added: 2026-09-20
-    names: [headlamp.home, headlamp.serhii.link]
-    chart: headlamp/headlamp 0.45.0, from kubernetes-sigs
-    auth: >-
-      None, and with cluster-admin behind it - chosen knowingly by the
-      owner on 2026-09-20. unsafeUseServiceAccountToken hands every visitor
-      the service account, and that account is bound to cluster-admin, so
-      opening the page is full control of the cluster.
-    exposure: >-
-      headlamp.serhii.link is behind Cloudflare Access. headlamp.home has
-      no gate at all, so anyone on the LAN - including the television and
-      anything else that joins the wifi - has that control by opening a
-      page, including reading every Secret: the NordVPN keys, the
-      Cloudflare tunnel credentials, the R2 backup keys and the database
-      passwords. The published name is the better defended of the two.
-    narrowing: >-
-      clusterRoleName: view is one word and gives a console that reads
-      every object and log, changes nothing, and cannot see Secrets at all.
-    state: none - no claim, no database, no CRDs
-    watches: >-
-      Nothing. It reports no failure and sends no alert, so decision 0008
-      is still open and no tool here closes it.
+    moved: >-
+      To satellite on 2026-09-30, with both names; it shows core through an
+      account in core's satellite-access namespace bound to edit. See
+      hosts/satellite.yaml.
   node_labels: {homelab/media-hdd: "true"}
   storage:
     classes:

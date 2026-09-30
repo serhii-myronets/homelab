@@ -49,4 +49,4 @@ anyway, but core's own certificates would face the same.
 
 Every satellite name under `.home` needs its own rewrite on the router,
 since `*.home` points at core; an exact rewrite outranks the wildcard in
-AdGuard Home, to be tested on this router.
+AdGuard Home, as tested on 2026-09-30 with headlamp.home.
