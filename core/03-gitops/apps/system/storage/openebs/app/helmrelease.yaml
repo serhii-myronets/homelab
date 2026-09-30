@@ -44,6 +44,9 @@ spec:
         resources:
           requests: {cpu: 25m, memory: 32Mi}
           limits: {memory: 256Mi}
+        # worker-1's taint; without this its `ssd` volume group has no driver.
+        tolerations:
+          - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
       lvmController:
         resources:
           requests: {cpu: 10m, memory: 32Mi}

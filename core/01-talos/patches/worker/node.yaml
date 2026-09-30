@@ -1,5 +1,5 @@
-# satellite, core's second node since 2026-09-30: a worker on the old
-# OpenMediaVault box. See docs/decisions/0034.
+# worker-1, core's second node since 2026-09-30, on the old OpenMediaVault
+# box. See docs/decisions/0034.
 machine:
   install:
     # Not by name: sda and sdb swap places between boots on this machine. Not
@@ -7,21 +7,21 @@ machine:
     # that ends in it, padded with runs of spaces - hence the glob.
     diskSelector:
       wwid: "*GSMB2092400746"
-  # The ORICO SSD is left whole to OpenEBS LVM LocalPV, as the Beelink's WD
-  # NVMe is; its volume group is made by a Job in 03-gitops.
+  # The ORICO SSD is left whole to OpenEBS LVM LocalPV, as controlplane's WD
+  # NVMe is; its volume group `ssd` is made by a Job in 03-gitops.
   kernel:
     modules:
       - name: dm_thin_pool
-  # Only what is sent here runs here: pods from core would otherwise land on
-  # a node without core's `nvme` volume group, or take its weaker GPU. What
-  # belongs on satellite carries a toleration; DaemonSets such as Cilium's and
-  # OpenEBS's tolerate every taint already.
+  # Only what is sent here runs here: other pods would otherwise land on a
+  # node without the `nvme` volume group or the HDDs, or take its weaker GPU.
+  # What belongs here carries a toleration - DaemonSets included: Cilium's
+  # tolerate every taint, OpenEBS's node plugin only this one.
   #
   # Through the kubelet at registration, not machine.nodeTaints: on a worker
   # Talos applies those with the node's own credentials, and NodeRestriction
   # forbids a node to change its taints. Registration is the one moment it
-  # may, so a node already registered must be deleted to pick this up.
+  # may; on a node already registered, change the taint with kubectl too.
   kubelet:
     extraConfig:
       registerWithTaints:
-        - {key: homelab/satellite, value: "true", effect: NoSchedule}
+        - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
