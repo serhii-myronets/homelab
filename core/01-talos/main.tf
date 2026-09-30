@@ -17,7 +17,7 @@ variable "satellite_bootstrap_endpoint" {
 }
 
 locals {
-  cluster_name       = "beelink"
+  cluster_name       = "core"
   node_ip            = "192.168.8.10"
   satellite_ip       = "192.168.8.11"
   talos_version      = "v1.14.1"
@@ -41,12 +41,12 @@ data "talos_machine_configuration" "controlplane" {
   kubernetes_version = local.kubernetes_version
   config_patches = [
     file("${path.module}/patches/controlplane/controlplane.yaml"),
+    file("${path.module}/patches/controlplane/hostname.yaml"),
     file("${path.module}/patches/controlplane/network.yaml"),
     file("${path.module}/patches/common/cilium.yaml"),
     file("${path.module}/patches/controlplane/storage.yaml"),
     file("${path.module}/patches/controlplane/swap.yaml"),
     yamlencode({ machine = { install = {
-      disk  = ""
       image = "factory.talos.dev/metal-installer/${local.schematic}:${local.talos_version}"
     } } })
   ]

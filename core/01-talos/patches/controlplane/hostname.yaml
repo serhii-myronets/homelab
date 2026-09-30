@@ -1,0 +1,7 @@
+# A fixed name, not Talos's generated one: every OpenEBS volume is pinned to
+# its node by name, so the name must survive a reinstall. It was talos-lqh-j5o
+# until the rebuild of 2026-09-30.
+apiVersion: v1alpha1
+kind: HostnameConfig
+auto: "off"
+hostname: controlplane
