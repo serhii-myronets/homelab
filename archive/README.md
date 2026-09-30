@@ -30,23 +30,6 @@ keeps writing to the same series. That is safe only while the cluster it
 recovers from is gone. Its one secret, the R2 key pair, is read from Infisical
 at `/backups/R2`; nothing here has to be pasted back by hand.
 
-## observability — the VictoriaMetrics k8s stack, twice
-
-Ran on core for an evening on 2026-09-20, and again on 2026-09-30 for a day as
-the metrics and log hub of satellite, a cluster of its own on the old
-OpenMediaVault box: victoria-metrics-k8s-stack 0.93.0 with VMSingle keeping
-three months, VictoriaLogs with vlagent collecting every pod's log, vmalert,
-Alertmanager on a 1Gi claim for its silences, and Grafana at grafana.home.
-Every target came up, logs flowed, and the stack held about 1 GiB. It went
-when satellite stopped being a cluster and became core's worker-1
-(decisions/0034); the lessons of both runs are in the comments of
-`app/helmrelease.yaml`.
-
-To bring it back on core, on worker-1: tolerate the taint
-`homelab/dedicated=worker-1:NoSchedule` and select the node `worker-1` in
-its values; move its claims from `lvm` to `lvm-worker-1`, the ORICO; point
-`ks.yaml` at wherever it lands, and add `grafana.home` to core's certificate.
-
 ## pulse — the Pulse hub and its Kubernetes agent
 
 Ran on 2026-09-20 for about an hour: pulse/pulse 6.4.1, the server on a
