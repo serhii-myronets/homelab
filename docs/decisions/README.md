@@ -32,6 +32,7 @@ are not reused.
 | [0029](0029-swap-on-the-system-disk.md) | Swap on the system disk, behind zswap | accepted | talos, swap, zswap, memory |
 | [0030](0030-nightly-etcd-backup-with-restic.md) | Back etcd up nightly with talosctl and restic | accepted | talos, etcd, backup, restic, r2 |
 | [0034](0034-satellite-joins-core.md) | The old box is core's worker, not a cluster of its own | accepted | worker-1, core, talos, memory |
+| [0035](0035-worker-1-holds-nothing-volsync-backs-up.md) | worker-1 holds nothing that VolSync backs up | accepted | worker-1, volsync, storage, scheduling |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing
 reports a failure to anyone yet.

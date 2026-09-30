@@ -1,7 +1,8 @@
 # worker-1 — core's second node, on the old OpenMediaVault box: called core
 # until 2026-09-29, then satellite, a Talos cluster of its own for a day, and a
 # worker in core since 2026-09-30 (decisions/0034). Nothing runs here unless it
-# tolerates the node's taint; today that is Cilium and OpenEBS's node plugin.
+# tolerates the node's taint, and nothing VolSync backs up runs here at all
+# (decisions/0035): compute and data that can be lost or remade.
 # Verified 2026-09-30.
 
 meta:
@@ -60,5 +61,4 @@ nics:
   - {name: enp2s0, state: down}     # spare wired
   - {name: wlo1, state: absent}     # Talos has no Wi-Fi support
 
-daemonsets_here: [cilium, cilium-envoy, openebs-lvm-localpv-node]
-                                          # intel-gpu-plugin stops at the taint
+daemonsets_here: [cilium, cilium-envoy, openebs-lvm-localpv-node, intel-gpu-plugin]

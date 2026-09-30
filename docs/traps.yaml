@@ -1276,3 +1276,20 @@ traps:
       .change.after.machine_configuration_input'`. Then validate --strict and
       dry-run that file, and delete it.
     diagnosed: 2026-09-30, renaming worker-1's taint
+
+  - id: volsync-movers-cannot-pass-a-taint
+    applies_to: [volsync, kubernetes, worker-1]
+    symptom: >-
+      A backed-up claim on a tainted node never restores and never backs up:
+      the mover pod stays Pending with "untolerated taint", and the
+      ReplicationSource shows no lastSyncTime.
+    cause: >-
+      VolSync's ReplicationSource and ReplicationDestination take
+      moverAffinity, moverResources and moverSecurityContext, but no
+      tolerations - through 0.16.0 at least. A mover must run beside the
+      volume it reads or fills, and on worker-1 its taint turns it away.
+    fix: >-
+      Keep backed-up claims off tainted nodes - decisions/0035. The
+      namespace-wide way round it, the PodTolerationRestriction admission
+      plugin, was weighed there and not taken.
+    diagnosed: 2026-09-30, planning Sure's move to worker-1
