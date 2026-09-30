@@ -1,6 +1,7 @@
-# headlamp.home only for now: core still serves that name and publishes
-# headlamp.serhii.link, until its own Headlamp goes and the router's rewrite
-# sends headlamp.home here.
+# The console for both clusters, since core's own went on 2026-09-30. The
+# router sends headlamp.home here by an exact rewrite, which outranks *.home;
+# Cloudflare Access guards the published name by hostname, whichever tunnel
+# carries it. Headlamp itself asks for nothing, so those are the only gates.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -10,6 +11,8 @@ spec:
     - {name: main-gateway, namespace: gateway-system}
   hostnames:
     - headlamp.home
+    # external-dns publishes this through satellite's tunnel.
+    - headlamp.serhii.link
   rules:
     - backendRefs:
         - {name: headlamp, port: 80}
