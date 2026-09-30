@@ -53,7 +53,9 @@ swap:
   zswap: {enabled: true, max_pool_percent: 20}
   kubelet: LimitedSwap
 
-memory: 0.7 GB used of 7.7, 6.7 available - as a cluster of its own it held 4.1
+memory: >-
+  2.2 GiB in use and 27% of it reserved by requests on 2026-09-30, running
+  the observability stack and FlareSolverr; as a cluster of its own it held 4.1
 
 nics:
   - {name: br0, addr: 192.168.8.11/24, ports: [enp1s0]}

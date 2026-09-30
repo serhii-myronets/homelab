@@ -81,10 +81,33 @@ patches this cluster never needed. AGENTS.md now carries the habits the day
 paid for: plan to a file before a Terraform apply, dry-run Talos, never print
 a secret, and zsh's two traps.
 
+## worker-1 put to work
+
+The taint lost the name satellite and became homelab/dedicated=worker-1,
+changed with kubectl as well, since the kubelet sets it only at
+registration. The ORICO became the thin pool `ssd` behind the class
+lvm-worker-1. FlareSolverr moved there.
+
+Sure was to follow and did not: VolSync's movers take no tolerations, so a
+backed-up claim on worker-1 could be neither restored nor backed up. Opening
+namespaces to it through two admission plugins was planned and dry-run, then
+dropped - worker-1 holds nothing VolSync backs up (0035).
+
+Immich's machine learning was tried there beside the running one. The
+Celeron's missing AVX did not matter; the UHD 600 did: OpenVINO's GPU plugin
+scored every face 0.5 and found none, while CLIP came out identical to
+controlplane's. On OpenVINO's CPU device it was correct and about 2.5x slower.
+It stays on controlplane until Grafana shows whether its peaks actually hurt.
+
+The VictoriaMetrics stack came out of the archive onto worker-1: every
+target up, logs from both nodes, grafana.home answering, about 1.1 GiB. The
+apiserver's SLO rules were switched off - they are built from the buckets
+the scrape drops, and kept RecordingRulesNoData firing.
+
 Still open:
-- intel-gpu does not run on worker-1: it does not tolerate the taint, now
-  homelab/dedicated=worker-1. OpenEBS's node plugin does, and the ORICO is
-  the ssd thin pool behind lvm-worker-1 - empty, waiting for metrics and
-  logs and a local copy of Immich's originals.
+- Nothing reaches anyone when an alert fires: Alertmanager has no receiver
+  (0008).
+- A local copy of Immich's originals on the ORICO, through a rest-server on
+  worker-1, is the next use for the disk.
 - The router: a T7 behind restic's append-only rest-server, node-exporter,
   and a watcher that reports to healthchecks.io - planned, not built.
