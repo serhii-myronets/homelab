@@ -1293,3 +1293,27 @@ traps:
       namespace-wide way round it, the PodTolerationRestriction admission
       plugin, was weighed there and not taken.
     diagnosed: 2026-09-30, planning Sure's move to worker-1
+
+  - id: uhd-600-finds-no-faces
+    applies_to: [immich, openvino, gpu, worker-1]
+    symptom: >-
+      Immich's machine learning on worker-1's UHD 600 answers every request,
+      CLIP included and correct, but finds no faces - none even at a minimum
+      score of 0.05, on a photograph where controlplane finds two at 0.78.
+    cause: >-
+      OpenVINO's GPU plugin on this Gen9.5 iGPU, through the image's
+      intel-opencl-icd-legacy1 runtime, returns 0.5 for every score of
+      buffalo_l's detector - a sigmoid of nothing. The same model on the same
+      node through OpenVINO's CPU device matches ONNX Runtime exactly, and
+      is twice as fast as the broken GPU run.
+    tell: >-
+      Run the detector's model.onnx through onnxruntime with
+      OpenVINOExecutionProvider and device_type GPU, then CPU: the score
+      outputs' maximum is 0.5 on GPU and about 0.8 on CPU.
+    fix: >-
+      Give the pod no gpu.intel.com/i915 on worker-1: with no GPU, Immich's
+      OpenVINO build falls back to the CPU device by itself. The plain CPU
+      image is correct too but, with no AVX here, spends 5.6 s on the faces
+      OpenVINO does in 1.7. The GPU plugin's DaemonSet stays off worker-1, so
+      nothing can ask for this GPU by mistake.
+    diagnosed: 2026-09-30, testing machine learning on worker-1

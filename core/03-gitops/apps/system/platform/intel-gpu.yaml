@@ -40,9 +40,3 @@ spec:
         - op: add
           path: /spec/template/spec/containers/0/args
           value: ["-shared-dev-num=3"]
-    # worker-1's UHD 600 too, for what is sent there - Immich's machine learning.
-    - target: {kind: DaemonSet, name: intel-gpu-plugin}
-      patch: |-
-        - op: add
-          path: /spec/template/spec/tolerations
-          value: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
