@@ -147,6 +147,9 @@ spec:
           org_role: Admin
         users:
           allow_sign_up: false
+      # The datasource for VictoriaLogs is a plugin, fetched when Grafana starts.
+      plugins:
+        - victoriametrics-logs-datasource
       # No claim, deliberately. Every dashboard is provisioned by the sidecar
       # from ConfigMaps and the datasource by the chart, so Grafana's database
       # holds only sessions and preferences. A claim would also need the
@@ -174,11 +177,28 @@ spec:
         requests: {cpu: 25m, memory: 32Mi}
         limits: {memory: 96Mi}
 
-    # Logs. Both off until the metrics half has been measured on this node.
+    # Logs, since 2026-09-30, once the metrics half had been measured here.
+    # VictoriaLogs keeps a month; vlagent reads every pod's log from the node
+    # and writes it here. core's own vlagent will write here too.
     vlsingle:
-      enabled: false
+      enabled: true
+      spec:
+        retentionPeriod: "30d"
+        storage:
+          storageClassName: lvm
+          resources:
+            requests: {storage: 50Gi}
+        resources:
+          requests: {cpu: 50m, memory: 128Mi}
+          limits: {memory: 512Mi}
     vlagent:
-      enabled: false
+      enabled: true
+      spec:
+        k8sCollector:
+          enabled: true
+        resources:
+          requests: {cpu: 25m, memory: 64Mi}
+          limits: {memory: 256Mi}
 
     # Talos binds the controller manager and the scheduler to localhost, and
     # serves etcd only to clients holding its certificate, so none of the three
