@@ -7,7 +7,7 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-09-29
+  updated: 2026-09-30
   tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router]
 
 traps:
@@ -366,78 +366,12 @@ traps:
       Gateway resources reconcile automatically.
     diagnosed: 2026-09-18, on the Beelink
 
-  - id: helmfile-build-runs-prepare-hooks
-    applies_to: [helmfile, kubernetes]
-    symptom: A command intended to inspect the rendered Helmfile changes the cluster.
-    cause: Helmfile executes `prepare` hooks for `build`, before rendering releases.
-    fix: Use `helm template` for each chart when read-only rendering is needed. Run Helmfile commands only when applying the hook is intentional.
-    diagnosed: 2026-09-18, while validating the Beelink platform
-
   - id: talos-provider-partial-on-destroy
     applies_to: [terraform, talos]
     symptom: Provider 0.11.0 plan fails with a null conversion error for on_destroy.graceful.
     cause: A partial on_destroy object leaves boolean fields null in the provider.
     fix: Set reset, graceful and reboot explicitly.
     diagnosed: 2026-09-17
-  - id: cilium-vip-conflicts-with-proxmox-guest
-    applies_to: [kubernetes, proxmox, caddy]
-    symptom: Gateway VIP port 80 refuses connections while its NodePort serves Grafana successfully.
-    cause: >-
-      The external Cilium pool spans 10.1.1.80-10.1.1.85 and assigned 10.1.1.80
-      to main-gateway. Running Proxmox VM 111 (control-plane) also has
-      ipconfig0=10.1.1.80/24. Proxmox's neighbor entry for that IP points to
-      the VM MAC bc:24:11:81:14:e0, not the announcing Cilium worker MAC
-      bc:24:11:ad:7f:f7. Requests therefore reach the other guest.
-    evidence: >-
-      Verified with qm config/status 111, ip neigh, the Cilium IP pool,
-      L2 announcement table and BPF service map. The VIP has an L7 proxy
-      entry; NodePort with Host grafana.home returns HTTP 200.
-    fix: >-
-      Allocate a non-overlapping range for Cilium in its GitOps source, or
-      deliberately renumber VM 111 through its owning configuration. Verify
-      address availability first; then reconcile the Gateway VIP and Caddy
-      upstream. Do not stop or destroy the VM as a diagnostic shortcut.
-    resolution: >-
-      The owner moved VM 111 to 10.1.1.90 (verified in qm config). Initial
-      probes timed out, then a packet capture confirmed ARP replies from the
-      Cilium worker and HTTP probes returned 200. No ARP flush was performed.
-    status: fixed
-    diagnosed: 2026-09-06
-  - id: tailscale-subnet-router-loops-through-flint
-    applies_to: [tailscale, router, proxmox]
-    symptom: >-
-      Proxmox becomes offline in Tailscale immediately after its advertised
-      10.1.1.0/24 route is approved, and loses DNS and outbound connectivity.
-    cause: >-
-      Flint 2 accepts Tailscale subnet routes by default. It installed
-      10.1.1.0/24 in Tailscale table 52 even though that subnet is directly
-      attached as br-lan.10. Replies for Proxmox 10.1.1.100 then went into
-      tailscale0 instead of the VLAN, cutting off the subnet router that
-      advertised the route.
-    fix: >-
-      Set `tailscale set --accept-routes=false` on Flint 2 before approving
-      the Proxmox route. Verify table 52 has peer /32 routes but no
-      10.1.1.0/24 route. Flint advertises 192.168.8.0/24; Proxmox advertises
-      10.1.1.0/24.
-    fix_does_not_survive_reboot: >-
-      That setting is lost on every router restart. /usr/bin/gl_tailscale:331
-      runs `tailscale up --reset --accept-routes` each time the service
-      starts, so --reset discards the stored preference and --accept-routes
-      puts RouteAll back to true. Editing that script is not an option — see
-      decisions/0007. A durable fix has to remove what Flint can accept:
-      un-approve Proxmox's 10.1.1.0/24 in the Tailscale admin console, or
-      stop Proxmox advertising it and have Flint advertise the VLAN instead,
-      since br-lan.10 is directly attached to Flint anyway.
-    recurred: >-
-      2026-09-10, after a power cut restarted the router. RouteAll was true
-      again, table 52 held 10.1.1.0/24 dev tailscale0, `ip route get
-      10.1.1.100` chose tailscale0, and Tailscale showed Proxmox with
-      tx 378612 rx 0 — sending into the tailnet and hearing nothing back.
-      Proxmox itself was healthy throughout: from the router,
-      `ping -I br-lan.10 10.1.1.100` answered in 0.6 ms with no loss, while
-      an unforced ping to the same address lost every packet.
-    diagnosed: 2026-09-08
-
   - id: wireguard-client-network-overlaps-vpn-and-lab
     applies_to: [wireguard, router, macos]
     symptom: >-
@@ -792,32 +726,6 @@ traps:
       `talosctl -n <node> containers --namespace cri`.
     diagnosed: 2026-09-20
 
-  - id: a-chart-that-mints-a-secret-while-it-renders-will-fight-argo
-    applies_to: [argocd, helm, kubernetes, observability]
-    symptom: >-
-      A value that should hold still does not. Grafana's admin password
-      changes under you; the apiserver fills with x509 errors against a
-      certificate authority it cannot verify, at a core of CPU, while the
-      webhook that authority serves fails open and validates nothing.
-    cause: >-
-      The chart generates the value at render time. The setting that is
-      meant to reuse the existing one - keepTLSSecret, or any default that
-      reads the cluster - works through Helm's lookup, and lookup needs a
-      live cluster. Argo renders without one, so it finds nothing and mints
-      again on every sync, while the running pod serves what it already had.
-    tell: >-
-      Render the chart twice and compare the field: `helm template ... |
-      grep <field>`. Two different values means it can never be stable
-      under Argo, and no amount of syncing will settle it. In the cluster,
-      compare what is deployed against what the chart renders now - if they
-      differ, Argo is the one changing it.
-    fix: >-
-      Turn the feature off if it is not earning its keep, or pin the field
-      with ignoreDifferences so Argo stops rewriting what the operator
-      owns. Both were used here: the webhook went, and Grafana's secret is
-      ignored.
-    diagnosed: 2026-09-20
-
   - id: a-long-release-name-becomes-a-label-that-does-not-fit
     applies_to: [kubernetes, helm, argocd]
     symptom: >-
@@ -856,57 +764,6 @@ traps:
       Scrape interval, not relabeling. metricRelabelConfigs drop after the
       response has been built and sent, so they save storage and not one
       millicore. Five minutes here, against thirty seconds.
-    diagnosed: 2026-09-20
-
-  - id: a-probe-that-cannot-reach-what-it-probes
-    applies_to: [kubernetes, helm, pulse]
-    symptom: >-
-      A container starts, logs that it is running, and stops about thirty
-      seconds later. It repeats for ever. The last state reads exit code 0
-      and reason Completed, so it looks like the process deciding to end
-      rather than anything failing.
-    cause: >-
-      Its liveness probe could never succeed. Pulse's chart probes port
-      9191 and Pulse's agent binds that port to 127.0.0.1 by default, which
-      is its own default too - kubelet probes the pod's address, and
-      nothing answers there. The clean exit is the giveaway pointing the
-      wrong way: the agent handles SIGTERM properly, so being killed looks
-      like leaving.
-    tell: >-
-      Read the probe and the bind address together, and check the clock.
-      Five seconds of initialDelay plus three failures of a ten-second
-      period is thirty-five, and the container died at thirty. A lifetime
-      that matches the probe's arithmetic is the probe, whatever the exit
-      code says.
-    fix: >-
-      Bind the health server to 0.0.0.0 - here `--health-addr=0.0.0.0:9191`
-      - rather than removing the probe. A listener on the pod network is
-      reachable only inside the cluster and the endpoint carries nothing.
-    diagnosed: 2026-09-20
-
-  - id: deleting-an-operator-and-its-work-in-one-move-strands-both
-    applies_to: [argocd, kubernetes, helm, observability]
-    symptom: >-
-      Removing an Application from git leaves two deadlocks. Argo will not
-      finish deleting it, retrying for ever with nothing in its way, and
-      the namespace sits in Terminating with no pods left in it.
-    cause: >-
-      Two different halves of the same mistake. Argo's pre-delete finalizer
-      runs a hook that is defined in the chart, and the files that render
-      it were the ones just moved away - there is nothing left to render.
-      Separately, the operator's custom resources carry its own finalizer,
-      and the operator that would clear them went out with the namespace.
-    tell: >-
-      `kubectl get ns <name> -o jsonpath='{.status.conditions}'` names both
-      the resources remaining and the finalizer holding them. For the
-      Application, a deletionTimestamp that is minutes old next to a sync
-      that keeps reporting success.
-    fix: >-
-      Remove the finalizers by hand - `kubectl patch ... --type json -p
-      '[{"op":"remove","path":"/metadata/finalizers"}]'` - on the
-      Application first and then on each stranded custom resource. Deleting
-      the CRDs afterwards restarts the collector loop in traps above, so
-      the controller manager wants a restart when the dust settles.
     diagnosed: 2026-09-20
 
   - id: kustomize-controller-does-not-fetch-remote-bases
@@ -977,34 +834,6 @@ traps:
       this cluster has. Allowing the Gateway back instead would need an ipBlock
       for cilium_host, an internal address that is not ours to pin.
     diagnosed: 2026-09-22, on the Beelink
-
-  - id: argo-field-managers-outlive-argo-and-block-removals
-    applies_to: [flux, argocd, kubernetes]
-    symptom: >-
-      A container renamed in Git ends up present twice: the new name runs and
-      the old one crash-loops beside it, here on a database the new one
-      already held. More generally, anything deleted from a Flux-managed
-      manifest stays in the cluster, while additions and edits apply normally.
-    cause: >-
-      Argo CD applied server-side, and its `argocd-controller` field-manager
-      entries survive it - uninstalling Argo removes the controller, not the
-      ownership records it wrote. Server-side apply removes an entry from a
-      list only when no manager still claims it, so kustomize-controller
-      dropping a container from its own field set is not enough.
-    tell: >-
-      `kubectl get <obj> --show-managed-fields -o json` and read
-      `.metadata.managedFields[].manager`. Two Apply managers on one object,
-      one of them belonging to something no longer installed, is the whole
-      problem. Stripping Argo's annotations does not touch this; they are
-      separate.
-    fix: >-
-      Give both controllers `--override-manager=argocd-controller`, through
-      `.spec.kustomize.patches` on the FluxInstance - kustomize-controller for
-      the plain-manifest components and helm-controller for the charts. One
-      reconciliation each afterwards cleared it from nineteen objects and the
-      stale entries are gone for good. Removing one object's field by hand
-      instead fixes that object and leaves the rest waiting.
-    diagnosed: 2026-09-22, renaming jellyseerr.home to seerr.home
 
   - id: two-snapshot-delete-errors-that-look-alike
     applies_to: [volsync, openebs, kubernetes, backup]
@@ -1221,8 +1050,8 @@ traps:
   - id: helmfile-diff-applies-the-prepare-hook
     applies_to: [helmfile, talos, kubernetes]
     symptom: >-
-      `helmfile diff` in core/02-platform changes the cluster, although
-      its name promises a preview.
+      `helmfile diff`, `template` or `build` in core/02-platform changes the
+      cluster, although each promises only to show what it would do.
     cause: >-
       Helmfile runs `prepare` hooks before every command, diff included, and
       this one server-side applies the Gateway API CRDs and the Infisical
@@ -1324,7 +1153,7 @@ traps:
     diagnosed: 2026-09-29, wiping EPHEMERAL for swap
 
   - id: talos-sees-no-serial-on-sata-disks
-    applies_to: [talos, satellite, core, disks]
+    applies_to: [talos, worker-1, core, disks]
     symptom: >-
       The first configuration apply is refused with "no disks matched the
       expression: glob(\"<serial>\", disk.serial)", although `talosctl get
@@ -1344,24 +1173,8 @@ traps:
       refused apply changes nothing on the node.
     diagnosed: 2026-09-29, installing satellite
 
-  - id: headlamp-in-cluster-ignores-kubeconfig-variable
-    applies_to: [headlamp, satellite, kubernetes]
-    symptom: >-
-      A Headlamp running in-cluster shows only its own cluster, although a
-      kubeconfig with more contexts is mounted and KUBECONFIG points at it.
-    cause: >-
-      In-cluster, Headlamp reads extra clusters only from its -kubeconfig flag;
-      the environment variable is not consulted.
-    tell: >-
-      Its log says `Kubeconfig path: ` with nothing after it, then "No
-      kubeconfig set, using only the in-cluster context".
-    fix: >-
-      Pass the path as `config.extraArgs: [-kubeconfig=<path>]` in the chart's
-      values. The log then shows a "Proxy setup" line for every context.
-    diagnosed: 2026-09-30, showing core in satellite's Headlamp
-
   - id: infisical-free-plan-refuses-external-intermediates
-    applies_to: [infisical, pki, tls, satellite]
+    applies_to: [infisical, pki, tls, worker-1]
     symptom: >-
       An intermediate CA created in Infisical's Certificate Manager stays in
       pending-certificate: importing the certificate an external root signed
@@ -1376,11 +1189,11 @@ traps:
     fix: >-
       Either pay, or keep the intermediate outside Infisical PKI: generate its
       key locally, sign it with the root, and store key and chain as ordinary
-      Infisical secrets for cert-manager's CA issuer - decisions/0033.
+      Infisical secrets for cert-manager's CA issuer.
     diagnosed: 2026-09-30, building satellite's certificates
 
   - id: ignore-changes-pins-the-maintenance-address
-    applies_to: [terraform, talos, satellite]
+    applies_to: [terraform, talos, worker-1]
     symptom: >-
       A later `terraform apply` of a node's configuration sits in "Still
       modifying..." and never reaches the node, although the node answers at
@@ -1401,7 +1214,7 @@ traps:
     diagnosed: 2026-09-30, tainting satellite as core's worker
 
   - id: talos-cannot-taint-its-own-worker
-    applies_to: [talos, kubernetes, satellite]
+    applies_to: [talos, kubernetes, worker-1]
     symptom: >-
       machine.nodeTaints on a worker lands in the machine configuration and in
       a NodeTaintSpec, but the Kubernetes node never shows the taint.

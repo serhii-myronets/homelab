@@ -3,55 +3,36 @@ id: "0008"
 title: Nothing tells anyone when something breaks
 status: open
 date: 2026-09-06
-tags: [monitoring, alerting, smart, backup, telegram, risk]
-hosts: [core, proxmox]
+updated: 2026-09-30
+tags: [monitoring, alerting, healthchecks, telegram, risk]
 ---
 
-Three things can fail quietly here, and all three currently do:
+# Nothing tells anyone when something breaks
 
-**A disk starts failing.** `smartd` polls both disks every 1800s and writes to
-the journal. There is no `-m` recipient and OMV's SMTP settings hold the
-placeholder `xxx`, so it tells nobody. The disks are unmirrored, which is what
-makes this matter: `core.yaml` records `redundancy: none`.
-
-**The backup stops running.** `restic-backup.timer` fires daily. A failure
-leaves an entry in the journal that nobody reads. The failure mode that costs
-the most is the silent one — a backup that has not run for two months looks
-exactly like one that has.
-
-**The machine does not come back.** No alert originating on `core` can report
-this, by definition.
+Failures here are quiet. Uptime Kuma on core sees a service stop answering,
+but has no notification channel set up, and cannot report core itself going
+down (0022). Flux's notification-controller runs with nowhere to send. No
+metrics stack runs since observability went back to the archive, so nothing
+alerts on memory, disks, the thin pool or a backup that stopped. A disk can
+fail, a VolSync source can stop syncing (traps.yaml), and the first sign is
+something missing.
 
 ## The shape of the fix
 
-Not "configure smartd". A channel is the small part; what feeds it is the
-point. One script in the repository — `core/notify/notify.sh` — taking a line
-of text and sending it, with two producers wired to it:
+One channel and three producers, all declared in Git where they can be:
 
-- `smartd`'s `-M exec`, for disk events
-- `OnFailure=` on `restic-backup.service`, for backup failures
-
-Keeping it in git is the reason to do it this way: a rebuild restores the
-alerting along with everything else, instead of leaving it as a manual step
-nobody remembers.
-
-The third failure needs an off-box observer. A dead-man's switch —
-healthchecks.io or equivalent, pinged by `backup.sh` on success — reports the
-absence of a signal, which is the only way to catch a machine that never
-started.
-
-## Channel
-
-Telegram, through a bot. It is gated by a token rather than by the obscurity of
-a topic name, which rules out `ntfy.sh` in its accountless form: an unguessed
-public topic is not privacy. SMTP through OMV would cover more of OMV's own
-subsystems, but needs a mail account and delivers into an inbox that goes
-unread for weeks; a push is harder to miss.
-
-The token belongs in `/srv/ssd/docker/secrets/telegram/token`, alongside the
-others, out of git.
+- **Telegram**, through a bot: gated by a token, and a push is harder to miss
+  than mail. The token belongs in Infisical.
+- **An outside heartbeat** - healthchecks.io or equivalent - for what nothing
+  in the house can report: power, the internet, the router, core's control
+  plane. Whatever runs the alerting pings it; silence raises the alarm.
+- **Something that watches core from outside core.** The plan is on the
+  router: Gatus, or the router's own packages, checking core's names and
+  pinging the heartbeat (decisions to come with it; 0007 governs how).
+- **In-cluster alerts** when a metrics stack returns: Alertmanager's
+  Watchdog to the heartbeat, its rules to Telegram, and Flux's
+  notification-controller for failed reconciliations.
 
 ## Status
 
-Deferred by the owner on 2026-09-06 — the work is understood, the appetite is
-elsewhere. Nothing blocks it but creating the bot.
+Open. Nothing blocks it but creating the bot and the heartbeat.

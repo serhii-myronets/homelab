@@ -1,88 +1,73 @@
 # Entry point. Read this first, then open only the file that answers the
-# question - every fact below lives in exactly one place.
+# question - every fact lives in exactly one place.
 #
-# Facts are YAML and verified against the live hosts. Reasoning is Markdown
-# with YAML front matter under decisions/ and sessions/.
+# Facts are YAML, verified against the live hosts; reasoning is Markdown with
+# YAML front matter under decisions/ and sessions/.
 #
-# The machines are named for what they are for, not for what they run:
-#   core       where the services and data live   192.168.8.10   Talos, Beelink ME Pro
-#   worker-1   core's second node                 192.168.8.11   Talos, the old OMV box
-#   proxmox    built and destroyed on purpose     10.1.1.100     Proxmox VE
-#   router     the boundary with the internet     192.168.8.1    GL.iNet
+# The machines, named for their role:
+#   core      the cluster the house depends on   controlplane .10, worker-1 .11
+#   proxmox   the lab, built and destroyed       10.1.1.100 - unreachable now
+#   router    the boundary with the internet     192.168.8.1, GL.iNet
 #
-# Renamed twice: on 2026-09-29 core stopped meaning the OpenMediaVault box and
-# the Beelink's cluster left core-talos/; on 2026-09-30 the cluster was rebuilt
-# as core, nodes controlplane and worker-1 (the old box, satellite for a day).
-# Sessions and decisions use the names of their day.
-#
-# One half is deployed from here: core/ onto core, through Flux. tools/ holds
-# installers run by hand, reconciled by nobody, and archive/ holds setups
-# switched off but kept whole, read by nothing - the old box's Docker stacks
-# among them.
+# core/ is deployed onto core, through Terraform, Helmfile and Flux. archive/
+# holds setups switched off but kept whole, read by nothing.
 
 meta:
-  updated: 2026-09-29
+  updated: 2026-09-30
   tags: [index, entrypoint, homelab]
 
 files:
   - path: docs/hosts/core.yaml
-    holds: >-
-      core - the Beelink ME Pro at 192.168.8.10: the Talos node, its disks,
-      and every service now running in the homelab. The busiest file here.
-    tags: [core, beelink, talos, kubernetes, bare-metal, storage, services]
+    holds: the cluster and its control plane - disks, network, access, every service's quirks
+    tags: [core, controlplane, talos, kubernetes, services]
   - path: docs/hosts/worker-1.yaml
-    holds: worker-1 - core's second node, the old OpenMediaVault box at 192.168.8.11 - hardware, disks, taint
-    tags: [worker-1, satellite, talos, hardware, storage]
+    holds: core's second node, the old OpenMediaVault box - hardware, disks, its taint
+    tags: [worker-1, talos, hardware]
   - path: docs/hosts/proxmox.yaml
-    holds: hypervisor at 10.1.1.100 - hardware, guests, spare capacity
-    tags: [proxmox, hypervisor, lab]
+    holds: the lab hypervisor - hardware, guests, why it is unreachable
+    tags: [proxmox, lab]
   - path: docs/hosts/router.yaml
-    holds: GL.iNet GL-MT6000 - zones, DNS, DHCP, WireGuard, what the reflash lost, risks
-    tags: [router, openwrt, glinet, firewall, vpn, wireguard]
+    holds: GL.iNet GL-MT6000 - DNS, DHCP, firewall, WireGuard, what a reflash loses
+    tags: [router, glinet, dns, wireguard]
   - path: docs/network.yaml
-    holds: subnets, gateways, DNS, TLS and VPN routes - the parts that span hosts
-    tags: [network, dns, tls, vpn, wireguard]
+    holds: subnets, the address plan, DNS, TLS, what can reach what
+    tags: [network, dns, tls, vpn]
   - path: docs/backups.yaml
-    holds: restic repositories, schedule, what is and is not covered
-    tags: [backup, restic, disaster-recovery]
-  - path: docs/service-ideas.md
-    holds: the shortlist of services not yet built, and where each might go
-    tags: [ideas, services, backlog]
+    holds: what goes to R2, how it restores, what is not backed up
+    tags: [backup, volsync, etcd, r2]
   - path: docs/traps.yaml
     holds: failures already paid for once - symptom, cause, tell, fix
-    tags: [traps, gotchas, debugging]
+    tags: [traps, debugging]
     read_when: anything that should work does not
+  - path: docs/service-ideas.md
+    holds: what to build next, in rough order
+    tags: [backlog]
   - path: docs/decisions/
-    holds: one file per decision, with status and tags in front matter
-    tags: [decisions, adr, rationale]
+    holds: one file per decision in force or open; README indexes them
+    tags: [decisions]
   - path: docs/sessions/
-    holds: what happened in past working sessions, newest last
-    tags: [sessions, handoff, history]
-    read_when: starting work - the newest one only
+    holds: the narrative of the last working session
+    tags: [sessions, handoff]
+    read_when: starting work
 
 answers:                     # question -> file, so a lookup costs one read
-  what is running right now: docs/hosts/core.yaml
-  what hardware do I have: docs/hosts/
-  what is the IP of X: docs/hosts/ or docs/network.yaml
-  what does this repository deploy: core/ onto core, through Flux
-  what is installed by hand: tools/ - see decisions/0011
+  what is running right now: core/03-gitops/apps, then docs/hosts/core.yaml for why
+  what is the IP of X: docs/network.yaml, then docs/hosts/
+  which hostname serves what: docs/hosts/core.yaml, access and services
+  how is the cluster built: core/README.md and the READMEs under it
   why is it built this way: docs/decisions/
-  what did we do last time: docs/sessions/
   what breaks if a disk dies: docs/backups.yaml
-  what could I install next: docs/service-ideas.md
-  which hostname serves what: docs/hosts/core.yaml, local_access and public_access
-  what can reach what: docs/network.yaml, then hosts/router.yaml
   why is this failing: docs/traps.yaml
+  what could I build next: docs/service-ideas.md
+  what did we do last time: docs/sessions/
 
 rules:                       # the full set is in AGENTS.md
-  - Verify against the live host before writing a fact down. Two documentation
-    errors found on 2026-09-06 were both stale claims that read as true.
-  - Do not edit the router's own uci config. See decisions/0007.
+  - Verify against the live host before writing a fact down.
+  - Do not change the router over ssh; see decisions/0007.
   - Secrets are never committed; Infisical holds them, and ExternalSecrets
     name only their paths.
-  - A fact belongs in exactly one file. README.md is procedures for a human and
-    does not restate these tables.
+  - A fact belongs in one file. README.md files are procedures and do not
+    restate these tables.
   - New failure mode -> traps.yaml. Choice with a rejected alternative ->
     decisions/. Narrative of a session -> sessions/.
-  - Commits name one author, the owner. No agent attribution anywhere in the
-    history.
+  - Commits name one author, the owner. No agent attribution anywhere.

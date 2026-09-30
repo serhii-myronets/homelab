@@ -28,10 +28,10 @@ spec:
       - paths: ["/data"]
         target: {kind: Secret, name: grafana}
   values:
-    # satellite's metrics hub, restored from archive/observability, where it
-    # spent one evening on core - every lesson in its comments below was paid for
-    # there. It keeps what both clusters send and alerts on it; core runs only an
-    # agent that writes here. See docs/decisions/0032.
+    # Last ran as the metrics and log hub of the satellite cluster, for a day
+    # on 2026-09-30, after an evening on core on 2026-09-20 - every lesson in
+    # the comments below was paid for in one of the two. See archive/README.md
+    # for what bringing it back onto worker-1 takes.
     global:
       # The label the chart's rules and dashboards group by.
       clusterLabel: cluster

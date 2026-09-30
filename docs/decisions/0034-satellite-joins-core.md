@@ -5,18 +5,18 @@ date: 2026-09-30
 status: accepted
 tags: [satellite, core, talos, kubernetes, observability, memory]
 hosts: [satellite, core]
-supersedes: ["0032"]
+supersedes: ["0032", "0033"]   # both removed from the tree; git keeps them
 ---
 
 # satellite becomes a worker in core rather than a cluster of its own
 
-For two days satellite ran as its own Talos cluster (0032) - built, working,
+For two days satellite ran as its own Talos cluster - built, working,
 and holding about 1.9 GiB of its 7.6 GB for its own platform before any
 workload: kube-apiserver alone 1.1 GiB, then Flux, cert-manager, External
 Secrets, external-dns, cloudflared. Around it grew the glue that joining two
 clusters takes: core's Infisical identity shared, a token for core in
 satellite's Headlamp, two external-dns owners, a Cloudflare tunnel each, an
-intermediate of home-ca (0033), and remote_write between them still to come.
+intermediate of home-ca, and remote_write between them still to come.
 
 It rejoins core as a worker at 192.168.8.11, in core's address block. As a
 worker it holds about 0.4 GiB for kubelet, the Cilium agent and the node's

@@ -46,11 +46,10 @@ them. Adding a component means adding a directory and one line there.
   absent from that file.
 - Setups that worked and were switched off live in `../../archive/` at the
   repository root, not here: this directory is what Flux reconciles, and they
-  are not. Their older Argo Applications need conversion before they can be
-  restored; see that README.
+  are not. See that README to bring one back.
 
 A component owns its namespace where needed. Dependencies are explicit in
-Flux `spec.dependsOn`; Argo sync-wave annotations do not order Flux applies.
+Flux `spec.dependsOn`.
 The `openebs` Kustomization installs the chart and runs the thin-pool Job
 together, waiting for both. `openebs-classes` publishes the storage classes
 only after they are ready.
@@ -69,7 +68,7 @@ from deleting them. This is separate from a StorageClass's reclaim policy;
 do not delete claims as a way to restart services.
 
 A public HTTPRoute under `serhii.link` is published by external-dns as a proxied
-CNAME to the Beelink tunnel. cloudflared forwards to the Gateway, and Cloudflare
+CNAME to the tunnel `beelink`. cloudflared forwards to the Gateway, and Cloudflare
 Access guards those names. Routes under `.home` remain local.
 
 The operator serves a read-only web view of all of this on `flux.home`, and

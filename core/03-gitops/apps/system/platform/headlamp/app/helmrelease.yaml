@@ -1,7 +1,5 @@
 # A console for this cluster: browse objects and read logs. It watches
-# nothing and alerts on nothing - that gap is still open, and neither Pulse
-# nor the VictoriaMetrics stack closed it either, both now under
-# archive/ at the repository root.
+# nothing and alerts on nothing - see docs/decisions/0008.
 #
 # Nothing is stored: no claim, no database, no CRDs. Losing the pod loses a
 # session and nothing else.
@@ -20,8 +18,8 @@ spec:
         kind: HelmRepository
         name: headlamp
         namespace: flux-system
-  # helm-controller leaves a release alone once installed. This is what Argo
-  # CD's selfHeal did: an edit made by hand is reverted at the next interval.
+  # helm-controller leaves a release alone once installed unless told
+  # otherwise: with this, an edit made by hand is reverted at the next interval.
   driftDetection:
     mode: enabled
   values:

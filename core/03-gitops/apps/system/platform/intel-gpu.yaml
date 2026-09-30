@@ -1,7 +1,6 @@
 # kustomize-controller builds only from the artifact source-controller hands
 # it and never reaches the network mid-build, so the plugin's manifests cannot
-# be a remote base the way they were under Argo CD. They become their own
-# source instead, pinned to the same tag, with everything but the one
+# be a remote base. They become their own source instead, pinned to the same tag, with everything but the one
 # directory ignored so source-controller is not holding the whole Intel
 # repository.
 apiVersion: source.toolkit.fluxcd.io/v1

@@ -38,8 +38,8 @@ The Talos and Kubernetes client configurations live in their standard paths:
 ~/.kube/config
 ```
 
-Use `talosctl` and `kubectl` normally. The cluster name is `beelink`, so its
-Talos context is `beelink` and its Kubernetes context is `admin@beelink`.
+Use `talosctl` and `kubectl` normally. The cluster name is `core`, so its
+Talos context is `core` and its Kubernetes context is `admin@core`.
 
 To replace the standard client configurations with the current cluster values,
 run:

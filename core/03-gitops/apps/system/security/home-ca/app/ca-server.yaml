@@ -1,5 +1,5 @@
 # Serves the authority's certificate at http://ca.home/root.crt, so a device
-# can fetch and trust it the way Caddy's ca.home worked. Only the public
+# can fetch and trust it before it trusts anything else here. Only the public
 # half of the key pair is mounted.
 apiVersion: apps/v1
 kind: Deployment
