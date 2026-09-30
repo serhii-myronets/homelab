@@ -98,6 +98,14 @@ platform:
     txtOwnerId satellite, never beelink, on core's Cloudflare token from
     /cloudflared/beelink/API_TOKEN. On its first run it changed nothing and
     all nine of core's public names still resolved.
+  headlamp: >-
+    One console for both clusters: satellite through its own service account
+    (cluster-admin), core through a kubeconfig an ExternalSecret builds from
+    Infisical prod /satellite/CORE_HEADLAMP_TOKEN and CORE_CA - an account in
+    core's satellite-access namespace bound to edit plus cluster-wide reads.
+    No route yet; reach it with
+    `kubectl --context satellite -n headlamp port-forward svc/headlamp 8080:80`.
+    core's own Headlamp stays until this one has headlamp.home.
   infisical: >-
     core's machine identity, shared: it reads all of prod. See the
     02-platform README for what that costs.
