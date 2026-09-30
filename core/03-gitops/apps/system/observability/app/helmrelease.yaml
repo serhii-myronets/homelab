@@ -288,3 +288,14 @@ spec:
                 - action: drop
                   sourceLabels: [__name__]
                   regex: ".*_bucket"
+
+    # The apiserver's availability and burn-rate rules are built from exactly
+    # those buckets, so with them dropped the rules can never produce a sample
+    # - fifteen of them, and RecordingRulesNoData firing for good. The alerts
+    # on top of them, kube-apiserver-slos, could never fire either.
+    defaultRules:
+      groups:
+        kube-apiserver-availability.rules: {enabled: false}
+        kube-apiserver-burnrate.rules: {enabled: false}
+        kube-apiserver-histogram.rules: {enabled: false}
+        kube-apiserver-slos: {enabled: false}
