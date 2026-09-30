@@ -1343,3 +1343,19 @@ traps:
       "*GSMB2092400746"}`, or `disk.wwid` in a volume's match expression. The
       refused apply changes nothing on the node.
     diagnosed: 2026-09-29, installing satellite
+
+  - id: headlamp-in-cluster-ignores-kubeconfig-variable
+    applies_to: [headlamp, satellite, kubernetes]
+    symptom: >-
+      A Headlamp running in-cluster shows only its own cluster, although a
+      kubeconfig with more contexts is mounted and KUBECONFIG points at it.
+    cause: >-
+      In-cluster, Headlamp reads extra clusters only from its -kubeconfig flag;
+      the environment variable is not consulted.
+    tell: >-
+      Its log says `Kubeconfig path: ` with nothing after it, then "No
+      kubeconfig set, using only the in-cluster context".
+    fix: >-
+      Pass the path as `config.extraArgs: [-kubeconfig=<path>]` in the chart's
+      values. The log then shows a "Proxy setup" line for every context.
+    diagnosed: 2026-09-30, showing core in satellite's Headlamp
