@@ -65,6 +65,7 @@ data "talos_machine_configuration" "worker_1" {
   config_patches = [
     file("${path.module}/patches/common/cilium.yaml"),
     file("${path.module}/patches/worker/node.yaml"),
+    file("${path.module}/patches/worker/hostname.yaml"),
     file("${path.module}/patches/worker/network.yaml"),
     file("${path.module}/patches/worker/swap.yaml"),
     yamlencode({ machine = { install = {
