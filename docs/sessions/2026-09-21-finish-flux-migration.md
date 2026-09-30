@@ -67,7 +67,7 @@ Validation after the cutover:
 
 Implementation commits: `3dfe141` and `4bf51eb`. The decision is recorded in
 [0020](../decisions/0020-flux-for-gitops.md); current inventory remains in
-[beelink.yaml](../hosts/beelink.yaml).
+[beelink.yaml](../hosts/core.yaml).
 
 ## What the validation above missed
 

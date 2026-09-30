@@ -1,25 +1,26 @@
-# core's Docker stacks. Every container below was stopped on 2026-09-19 once
-# its replacement reached the Beelink; the compose files stay as a way back.
-# What is actually running is in hosts/beelink.yaml.
+# satellite's Docker stacks - the old OpenMediaVault box, called core until
+# 2026-09-29. Every container below was stopped on 2026-09-19 once its
+# replacement reached the Beelink, and the compose files now sit under
+# archive/core-docker/. What is actually running is in hosts/core.yaml.
 #
 # This file is rollback material. Read it when something has to be started on
-# core again - not otherwise.
+# satellite again - not otherwise.
 
 meta:
   updated: 2026-09-20
-  tags: [core, docker, portainer, rollback, secrets]
+  tags: [satellite, docker, portainer, rollback, secrets]
 
 status: every stack stopped 2026-09-19; 0 of 9 containers running, verified 2026-09-20
 
 stacks:                     # name: compose path, how it was deployed
-  homepage:    {path: core/homepage/docker-compose.yaml,    by: portainer-gitops, rpv: true}
-  caddy:       {path: core/caddy/docker-compose.yaml,       by: portainer-gitops, rpv: true}
-  torrent:     {path: core/torrent/docker-compose.yaml,     by: portainer-gitops, rpv: true,
+  homepage:    {path: archive/core-docker/homepage/docker-compose.yaml,    by: portainer-gitops, rpv: true}
+  caddy:       {path: archive/core-docker/caddy/docker-compose.yaml,       by: portainer-gitops, rpv: true}
+  torrent:     {path: archive/core-docker/torrent/docker-compose.yaml,     by: portainer-gitops, rpv: true,
                 note: "vpn, qbittorrent and flood; the last two share vpn's network namespace"}
-  pulse:       {path: core/pulse/docker-compose.yaml,       by: docker-compose-manual, rpv: false}
-  cloudflared: {path: core/cloudflared/docker-compose.yaml, by: portainer-gitops, rpv: false}
-  jellyfin:    {path: core/jellyfin/docker-compose.yaml,    by: portainer-gitops, rpv: false}
-  portainer:   {path: core/portainer/docker-compose.yaml,   by: core/bootstrap.sh, rpv: false,
+  pulse:       {path: archive/core-docker/pulse/docker-compose.yaml,       by: docker-compose-manual, rpv: false}
+  cloudflared: {path: archive/core-docker/cloudflared/docker-compose.yaml, by: portainer-gitops, rpv: false}
+  jellyfin:    {path: archive/core-docker/jellyfin/docker-compose.yaml,    by: portainer-gitops, rpv: false}
+  portainer:   {path: archive/core-docker/portainer/docker-compose.yaml,   by: archive/core-docker/bootstrap.sh, rpv: false,
                 edition: EE, note: "not a Portainer stack - see decisions/0001"}
 
 portainer_stack_settings:   # Stacks -> Add stack -> Repository
@@ -34,7 +35,7 @@ portainer_stack_settings:   # Stacks -> Add stack -> Repository
   gitops_paths: /srv/ssd/docker/gitops/<stack>; the manual one is /srv/ssd/docker/homelab/core/pulse
 
 routes:
-  status: inactive          # Caddy and core's tunnel are both stopped
+  status: inactive          # Caddy and satellite's tunnel are both stopped
   names_still_pointing_here: >-
     omv, portainer, homepage, pulse, proxmox and proxmenux under .home. The
     router sends every *.home to the Beelink since 2026-09-19, so all six
@@ -42,11 +43,11 @@ routes:
   former_targets: >-
     omv and proxmox went to their own web interfaces, proxmenux to
     10.1.1.100:8008, the rest to the container of the same name. The same set
-    was published under serhii.link through core's tunnel, each behind
+    was published under serhii.link through satellite's tunnel, each behind
     Cloudflare Access, with a catch-all 404 for anything else.
 
 secrets:
-  location: /srv/ssd/docker/secrets     # on core, never in git
+  location: /srv/ssd/docker/secrets     # on satellite, never in git
   files:
     - {path: portainer/license.env, holds: PORTAINER_LICENSE_KEY}
     - {path: cloudflared/auth.env, holds: Cloudflare tunnel token}
@@ -63,7 +64,7 @@ secrets:
 pulse:
   server: stopped with the rest
   agents: >-
-    tools/pulse-agent/install.sh put pulse-agent.service on core and proxmox,
-    and core's is still enabled - it logs connection refused against the
+    tools/pulse-agent/install.sh put pulse-agent.service on satellite and proxmox,
+    and satellite's is still enabled - it logs connection refused against the
     stopped server every few seconds. Stopping it is an open cleanup item.
   proxmox_api: "pulse@pve!monitor, role PVEAuditor, against https://10.1.1.100:8006"

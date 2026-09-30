@@ -7,7 +7,7 @@ meta:
   tags: [network, subnets, dns, tls, vpn, wireguard]
 
 subnets:
-  - {cidr: 192.168.8.0/24, use: LAN, hosts: [core, beelink], gateway: 192.168.8.1}
+  - {cidr: 192.168.8.0/24, use: LAN, hosts: [core, satellite], gateway: 192.168.8.1}
   - {cidr: 10.1.1.0/24, use: lab, vlan: 10, hosts: [proxmox], gateway: 10.1.1.1,
      routed: no}                   # VLAN not rebuilt after the reflash
   - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1, enabled: no}
@@ -16,7 +16,7 @@ subnets:
 load_balancers:
   cilium_beelink:
     range: 192.168.8.15-192.168.8.20
-    announced_by: beelink
+    announced_by: core
     interface: br0
 
 dns:
