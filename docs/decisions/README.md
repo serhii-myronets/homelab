@@ -42,6 +42,7 @@ One file per decision. Front matter carries `status`, `date`, `tags` and the
 | [0030](0030-nightly-etcd-backup-with-restic.md) | Back etcd up nightly with talosctl and restic, not talos-backup | accepted | beelink, talos, etcd, backup, restic, r2 |
 | [0031](0031-core-and-satellite.md) | The cluster is core; the old box is satellite | accepted | naming, core, satellite, repository, flux |
 | [0032](0032-satellite-watches-core.md) | satellite becomes a second Talos cluster that watches core | accepted | satellite, talos, observability, backup, gitops |
+| [0033](0033-satellite-signs-with-an-intermediate.md) | satellite signs .home with an intermediate of home-ca | accepted | satellite, tls, cert-manager, home-ca, infisical |
 
 Open items, shortest path first:
 [0008](0008-nothing-tells-anyone-when-something-breaks.md) is a
