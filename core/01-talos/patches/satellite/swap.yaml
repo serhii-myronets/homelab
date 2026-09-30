@@ -1,0 +1,26 @@
+# Swap behind zswap, as on the Beelink, sized for 7.6 GB. The EPHEMERAL cap
+# applies only when the volume is created, so it is set before the install.
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  maxSize: 96GiB
+---
+apiVersion: v1alpha1
+kind: SwapVolumeConfig
+name: swap
+provisioning:
+  diskSelector:
+    match: system_disk
+  minSize: 8GiB
+  maxSize: 8GiB
+---
+apiVersion: v1alpha1
+kind: ZswapConfig
+maxPoolPercent: 20
+---
+machine:
+  kubelet:
+    extraConfig:
+      memorySwap:
+        swapBehavior: LimitedSwap
