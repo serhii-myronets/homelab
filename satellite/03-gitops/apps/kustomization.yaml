@@ -5,6 +5,8 @@ kind: Kustomization
 resources:
   - helm-repositories.yaml
 
+  - system/network/cloudflared/ks.yaml
+  - system/network/external-dns/ks.yaml
   - system/network/gateway-system/ks.yaml
 
   # A HelmRelease with no manifests beside it, applied by the root directly.

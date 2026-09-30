@@ -1,0 +1,27 @@
+# satellite's own Gateway, so its services stay reachable when core is down.
+# Only the public listener for now: the tunnel speaks plain HTTP to it and
+# Cloudflare holds the certificate at its edge. Local names under .home come
+# with a certificate from Infisical PKI.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: main-gateway
+  namespace: gateway-system
+  annotations:
+    # external-dns points public names at satellite's tunnel, never core's.
+    external-dns.kubernetes.io/target: 970ef69a-1a26-4869-8977-abf74db554a5.cfargotunnel.com
+spec:
+  gatewayClassName: cilium
+  # The first address of the block, and fixed: the router's rewrites for
+  # satellite's .home names will point here.
+  infrastructure:
+    annotations:
+      lbipam.cilium.io/ips: 192.168.8.21
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: "*.serhii.link"
+      allowedRoutes:
+        namespaces:
+          from: All
