@@ -12,6 +12,19 @@ machine:
   kernel:
     modules:
       - name: dm_thin_pool
+  # Only what is sent here runs here: pods from core would otherwise land on
+  # a node without core's `nvme` volume group, or take its weaker GPU. What
+  # belongs on satellite carries a toleration; DaemonSets such as Cilium's and
+  # OpenEBS's tolerate every taint already.
+  #
+  # Through the kubelet at registration, not machine.nodeTaints: on a worker
+  # Talos applies those with the node's own credentials, and NodeRestriction
+  # forbids a node to change its taints. Registration is the one moment it
+  # may, so a node already registered must be deleted to pick this up.
+  kubelet:
+    extraConfig:
+      registerWithTaints:
+        - {key: homelab/satellite, value: "true", effect: NoSchedule}
 ---
 # A fixed name, not a generated one: workloads are pinned to it.
 apiVersion: v1alpha1
