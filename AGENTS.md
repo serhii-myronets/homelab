@@ -31,6 +31,7 @@ Before debugging anything that should work, check
 | `core/01-talos/` | Terraform for the node; its state and `secrets.yaml` are local and ignored |
 | `core/02-platform/` | Helmfile bootstrap, applied by hand |
 | `core/03-gitops/` | everything Flux reconciles |
+| `satellite/01-talos/` | Terraform for satellite, the same shape as core's; not applied yet |
 | `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
 | `archive/` | setups switched off but kept whole; nothing reconciles it |

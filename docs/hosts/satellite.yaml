@@ -43,9 +43,10 @@ docker:
 
 disks:                             # sda and sdb swap between boots - they
                                    # were the other way round on 2026-09-20;
-                                   # match on model, not on the name
+                                   # match on serial, not on the name
   - dev: sda                       # on 2026-09-29
     model: M.2 SSD 128GB
+    serial: GSMB2092400746
     size: 119G
     transport: sata
     role: system
@@ -54,9 +55,12 @@ disks:                             # sda and sdb swap between boots - they
             power_on_hours: 16707}    # 2026-09-29
   - dev: sdb                       # on 2026-09-29
     model: ORICO
+    serial: UB202412065113
     size: 1.9T
     role: data
     transport: sata
+    link: 3.0 Gb/s of 6.0           # the drive is SATA 3.0; the cable or port
+                                   # holds it at half speed
     rotational: false
     fs: ext4
     mount: /srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85

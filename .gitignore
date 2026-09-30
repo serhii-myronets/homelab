@@ -11,5 +11,13 @@
 /core/03-gitops/system/*/charts/
 !/core/01-talos/.terraform.lock.hcl
 
+/satellite/01-talos/.terraform/
+/satellite/01-talos/*.tfstate*
+/satellite/01-talos/*.tfplan
+/satellite/01-talos/crash*.log
+/satellite/01-talos/talosconfig
+/satellite/01-talos/kubeconfig
+!/satellite/01-talos/.terraform.lock.hcl
+
 # Personal Claude Code permissions; not the repository's business.
 .claude/settings.local.json
