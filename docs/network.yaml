@@ -42,7 +42,7 @@ reachability:                      # who can reach whom, as configured today
   lan_to_lab: no                   # no VLAN 10 on the router at all
   lab_to_lan: no
   vpn_to_internet: yes             # wgserver2wan
-  vpn_to_lan: no                   # wgserver2lan exists, disabled
+  vpn_to_lan: yes                  # verified 2026-09-29 from outside
   vpn_to_lab: no
   guest_to_anything: no            # wan only
   wan_to_lan: no                   # no port forwards; public access is the

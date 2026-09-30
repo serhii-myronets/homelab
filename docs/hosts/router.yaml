@@ -87,8 +87,9 @@ forwardings:                       # what may reach what
   - {src: wgserver, dest: wan,      name: wgserver2wan}
   - {src: lan,      dest: wgserver, name: lan2wgserver}
 forwardings_note: >-
-  GL.iNet names what it creates <src>2<dest>. Firmware 4.11 now ships its own
-  wgserver2lan, as a rule rather than a forwarding, and leaves it disabled.
+  GL.iNet names what it creates <src>2<dest>. Firmware 4.11 ships its own
+  wgserver2lan, as a rule rather than a forwarding; the WireGuard server's
+  "Allow Remote Access to the LAN Subnet" option switches it on.
 
 wan_input_allowed:                 # everything else is dropped
   - {port: 68/udp, what: DHCP renew}
@@ -105,10 +106,19 @@ wireguard_server:
   address_v4: 10.1.0.1/24
   address_v6: fd00:d5cc:a7e7:fdc7::1/64
   port: 51820
-  peers: 0                         # every pre-reflash client config is dead:
-                                   # the server key is new
-  access: DROP                     # clients reach the internet and the
-                                   # router's DNS, not the LAN
+  peers: 1                         # macbook air; every pre-reflash client
+                                   # config is dead - the server key is new
+  lan_access: yes                  # Options -> Allow Remote Access to the LAN
+                                   # Subnet. Verified 2026-09-29 from a phone
+                                   # hotspot: .10 and .100 answer, *.home
+                                   # resolves and flux.home returns 200
+  router_input: >-
+    Clients reach the router itself only for DNS (wgserver_allow_dns); a ping
+    to 192.168.8.1 through the tunnel gets port-unreachable, and that is not a
+    broken tunnel.
+  client_config: >-
+    AllowedIPs 192.168.8.0/24, DNS 192.168.8.1, keepalive 25, preshared key,
+    endpoint the DDNS name rather than the WAN address.
   client_to_client: false
   masquerade: true
 
@@ -138,9 +148,9 @@ gaps:
     observed: >-
       A Mac at 10.1.0.62/22 routed 10.1.0.1 and 10.1.1.0/24 through en0.
     fix: >-
-      The reflash put the server back on 10.1.0.1/24 with no peers, so
-      renumbering now costs nothing: move it to a rarer subnet, for example
-      10.66.66.0/24, before issuing client configs.
+      The reflash put the server back on 10.1.0.1/24. With one peer,
+      renumbering still costs one regenerated config: move it to a rarer
+      subnet, for example 10.66.66.0/24, before issuing more.
   firmware_age:
     severity: medium
     symptom: >-
