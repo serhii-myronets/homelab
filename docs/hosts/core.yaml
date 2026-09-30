@@ -155,6 +155,18 @@ services:
   uptime_kuma:
     names: [kuma.home]
     limit: runs on core, so it cannot report core itself down (decisions/0022)
+  observability:
+    names: [grafana.home]                    # local only, no sign-in, Admin to anyone
+    where: >-
+      worker-1, every component but node-exporter and vlagent, which run on
+      both nodes; VictoriaMetrics keeps three months and VictoriaLogs thirty
+      days on the ORICO, neither backed up. About 1.1 GiB in use on
+      2026-09-30.
+    alerts: >-
+      vmalert evaluates the chart's rules and Alertmanager receives them, but
+      no receiver is configured, so nothing reaches anyone yet
+      (decisions/0008). The apiserver's SLO rules are off: they need the
+      _bucket series the scrape drops.
   samba:
     address: 192.168.8.10, host network, Beelink.local
     auth: guest
