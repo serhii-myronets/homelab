@@ -24,10 +24,10 @@ resources:
   - system/network/gateway-system/ks.yaml
 
   # Two that need no directory of their own: a HelmRelease with no manifests
-  # beside it, and one that carries its own upstream source. Headlamp moved
-  # to satellite on 2026-09-30 and shows core from there.
+  # beside it, and one that carries its own upstream source.
   - system/platform/intel-gpu.yaml
   - system/platform/metrics-server.yaml
+  - system/platform/headlamp/ks.yaml
 
   - system/security/cert-manager/ks.yaml
   - system/security/external-secrets/ks.yaml
