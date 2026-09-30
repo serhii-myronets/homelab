@@ -51,10 +51,12 @@ disks:                             # sda and sdb swap between boots, so both
     serial: UB202412065113
     size: 2.0 TB
     role: >-
-      One LVM volume group and thin pool for OpenEBS LVM LocalPV, made by a
-      Job in 03-gitops. Not yet: it still holds the old machine's ext4
-      partition - the torrent copy, the old restic repositories and
-      config.xml - until it is wiped by hand.
+      OpenEBS LVM LocalPV behind the StorageClass lvm: volume group ssd
+      (1.86 TiB) and thin pool ssd_thinpool (1.77 TiB, 95% of it), made by
+      the ssd-thinpool Job in 03-gitops once the disk was wiped on
+      2026-09-29. A 1 GiB test claim bound, mounted XFS and took a write.
+      dmeventd is absent, so the pool is not auto-extended; it does not need
+      to be, with no free space left to extend into.
     link: 3.0 Gb/s of 6.0           # the drive is SATA 3.0; the cable or port
                                    # holds it at half speed
     smart: {health: passed, reallocated: 0, uncorrectable: 0, power_on_hours: 12193}  # 2026-09-29
@@ -75,7 +77,16 @@ platform:
     - {name: cilium, namespace: kube-system, chart: 1.20.2, status: deployed}
     - {name: external-secrets, namespace: external-secrets, chart: 2.10.0, status: deployed}
     - {name: flux-operator, namespace: flux-system, chart: 0.60.0, status: deployed}
-  flux: v2.9.5 - source, kustomize, helm and notification controllers; nothing to sync yet
+  flux: v2.9.5 - source, kustomize, helm and notification controllers
+  gitops: >-
+    satellite/03-gitops: the Infisical ClusterSecretStore (validated), the
+    load balancer pool 192.168.8.21-29 announced on enp1s0, OpenEBS LVM
+    LocalPV with the lvm StorageClass, metrics-server.
+  tunnel:
+    name: satellite
+    id: 970ef69a-1a26-4869-8977-abf74db554a5
+    credentials: Infisical prod /cloudflared/satellite/TUNNEL_CREDENTIALS
+    state: created 2026-09-29, nothing runs it yet
   infisical: >-
     core's machine identity, shared: it reads all of prod. See the
     02-platform README for what that costs.
