@@ -1,119 +1,83 @@
-# satellite — the OpenMediaVault box, called core until 2026-09-29, when that
-# name went to the cluster on the Beelink that took over its job. It serves
-# nothing now - all nine of its containers are stopped, its disks and shares
-# still mounted. It is to be wiped and rebuilt on Talos to watch core and keep
-# copies of its backups, a role nothing may depend on.
-# Verified 2026-09-20; disks re-read 2026-09-29.
+# satellite — the cluster that watches core from outside and keeps copies of
+# its backups; nothing may depend on it. The old OpenMediaVault box, called
+# core until 2026-09-29 and rebuilt on Talos the same day from
+# satellite/01-talos. See decisions/0032.
+# Verified 2026-09-29, after the install.
 
 meta:
   host: satellite
   updated: 2026-09-29
-  tags: [satellite, nas, omv, debian, docker, storage]
+  tags: [satellite, talos, kubernetes, bare-metal, storage]
 
 identity:
-  hostname: openmediavault
-  ip: 192.168.8.100
+  hostname: satellite              # fixed in the configuration, not generated
+  ip: 192.168.8.20                 # static in Talos; the LAN's .20-.29 block
   vlan: 1
-  role: retired, awaiting a rebuild as satellite
-  ssh: root@192.168.8.100          # key at ~/.ssh/id_ed25519
-  ssh_tcp_forwarding: >-
-    Refused. sshd_config carries AllowTcpForwarding no, so ssh -L to this host
-    opens a local listener that then goes nowhere — connections time out with
-    no error from ssh itself. Reach a container's published port directly on
-    192.168.8.100 instead of tunnelling. Verified 2026-09-07.
-  note: >-
-    Deliberately boring. Nothing experimental runs here, which is why it
-    keeps working.
+  role: satellite
+  cluster: satellite
+  access:
+    talos: talosctl --context satellite -n 192.168.8.20
+    kubernetes_context: admin@satellite
+  context_note: >-
+    talosctl config merge makes the merged context current, so after merging
+    satellite's the default talosctl context became satellite and commands
+    aimed at core went to the wrong cluster. beelink stays the current one;
+    satellite is named with --context.
 
 os:
-  distribution: OpenMediaVault on Debian 13
-  kernel: 7.1.8+deb13-amd64
-  timezone: America/Los_Angeles
+  distribution: Talos Linux 1.14.1
+  kubernetes: 1.37.0
+  extensions: [i915, intel-ucode]  # core's schematic
   virtualised: false
 
 hardware:
-  cpu: {model: Intel Celeron J4125, cores: 4, ghz: 2.0}
+  cpu: {model: Intel Celeron J4125, cores: 4, ghz: 2.0}   # SSE4.2, no AVX
   ram_gb: 7.6
   gpu: Intel UHD 600
 
-docker:
-  engine: 29.8.0
-  compose: 5.5.1
-  source: OMV-Extras apt repository (omvdocker.sources)
-
-disks:                             # sda and sdb swap between boots - they
-                                   # were the other way round on 2026-09-20;
-                                   # match on serial, not on the name
-  - dev: sda                       # on 2026-09-29
-    model: M.2 SSD 128GB
+disks:                             # sda and sdb swap between boots, so both
+                                   # are chosen by what ends their WWID
+  - model: M.2 SSD 128GB
     serial: GSMB2092400746
-    size: 119G
-    transport: sata
-    role: system
-    layout: "/ (110G, ~9G used), /boot/efi, 6.2G swap"
+    serial_note: >-
+      Talos reports no serial for either SATA disk, only a WWID that ends in
+      it after runs of spaces; a serial selector matched nothing and the first
+      apply was refused. See traps.yaml.
+    role: Talos system disk
+    layout: "EFI 2.2 GB, META, STATE 105 MB, EPHEMERAL 103 GB (capped at 96 GiB), swap 8 GiB"
     smart: {health: passed, reallocated: 0, pending: 0, erase_fails: 0,
-            power_on_hours: 16707}    # 2026-09-29
-  - dev: sdb                       # on 2026-09-29
-    model: ORICO
+            power_on_hours: 16707}    # 2026-09-29, under Debian
+  - model: ORICO
     serial: UB202412065113
-    size: 1.9T
-    role: data
-    transport: sata
+    size: 2.0 TB
+    role: >-
+      One LVM volume group and thin pool for OpenEBS LVM LocalPV, made by a
+      Job in 03-gitops. Not yet: it still holds the old machine's ext4
+      partition - the torrent copy, the old restic repositories and
+      config.xml - until it is wiped by hand.
     link: 3.0 Gb/s of 6.0           # the drive is SATA 3.0; the cable or port
                                    # holds it at half speed
-    rotational: false
-    fs: ext4
-    mount: /srv/dev-disk-by-uuid-925787e7-dba0-451f-b9bf-c5afbd0ebc85
-    symlink: /srv/ssd              # what every compose file refers to
-    used: 1.7T
-    free: ~100G
     smart: {health: passed, reallocated: 0, uncorrectable: 0, power_on_hours: 12193}  # 2026-09-29
 
-redundancy: none                    # neither disk is mirrored
-
-monitoring:
-  smartd: enabled                   # polls both disks every 1800s
-  pulse_agent: enabled              # host and Docker telemetry; tools/pulse-agent/install.sh
-  alerting: none                    # no -m recipient, OMV SMTP unset
-  gap: >-
-    SMART will notice a failing disk and tell nobody. Needs either an -m
-    recipient in smartd.conf or OMV's SMTP settings filled in.
-
-moved_to_beelink:                   # 2026-09-19; containers stopped, data kept
-  - {what: jellyfin, note: configuration and watch history copied}
-  - {what: qbittorrent and flood, note: 55 torrents resumed there}
-  - {what: vpn, note: stopped with them}
-  - {what: samba/torrents, note: 1.8 TB copied to the Beelink's hdd-a}
-  - {what: samba/scan, note: 89 document files copied to the Beelink's hdd-b}
-  - {what: "*.home names", note: the router's wildcard now points at the Beelink}
-
-shares:
-  auth: guest                       # no unix users >=1000, no SMB accounts
-  list:
-    - {name: torrents, path: /srv/ssd/samba/torrents, size: 1.7T}
-    - {name: scan, path: /srv/ssd/samba/scan, size: 110M}
+swap:
+  size: 8 GiB                      # partition after EPHEMERAL on the system disk
+  zswap: {enabled: true, max_pool_percent: 20}
+  kubelet: LimitedSwap
 
 nics:
-  - {name: enp1s0, state: up, addr: 192.168.8.100/24}
+  - {name: enp1s0, state: up, mac: "84:39:4c:00:25:fc", addr: 192.168.8.20/24}
   - {name: enp2s0, state: down}     # spare wired
-  - {name: wlo1, state: down}       # spare wifi
+  - {name: wlo1, state: absent}     # Talos has no Wi-Fi support
 
-firewall: none                      # only Docker's own NAT rules
+platform:
+  cni: none yet                    # Cilium comes from 02-platform; until then
+                                   # the node is NotReady and CoreDNS Pending
+  scheduling: control-plane enabled
 
-config_of_record: /etc/openmediavault/config.xml   # shares, mounts, SMART,
-                                                   # users, network — all of it
-
-paths:                              # where things actually live on this host
-  clone: /srv/ssd/docker/homelab    # the working checkout of this repository;
-                                    # the backup unit's ExecStart points into
-                                    # it, so moving it breaks the timer until
-                                    # core/backup/install.sh is re-run
-  gitops: /srv/ssd/docker/gitops    # Portainer unpacks each git-deployed stack
-                                    # under here, one directory per stack
-  data: /srv/ssd/docker/data        # container state, one directory per stack
-  secrets: /srv/ssd/docker/secrets
-
-cruft: none                         # the six /etc/cron.d/omv-compose-* files
-                                    # left by the removed OMV compose plugin
-                                    # were deleted 2026-09-06; they held only
-                                    # SHELL and PATH, no scheduled job
+config:
+  talos: satellite/01-talos/
+  local_files:                     # ignored by Git; back them up elsewhere
+    - satellite/01-talos/terraform.tfstate
+    - satellite/01-talos/secrets.yaml   # regenerated from the node's own
+                                        # configuration; Terraform made the
+                                        # secrets, so the state is the source

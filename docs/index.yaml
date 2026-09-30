@@ -6,7 +6,7 @@
 #
 # The machines are named for what they are for, not for what they run:
 #   core       where the services and data live   192.168.8.10   Talos, Beelink ME Pro
-#   satellite  watches core, keeps copies         192.168.8.100  OpenMediaVault, to be Talos
+#   satellite  watches core, keeps copies         192.168.8.20   Talos, the old OMV box
 #   proxmox    built and destroyed on purpose     10.1.1.100     Proxmox VE
 #   router     the boundary with the internet     192.168.8.1    GL.iNet
 #
@@ -31,8 +31,8 @@ files:
       and every service now running in the homelab. The busiest file here.
     tags: [core, beelink, talos, kubernetes, bare-metal, storage, services]
   - path: docs/hosts/satellite.yaml
-    holds: satellite - the OpenMediaVault box at 192.168.8.100 - hardware, disks, shares
-    tags: [satellite, nas, omv, hardware, storage]
+    holds: satellite - Talos on the old OpenMediaVault box at 192.168.8.20 - hardware, disks, access
+    tags: [satellite, talos, hardware, storage]
   - path: docs/hosts/proxmox.yaml
     holds: hypervisor at 10.1.1.100 - hardware, guests, spare capacity
     tags: [proxmox, hypervisor, lab]

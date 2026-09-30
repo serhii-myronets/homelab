@@ -3,6 +3,10 @@
 # replacement reached the Beelink, and the compose files now sit under
 # archive/core-docker/. What is actually running is in hosts/core.yaml.
 #
+# The machine was rebuilt on Talos on 2026-09-29, so none of this can start
+# there again. The data these stacks used is on the ORICO disk until that is
+# wiped; after that this file is history.
+#
 # This file is rollback material. Read it when something has to be started on
 # satellite again - not otherwise.
 

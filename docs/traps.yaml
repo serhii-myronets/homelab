@@ -1322,3 +1322,24 @@ traps:
       near its usual number, then check the routes. On 2026-09-29 that took
       under nine minutes from the wipe.
     diagnosed: 2026-09-29, wiping EPHEMERAL for swap
+
+  - id: talos-sees-no-serial-on-sata-disks
+    applies_to: [talos, satellite, core, disks]
+    symptom: >-
+      The first configuration apply is refused with "no disks matched the
+      expression: glob(\"<serial>\", disk.serial)", although `talosctl get
+      disks` lists a disk whose row ends in that very serial.
+    cause: >-
+      For these SATA disks Talos fills no serial field. The number sits at the
+      end of the WWID instead, after runs of spaces -
+      `t10.ATA     M.2 SSD 128GB                           GSMB2092400746` -
+      and the table view makes it look like the SERIAL column.
+    tell: >-
+      `talosctl get disks -o yaml` has a wwid line and no serial line for the
+      disk. core's HDDs showed the same, which is why its storage.yaml selects
+      them by WWID.
+    fix: >-
+      Select by WWID with a glob on its tail: `diskSelector: {wwid:
+      "*GSMB2092400746"}`, or `disk.wwid` in a volume's match expression. The
+      refused apply changes nothing on the node.
+    diagnosed: 2026-09-29, installing satellite

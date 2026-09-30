@@ -1,9 +1,12 @@
 # What is backed up, where to, and what is not. Verified 2026-09-06,
 # including a restore in both directions.
 #
-# The restic job first below runs on satellite, the old OpenMediaVault box
-# (core until 2026-09-29), and backs up the data of its stopped Docker stacks.
-# What protects the live services is volsync_to_r2 and etcd_to_r2 further down.
+# The restic job first below ran on the old OpenMediaVault box (core until
+# 2026-09-29, now satellite) and backed up the data of its stopped Docker
+# stacks. It ended when the box was rebuilt on Talos on 2026-09-29: the
+# repository on the system disk went with it, the one on the ORICO lasts until
+# that disk is wiped, and the copy on proxmox stays. What protects the live
+# services is volsync_to_r2 and etcd_to_r2 further down.
 
 meta:
   updated: 2026-09-23

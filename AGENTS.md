@@ -5,7 +5,7 @@ Four machines:
 | | | Deployed from here |
 |---|---|---|
 | **core** | where the services and their data live — everything depends on it; Talos on the Beelink | yes, out of `core/` |
-| **satellite** | watches core and keeps copies — nothing may depend on it; the old OpenMediaVault box, to be rebuilt on Talos | not yet |
+| **satellite** | watches core and keeps copies — nothing may depend on it; Talos on the old OpenMediaVault box | yes, out of `satellite/` |
 | **proxmox** | built and destroyed on purpose — Talos, Terraform | no — only a `tools/` installer, by hand |
 | **router** | the boundary with the internet — routing, DNS, firewall, VPN | no, and never over ssh |
 
@@ -31,7 +31,7 @@ Before debugging anything that should work, check
 | `core/01-talos/` | Terraform for the node; its state and `secrets.yaml` are local and ignored |
 | `core/02-platform/` | Helmfile bootstrap, applied by hand |
 | `core/03-gitops/` | everything Flux reconciles |
-| `satellite/01-talos/` | Terraform for satellite, the same shape as core's; not applied yet |
+| `satellite/01-talos/` | Terraform for satellite, the same shape as core's |
 | `tools/<name>/` | run by hand on a host; not a stack — see decisions/0011 |
 | `docs/` | every fact, decision and session; `index.yaml` routes |
 | `archive/` | setups switched off but kept whole; nothing reconciles it |
@@ -43,11 +43,12 @@ A procedure belongs in one of those, never in two.
 
 ## Access
 
-core has no shell: `talosctl -n 192.168.8.10` and `kubectl`. The rest take
-the key at `~/.ssh/id_ed25519`:
+core and satellite have no shell: `talosctl -n 192.168.8.10` and `kubectl`
+for core, `talosctl --context satellite -n 192.168.8.20` and
+`kubectl --context admin@satellite` for satellite. The rest take the key at
+`~/.ssh/id_ed25519`:
 
 ```bash
-ssh root@192.168.8.100   # satellite, until it is rebuilt on Talos
 ssh root@10.1.1.100      # proxmox
 ssh root@192.168.8.1     # router — read-only, see rules
 ```
