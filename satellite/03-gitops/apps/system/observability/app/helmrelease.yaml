@@ -117,6 +117,15 @@ spec:
 
     alertmanager:
       spec:
+        # Silences and the log of what was already sent live here; on the
+        # chart's emptyDir they vanished with every restart, so a silenced
+        # alert came back and a sent one could go out again.
+        storage:
+          volumeClaimTemplate:
+            spec:
+              storageClassName: lvm
+              resources:
+                requests: {storage: 1Gi}
         resources:
           requests: {cpu: 10m, memory: 48Mi}
           limits: {memory: 128Mi}
