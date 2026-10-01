@@ -13,3 +13,18 @@ spec:
     app: torrent
   ports:
     - {name: qbittorrent, port: 8080, targetPort: qbittorrent}
+---
+# The Gateway's way in. Cilium's Envoy honours externalTrafficPolicy: Local on
+# the Service above, so on a node without this pod it found no endpoint and
+# answered 503 "no healthy upstream" - from worker-1 always, and from the
+# whole LAN whenever the Gateway's address moves there. A plain ClusterIP has
+# no such policy.
+apiVersion: v1
+kind: Service
+metadata:
+  name: torrent-web
+spec:
+  selector:
+    app: torrent
+  ports:
+    - {name: qbittorrent, port: 8080, targetPort: qbittorrent}
