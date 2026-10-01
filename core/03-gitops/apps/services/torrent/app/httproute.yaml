@@ -11,4 +11,4 @@ spec:
   hostnames: [torrent.home, torrent.serhii.link]
   rules:
     - backendRefs:
-        - {name: torrent, port: 8080}
+        - {name: torrent-web, port: 8080}

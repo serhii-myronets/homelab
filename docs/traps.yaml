@@ -1346,3 +1346,29 @@ traps:
       Prevented since then by moverResources in backed-up-volume: with a
       memory limit the OOM controller scores a mover zero.
     diagnosed: 2026-10-01, Uptime Kuma's backup stuck since 01:30
+
+  - id: gateway-503s-a-service-with-local-traffic-policy
+    applies_to: [cilium, gateway, kubernetes, torrent, worker-1]
+    symptom: >-
+      One route through the Gateway answers 503 "no healthy upstream", server
+      envoy, while the same Service answers by its own address and every
+      other route through the Gateway works. From the Mac it worked; from a
+      pod on worker-1 it never did.
+    cause: >-
+      The route's backend was a LoadBalancer Service with
+      externalTrafficPolicy: Local, there so qBittorrent sees the LAN
+      client's address. Cilium's Envoy honours that policy for Gateway
+      traffic too, and keeps only endpoints on its own node: the node without
+      the pod has none. Today the Gateway's address is announced from
+      controlplane, where the pod is, so only worker-1's own traffic showed it;
+      had the announcement moved to worker-1, the whole house would have had
+      the 503.
+    tell: >-
+      `curl -D -` through the Gateway from a pod on the other node shows
+      "no healthy upstream"; `kubectl get svc -o
+      jsonpath='{.spec.externalTrafficPolicy}'` on the backend says Local.
+    fix: >-
+      Point the HTTPRoute at a ClusterIP Service on the same pods
+      (torrent-web), and keep the Local policy only on the LoadBalancer
+      Service that needs it.
+    diagnosed: 2026-10-01, Gatus's first run from worker-1
