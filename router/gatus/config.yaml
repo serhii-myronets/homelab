@@ -18,10 +18,17 @@ ui:
   title: Home
   header: Home
 
+# The router itself resolves through the WAN's servers (/etc/resolv.conf is
+# GL.iNet's), which know nothing of *.home; the LAN's answers come from
+# 192.168.8.1:53. Every name is looked up there, as a phone in the house does.
+x-dns: &dns
+  dns-resolver: udp://192.168.8.1:53
+
 # The *.home certificate lives a year and cert-manager renews it with 30 days
 # left (home-ca's certificate.yaml), so under ten days means renewal failed.
 x-home: &home
   interval: 1m
+  client: *dns
   conditions:
     - "[STATUS] == 200"
     - "[CERTIFICATE_EXPIRATION] > 240h"
@@ -33,6 +40,7 @@ x-public: &public
   group: Public, behind Cloudflare Access
   interval: 5m
   client:
+    <<: *dns
     ignore-redirect: true
   conditions:
     - "[STATUS] == 302"
@@ -62,7 +70,7 @@ endpoints:
   - {<<: *home, group: Cluster, name: home-ca root, url: http://ca.home/root.crt,
      conditions: ["[STATUS] == 200"]}
   - {<<: *home, group: Cluster, name: Uptime Kuma, url: https://kuma.home/,
-     client: {ignore-redirect: true},
+     client: {<<: *dns, ignore-redirect: true},
      conditions: ["[STATUS] == 302", "[CERTIFICATE_EXPIRATION] > 240h"]}
 
   # The two services with addresses of their own, past the Gateway.

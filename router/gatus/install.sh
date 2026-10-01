@@ -18,7 +18,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 on_router() { ssh -o BatchMode=yes "$ROUTER" "$@"; }
 put() { on_router "cat > '$2'" < "$1"; }
-same() { [ "$(md5 -q "$1")" = "$(on_router "md5sum < '$2' 2>/dev/null" | cut -d' ' -f1)" ]; }
+same() { [ "$(md5 -q "$1")" = "$(on_router "[ -f '$2' ] && md5sum < '$2'" | cut -d' ' -f1)" ]; }
 
 on_router 'mkdir -p /opt/gatus /etc/gatus/certs'
 # `install.sh restart` also restarts Gatus - the way to pick up a changed
@@ -83,6 +83,7 @@ on_router "
 		grep -qxF \"\$p\" /etc/sysupgrade.conf || echo \"\$p\" >> /etc/sysupgrade.conf
 	done
 	/etc/init.d/gatus enable
-	if [ $restart = yes ] || ! pgrep -f /opt/gatus/gatus >/dev/null; then /etc/init.d/gatus restart; fi
+	if ! pgrep -f /opt/gatus/gatus >/dev/null; then /etc/init.d/gatus start
+	elif [ $restart = yes ]; then /etc/init.d/gatus restart; fi
 "
 echo "Gatus $VERSION on the router: http://192.168.8.1:8090"
