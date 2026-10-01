@@ -12,8 +12,8 @@ Ideas and planned work, not commitments; what runs is in
 | What | Why | Where |
 |---|---|---|
 | A second copy of Immich's originals | The only irreplaceable data here has no copy ([backups.yaml](backups.yaml)) | R2, and an append-only copy on the router's T7 |
-| Alerting | Nothing tells anyone when something breaks ([0008](decisions/0008-nothing-tells-anyone-when-something-breaks.md)) | Telegram, healthchecks.io, a watcher on the router |
-| Router packages | restic's append-only rest-server on the T7, node-exporter, the watcher above | The router, installed through its Plug-ins page; needs a narrow exception to [0007](decisions/0007-router-config-is-not-ours-to-edit.md) for their config files |
+| Alerting | Nothing tells anyone when something breaks ([0008](decisions/0008-nothing-tells-anyone-when-something-breaks.md)) | Telegram for Gatus on the router (`router/gatus`, decisions/0036), and healthchecks.io for the router itself |
+| Router packages | restic's append-only rest-server on the T7, node-exporter | The router, installed through its Plug-ins page; needs a narrow exception to [0007](decisions/0007-router-config-is-not-ours-to-edit.md) for their config files |
 | Terraform state in R2 | core cannot be rebuilt without state and secrets that live only on the Mac | An S3 backend in `core/01-talos`, its own bucket and token |
 | Immich machine learning off controlplane | Its 2-3 GiB spikes may be what controlplane's memory runs out on - Grafana will say | worker-1's CPU through OpenVINO, not its GPU - tested 2026-09-30: correct, about 2.5x slower than controlplane |
 | The lab network | Proxmox has been unreachable since the router's reflash | A flat LAN in .30-.49, or VLAN 10 rebuilt with rules that isolate |
