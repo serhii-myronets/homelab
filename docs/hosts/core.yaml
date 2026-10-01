@@ -143,6 +143,12 @@ services:
       Gentlemen is 2020 to TMDb and 2019 on all three, so a search for it
       found nothing there. Radarr still matches the release by its secondary
       year. Set in Radarr, not Prowlarr; a forced Prowlarr sync keeps it.
+    rutracker: >-
+      Switched off since 2026-10-01, by the owner's choice, in all three
+      places: Prowlarr, and RSS and both searches in Sonarr and Radarr.
+      Prowlarr leaves a disabled indexer in the apps and answers them 410
+      Gone, so it has to be switched off there too; turning it back on is the
+      same three steps.
     gate: >-
       Seerr signs in against Jellyfin; the three *arr have no sign-in, since
       they see only the Gateway's address, so Cloudflare Access is their gate.
