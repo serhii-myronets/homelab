@@ -1,0 +1,83 @@
+# Checks everything a person in the house reaches, from worker-1, so it keeps
+# running when controlplane does not - kubelet holds its pods without the API.
+# Nothing it watches is backed up here: the checks are config.yaml in Git and
+# the history is allowed to be lost (decisions/0035).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatus
+spec:
+  replicas: 1
+  # The history is an lvm volume, which mounts into one pod only.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: gatus
+  template:
+    metadata:
+      labels:
+        app: gatus
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-1
+      tolerations:
+        - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
+      # The router, as every device in the house resolves, not CoreDNS: both
+      # replicas run on controlplane, and a check of *.home should not fail
+      # for a reason a phone would never see. Nothing here needs a cluster name.
+      dnsPolicy: None
+      dnsConfig:
+        nameservers: [192.168.8.1]
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: gatus
+          image: ghcr.io/twin/gatus:v5.37.0
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - {name: GATUS_CONFIG_PATH, value: /config/config.yaml}
+            # Added to the image's public roots rather than replacing them, so
+            # *.home verifies against home-ca and serhii.link against the web's.
+            - {name: SSL_CERT_DIR, value: /etc/home-ca}
+          ports:
+            - {name: http, containerPort: 8080}
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+          livenessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: config, mountPath: /config, readOnly: true}
+            - {name: home-ca, mountPath: /etc/home-ca, readOnly: true}
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: config
+          configMap: {name: gatus-config}
+        - name: home-ca
+          secret: {secretName: home-ca-root}
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatus
+  labels:
+    app: gatus
+spec:
+  selector:
+    app: gatus
+  ports:
+    - {name: http, port: 80, targetPort: http}
