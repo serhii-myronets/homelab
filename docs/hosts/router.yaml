@@ -76,6 +76,23 @@ dns:
     without adding a user to that file over ssh, which decisions/0007 rules
     out and the firmware would likely undo. Verified 2026-09-29.
 
+  own_lookups: >-
+    The router's own processes resolve through the WAN's servers, not
+    through dnsmasq: /etc/resolv.conf is a link to /tmp/resolv.conf, which
+    names 192.152.0.1 and .2. A program on the router that must see *.home
+    has to ask 192.168.8.1:53, as Gatus's checks do. Verified 2026-10-01.
+
+gatus:
+  what: >-
+    The house's watcher, decisions/0036 - the one thing installed over ssh,
+    by router/gatus/install.sh from the Mac, which is also how every change
+    to its checks arrives. Binary and version in /opt/gatus, checks and
+    secrets in /etc/gatus (env, mode 600, empty until alerting), started by
+    /etc/init.d/gatus as nobody; the three paths are in /etc/sysupgrade.conf.
+  ui: http://192.168.8.1:8090        # LAN side only
+  verified: >-
+    2026-10-01: v5.37.0, 32 of 32 checks passing, 31 MB resident.
+
 dhcp:
   pools:
     - {network: lan, range: 192.168.8.100-249, lease: 12h}
