@@ -12,7 +12,7 @@ meta:
 volsync_to_r2:
   covers: >-
     One claim per service, named data, under volsync/<service>: immich,
-    jellyfin, library, sure, torrent, uptime-kuma and vaultwarden. Hourly,
+    jellyfin, library, sure, torrent and vaultwarden. Hourly,
     from a thin snapshot so the application keeps running, each service on
     its own minute past the hour (MINUTE in its kustomization) - sharing one
     throttled the snapshot controller once. Keeps 24 hourly, 7 daily,
@@ -29,7 +29,9 @@ volsync_to_r2:
   watch: >-
     A ReplicationSource with an empty lastSyncTime has never run, and looks
     like a healthy one at a glance (traps.yaml).
-  leftover: volsync/actual, from Actual, archived; nothing writes or prunes it
+  leftover: >-
+    volsync/actual and volsync/uptime-kuma, from archived services; nothing
+    writes or prunes them, and each restores its service if it returns
 
 etcd_to_r2:
   what: >-

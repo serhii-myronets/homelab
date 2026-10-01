@@ -17,7 +17,6 @@ spec:
     - home
     - ca.home
     - flux.home
-    - gatus.home
     - grafana.home
     - headlamp.home
     - jellyfin.home
@@ -28,7 +27,6 @@ spec:
     - sonarr.home
     - sure.home
     - torrent.home
-    - kuma.home
     - vault.home
   duration: 8760h
   renewBefore: 720h

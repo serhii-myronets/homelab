@@ -1,7 +1,8 @@
 ---
 id: "0022"
 title: Uptime Kuma observes the Beelink from inside it
-status: accepted
+status: superseded
+superseded_by: "0036"
 date: 2026-09-22
 tags: [monitoring, uptime-kuma, beelink, alerts]
 hosts: [beelink, router]

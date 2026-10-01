@@ -62,8 +62,9 @@ up (0008).
 ## Rejected
 
 - **Gatus on worker-1 alone.** Silent when worker-1 is down, and it shares
-  Cilium and the cluster's fate with what it checks. It stays until the
-  router's copy has run alongside it, then goes.
+  Cilium and the cluster's fate with what it checks. It ran for a day beside
+  the router's copy and went to the archive on 2026-10-01, with Uptime Kuma,
+  which had never been given a monitor.
 - **Docker on the router**, to run the official image unchanged. The engine
   costs more memory than Gatus and is a second runtime on the house's most
   important box.

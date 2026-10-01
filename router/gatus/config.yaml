@@ -69,9 +69,6 @@ endpoints:
   - {<<: *home, group: Cluster, name: Flux, url: https://flux.home/}
   - {<<: *home, group: Cluster, name: home-ca root, url: http://ca.home/root.crt,
      conditions: ["[STATUS] == 200"]}
-  - {<<: *home, group: Cluster, name: Uptime Kuma, url: https://kuma.home/,
-     client: {<<: *dns, ignore-redirect: true},
-     conditions: ["[STATUS] == 302", "[CERTIFICATE_EXPIRATION] > 240h"]}
 
   # The two services with addresses of their own, past the Gateway.
   - {group: Direct, name: Jellyfin at .17, url: http://192.168.8.17:8096/health, interval: 1m,
