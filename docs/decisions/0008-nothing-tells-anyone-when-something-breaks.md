@@ -9,11 +9,11 @@ tags: [monitoring, alerting, healthchecks, telegram, risk]
 
 # Nothing tells anyone when something breaks
 
-Failures here are quiet. Uptime Kuma on core sees a service stop answering,
-but has no notification channel set up, and cannot report core itself going
-down (0022). Flux's notification-controller runs with nowhere to send. No
-metrics stack runs since observability went back to the archive, so nothing
-alerts on memory, disks, the thin pool or a backup that stopped. A disk can
+Failures here are quiet. Gatus on the router sees a service stop answering
+(0036), and VictoriaMetrics evaluates the chart's alert rules on worker-1,
+but neither has anywhere to send yet. Flux's notification-controller runs
+with nowhere to send either. So nothing tells anyone about memory, disks, the
+thin pool or a backup that stopped. A disk can
 fail, a VolSync source can stop syncing (traps.yaml), and the first sign is
 something missing.
 

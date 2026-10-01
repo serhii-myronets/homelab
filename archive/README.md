@@ -30,6 +30,23 @@ keeps writing to the same series. That is safe only while the cluster it
 recovers from is gone. Its one secret, the R2 key pair, is read from Infisical
 at `/backups/R2`; nothing here has to be pasted back by hand.
 
+## uptime-kuma — Uptime Kuma 2.5
+
+Ran on core from 2026-09-22 to 2026-10-01 behind `kuma.home`, its claim
+backed up hourly to R2 under `volsync/uptime-kuma`. It was never given a
+monitor or a notification - every backup, the oldest included, held none -
+and Gatus on the router took its job (decisions/0036). Moved back into
+`core/03-gitops/apps/services/` and listed in `apps/kustomization.yaml`, it
+restores itself from R2; `kuma.home` goes back into home-ca's certificate.
+
+## gatus — Gatus on worker-1
+
+Ran for a day on 2026-10-01 beside the router's copy, on worker-1, with
+history on an `lvm-worker-1` claim, resolving through the router rather
+than CoreDNS. Its first run found the qBittorrent 503 in traps.yaml. The
+router's copy replaced it (decisions/0036); `router/gatus/config.yaml` has
+since moved on from `app/config/config.yaml` here.
+
 ## pulse — the Pulse hub and its Kubernetes agent
 
 Ran on 2026-09-20 for about an hour: pulse/pulse 6.4.1, the server on a

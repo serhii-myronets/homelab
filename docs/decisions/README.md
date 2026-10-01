@@ -22,7 +22,7 @@ are not reused.
 | [0019](0019-beelink-backups-to-r2.md) | Back up to R2, and let volumes restore themselves | accepted | backup, volsync, lvm, openebs, r2 |
 | [0020](0020-flux-for-gitops.md) | Flux replaces Argo CD | accepted | flux, gitops, resources, helm |
 | [0021](0021-flux-operator-for-the-web-interface.md) | The Flux Operator installs Flux, for its web interface | accepted | flux, gitops, ui |
-| [0022](0022-uptime-kuma-on-beelink.md) | Uptime Kuma observes core from inside it | accepted | monitoring, uptime-kuma, alerts |
+| [0022](0022-uptime-kuma-on-beelink.md) | Uptime Kuma observes core from inside it | superseded by 0036; archived | monitoring, uptime-kuma, alerts |
 | [0023](0023-archive-paperless.md) | Archive the empty Paperless trial | accepted | paperless, archive |
 | [0024](0024-keep-volsyncs-restore-volume.md) | Keep VolSync's restore volume instead of cleaning it up | accepted | volsync, openebs, backup, restore |
 | [0025](0025-one-namespace-for-the-storage-controllers.md) | One namespace for the storage controllers, and why OpenEBS is not in it | accepted | storage, openebs, volsync, namespaces |
