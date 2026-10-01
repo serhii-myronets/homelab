@@ -63,17 +63,21 @@ spec:
           # the pod cgroup has memory.max and Talos's OOM controller scores it
           # zero - it is never chosen while any pod without a limit is left.
           # Before the init container had one, this was the victim every time;
-          # see traps.yaml. Requests equal limits as well, which keeps CPU
-          # reserved for it. The CPU ceiling keeps an import's thumbnails and transcodes from
-          # taking every core; a throttled pod answers slowly, hence the probe
-          # timeouts above. The iGPU slot is for QSV transcoding, chosen under
-          # Administration, Video Transcoding.
-          # 3Gi: at 2.5Gi the kernel killed it inside its own limit during the
-          # second phone's import - Node at about 2Gi plus the ffmpeg processes
-          # transcoding and grabbing video frames, all charged to this pod.
+          # see traps.yaml. The CPU ceiling keeps an import's thumbnails and
+          # transcodes from taking every core; a throttled pod answers slowly,
+          # hence the probe timeouts above. The iGPU slot is for QSV
+          # transcoding, chosen under Administration, Video Transcoding.
+          #
+          # Memory: 3Gi reserved, 4Gi allowed. At 2.5Gi, then at 3Gi, the
+          # kernel killed it inside its own limit during imports - through the
+          # night of 2026-09-30 it held 2.2-2.7Gi with job concurrency already
+          # at one or two, and a single large video or image pushed it over,
+          # three times. The ceiling above the request is for those peaks
+          # without reserving a further gigabyte on controlplane; if the node
+          # runs short, Talos takes machine learning, never this.
           resources:
             requests: {cpu: "1", memory: 3Gi, gpu.intel.com/i915: "1"}
-            limits: {cpu: "1", memory: 3Gi, gpu.intel.com/i915: "1"}
+            limits: {cpu: "1", memory: 4Gi, gpu.intel.com/i915: "1"}
           volumeMounts:
             # Upstream calls this UPLOAD_LOCATION and mounts it at /data:
             # originals, thumbnails and encoded video all live under it.
