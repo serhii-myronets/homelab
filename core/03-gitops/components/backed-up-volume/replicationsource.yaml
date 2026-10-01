@@ -19,3 +19,10 @@ spec:
     retain: {hourly: 24, daily: 7, weekly: 4, monthly: 3}
     # Media applications share UID 1000; the mover must read their files.
     moverSecurityContext: {runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000}
+    # A limit, so Talos's OOM controller scores the mover zero. Without one it
+    # was BestEffort and the first pod killed when an import ran controlplane
+    # short, mid-backup, leaving a restic lock that failed every later run
+    # (traps.yaml). Movers peaked at 200Mi; the ceiling is for prune.
+    moverResources:
+      requests: {cpu: 10m, memory: 64Mi}
+      limits: {memory: 1Gi}
