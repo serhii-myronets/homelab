@@ -44,6 +44,13 @@
       depNameTemplate: "kubernetes-sigs/gateway-api",
       datasourceTemplate: "github-releases",
     },
+    {
+      customType: "regex",
+      managerFilePatterns: ["/^router/gatus/install\\.sh$/"],
+      matchStrings: ["VERSION=(?<currentValue>v[\\d.]+)"],
+      depNameTemplate: "ghcr.io/twin/gatus",
+      datasourceTemplate: "docker",
+    },
   ],
 
   packageRules: [
@@ -102,6 +109,13 @@
       // revision. Samba's version decides.
       matchPackageNames: ["ghcr.io/servercontainers/samba"],
       versioning: "regex:^a[\\d.]+-s(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-r(?<build>\\d+)$",
+    },
+    {
+      matchDepNames: ["ghcr.io/twin/gatus"],
+      matchFileNames: ["router/**"],
+      prBodyNotes: [
+        "Merging does not deploy this. Run `router/gatus/install.sh` from the Mac.",
+      ],
     },
     {
       // Helmfile releases are applied by hand: one pull request each.
