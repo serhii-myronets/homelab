@@ -1,0 +1,12 @@
+# Uptime history only. It lives on worker-1 with Gatus and is not backed up:
+# losing it costs the graphs, not the checks, which are config.yaml in Git.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: lvm-worker-1
+  resources:
+    requests:
+      storage: 1Gi

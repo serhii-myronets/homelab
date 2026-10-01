@@ -1,0 +1,100 @@
+# Every check, in one place. A new service is a few lines here; its name must
+# also be in home-ca's certificate (docs/hosts/core.yaml, access).
+#
+# No alerting yet: nothing reaches anyone until a Telegram block lands here
+# (decisions/0008).
+
+storage:
+  type: sqlite
+  path: /data/data.db
+
+metrics: true
+
+ui:
+  title: Home
+  header: Home
+
+# The *.home certificate lives a year and cert-manager renews it with 30 days
+# left (home-ca's certificate.yaml), so under ten days means renewal failed.
+x-home: &home
+  interval: 1m
+  conditions:
+    - "[STATUS] == 200"
+    - "[CERTIFICATE_EXPIRATION] > 240h"
+
+# Behind Cloudflare Access, a request without a session is sent to its login
+# page. Anything else - above all a 200 - means a name has come out from
+# behind Access.
+x-public: &public
+  group: Public, behind Cloudflare Access
+  interval: 5m
+  client:
+    ignore-redirect: true
+  conditions:
+    - "[STATUS] == 302"
+
+endpoints:
+  # Services, as the house reaches them: router DNS, then the Gateway.
+  - {<<: *home, group: Photos, name: Immich, url: https://immich.home/api/server/ping,
+     conditions: ["[STATUS] == 200", "[BODY].res == pong", "[CERTIFICATE_EXPIRATION] > 240h"]}
+  - {<<: *home, group: Media, name: Jellyfin, url: https://jellyfin.home/health,
+     conditions: ["[STATUS] == 200", "[BODY] == Healthy", "[CERTIFICATE_EXPIRATION] > 240h"]}
+  - {<<: *home, group: Media, name: Jellyfin for the TV, url: http://tv.home/health,
+     conditions: ["[STATUS] == 200", "[BODY] == Healthy"]}
+  - {<<: *home, group: Media, name: Seerr, url: https://seerr.home/api/v1/status}
+  - {<<: *home, group: Media, name: Prowlarr, url: https://prowlarr.home/ping,
+     conditions: ["[STATUS] == 200", "[BODY].status == OK", "[CERTIFICATE_EXPIRATION] > 240h"]}
+  - {<<: *home, group: Media, name: Sonarr, url: https://sonarr.home/ping,
+     conditions: ["[STATUS] == 200", "[BODY].status == OK", "[CERTIFICATE_EXPIRATION] > 240h"]}
+  - {<<: *home, group: Media, name: Radarr, url: https://radarr.home/ping,
+     conditions: ["[STATUS] == 200", "[BODY].status == OK", "[CERTIFICATE_EXPIRATION] > 240h"]}
+  - {<<: *home, group: Media, name: qBittorrent, url: https://torrent.home/}
+  - {<<: *home, group: Money, name: Sure, url: https://sure.home/up}
+  - {<<: *home, group: Passwords, name: Vaultwarden, url: https://vault.home/alive}
+  - {<<: *home, group: Cluster, name: Grafana, url: https://grafana.home/api/health,
+     conditions: ["[STATUS] == 200", "[BODY].database == ok", "[CERTIFICATE_EXPIRATION] > 240h"]}
+  - {<<: *home, group: Cluster, name: Headlamp, url: https://headlamp.home/}
+  - {<<: *home, group: Cluster, name: Flux, url: https://flux.home/}
+  - {<<: *home, group: Cluster, name: home-ca root, url: http://ca.home/root.crt,
+     conditions: ["[STATUS] == 200"]}
+  - {<<: *home, group: Cluster, name: Uptime Kuma, url: https://kuma.home/,
+     client: {ignore-redirect: true},
+     conditions: ["[STATUS] == 302", "[CERTIFICATE_EXPIRATION] > 240h"]}
+
+  # The two services with addresses of their own, past the Gateway.
+  - {group: Direct, name: Jellyfin at .17, url: http://192.168.8.17:8096/health, interval: 1m,
+     conditions: ["[STATUS] == 200", "[BODY] == Healthy"]}
+  - {group: Direct, name: qBittorrent at .16, url: http://192.168.8.16:8080/, interval: 1m,
+     conditions: ["[STATUS] == 200"]}
+
+  - {<<: *public, name: flux.serhii.link, url: https://flux.serhii.link/}
+  - {<<: *public, name: headlamp.serhii.link, url: https://headlamp.serhii.link/}
+  - {<<: *public, name: jellyfin.serhii.link, url: https://jellyfin.serhii.link/}
+  - {<<: *public, name: prowlarr.serhii.link, url: https://prowlarr.serhii.link/}
+  - {<<: *public, name: radarr.serhii.link, url: https://radarr.serhii.link/}
+  - {<<: *public, name: seerr.serhii.link, url: https://seerr.serhii.link/}
+  - {<<: *public, name: sonarr.serhii.link, url: https://sonarr.serhii.link/}
+  - {<<: *public, name: sure.serhii.link, url: https://sure.serhii.link/}
+  - {<<: *public, name: torrent.serhii.link, url: https://torrent.serhii.link/}
+
+  # What the services stand on.
+  - name: Router DNS answers for *.home
+    group: Infrastructure
+    url: 192.168.8.1
+    interval: 1m
+    dns:
+      query-name: immich.home
+      query-type: A
+    conditions:
+      - "[DNS_RCODE] == NOERROR"
+      - "[BODY] == 192.168.8.15"
+  - {group: Infrastructure, name: Samba, url: "tcp://192.168.8.10:445", interval: 1m,
+     conditions: ["[CONNECTED] == true"]}
+  - {group: Infrastructure, name: Kubernetes API, url: "tcp://192.168.8.10:6443", interval: 1m,
+     conditions: ["[CONNECTED] == true"]}
+  - {group: Infrastructure, name: Talos on controlplane, url: "tcp://192.168.8.10:50000", interval: 1m,
+     conditions: ["[CONNECTED] == true"]}
+  - {group: Infrastructure, name: Talos on worker-1, url: "tcp://192.168.8.11:50000", interval: 1m,
+     conditions: ["[CONNECTED] == true"]}
+  - {group: Infrastructure, name: Internet, url: https://1.1.1.1/cdn-cgi/trace, interval: 1m,
+     conditions: ["[STATUS] == 200"]}
