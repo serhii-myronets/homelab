@@ -165,8 +165,16 @@ services:
   vaultwarden:
     names: [vault.home]                      # local only
     why_local: Cloudflare Access is not a transport Bitwarden clients can pass
+  gatus:
+    names: [gatus.home]                      # local only
+    where: >-
+      worker-1, resolving through the router rather than CoreDNS, so it sees
+      what a phone sees and keeps checking while controlplane is down. 32
+      checks in its config.yaml; history on the ORICO, not backed up. No
+      alerting yet. Kuma and Gatus run side by side until one is chosen.
   uptime_kuma:
     names: [kuma.home]
+    monitors: none configured, nor any notification (2026-10-01)
     limit: runs on core, so it cannot report core itself down (decisions/0022)
   observability:
     names: [grafana.home]                    # local only, no sign-in, Admin to anyone
