@@ -1317,3 +1317,32 @@ traps:
       OpenVINO does in 1.7. The GPU plugin's DaemonSet stays off worker-1, so
       nothing can ask for this GPU by mistake.
     diagnosed: 2026-09-30, testing machine learning on worker-1
+
+  - id: an-oom-killed-mover-leaves-a-restic-lock
+    applies_to: [volsync, restic, talos, memory, backup]
+    symptom: >-
+      One service's ReplicationSource retries for ever: a new volsync-src
+      pod every minute or two, each ending in Error, a dozen of them piling
+      up, while the other services back up on time. Each attempt saves a
+      snapshot - the backup itself works - and then fails.
+    cause: >-
+      An earlier mover was killed mid-run and left its lock in the restic
+      repository; `restic forget` then refuses with "repository is already
+      locked by PID ... on volsync-src-data-<old pod>". VolSync never clears
+      a lock by itself. Here the killer was Talos's OOM controller, on
+      2026-10-01 at 01:30, while a phone import held controlplane at 0.57 GiB
+      available: the movers had no resources, so they were BestEffort and
+      the first pod it took. It killed machine learning five seconds later.
+    tell: >-
+      The mover's log ends in "unable to create lock in backend" with the
+      lock's age, and `talosctl logs controller-runtime` shows "Sending
+      SIGKILL to cgroup .../kubepods/besteffort/..." at the time the lock was
+      made.
+    fix: >-
+      Set spec.restic.unlock on the ReplicationSource to any new string -
+      `kubectl patch ... -p '{"spec":{"restic":{"unlock":"<anything new>"}}}'`
+      - and the next run removes the stale lock; status.restic.lastUnlocked
+      echoes the string. Flux leaves the field alone, as it does not own it.
+      Prevented since then by moverResources in backed-up-volume: with a
+      memory limit the OOM controller scores a mover zero.
+    diagnosed: 2026-10-01, Uptime Kuma's backup stuck since 01:30

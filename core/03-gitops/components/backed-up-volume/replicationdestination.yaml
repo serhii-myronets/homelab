@@ -24,3 +24,8 @@ spec:
     # bound claim per service; see decisions/0024.
     enableFileDeletion: true
     moverSecurityContext: {runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000}
+    # As in replicationsource.yaml: a limit keeps Talos's OOM controller off
+    # the restore, when every service restores at once on an empty cluster.
+    moverResources:
+      requests: {cpu: 10m, memory: 64Mi}
+      limits: {memory: 1Gi}
