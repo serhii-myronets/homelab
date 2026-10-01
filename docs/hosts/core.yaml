@@ -136,6 +136,13 @@ services:
       hdd-a whole as /data; the library is hard links into torrents/, so
       organising costs no space and breaks no torrent.
     profiles: English and Ukrainian, each requiring its language
+    search_year: >-
+      Radarr's Toloka, RuTracker and Mazepa indexers have "Remove year from
+      search query" on. Those trackers are searched by title text and label a
+      film by its first premiere, while Radarr searches with TMDb's year: The
+      Gentlemen is 2020 to TMDb and 2019 on all three, so a search for it
+      found nothing there. Radarr still matches the release by its secondary
+      year. Set in Radarr, not Prowlarr; a forced Prowlarr sync keeps it.
     gate: >-
       Seerr signs in against Jellyfin; the three *arr have no sign-in, since
       they see only the Gateway's address, so Cloudflare Access is their gate.
