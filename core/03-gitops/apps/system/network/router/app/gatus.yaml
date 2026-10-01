@@ -1,0 +1,44 @@
+# gatus.home: Gatus on the router (router/gatus, decisions/0036), behind the
+# Gateway for HTTPS and a name without a port. Local only - no serhii.link
+# name, so nothing from the internet reaches the router this way.
+#
+# It goes down with controlplane, when the status matters most; the router
+# answers directly at http://192.168.8.1:8090 regardless.
+#
+# A Service without a selector and an EndpointSlice written by hand: the one
+# endpoint is outside the cluster. Not ExternalName, which takes a DNS name
+# rather than an address and which Cilium's Gateway does not route to.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatus
+spec:
+  ports:
+    - {name: http, port: 80, targetPort: 8090}
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: gatus
+  labels:
+    kubernetes.io/service-name: gatus
+    # Not the EndpointSlice controller's; it leaves this one alone.
+    endpointslice.kubernetes.io/managed-by: homelab
+addressType: IPv4
+ports:
+  - {name: http, port: 8090, protocol: TCP}
+endpoints:
+  - addresses: ["192.168.8.1"]
+    conditions: {ready: true}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gatus
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [gatus.home]
+  rules:
+    - backendRefs:
+        - {name: gatus, port: 80}

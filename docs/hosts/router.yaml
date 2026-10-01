@@ -89,7 +89,9 @@ gatus:
     to its checks arrives. Binary and version in /opt/gatus, checks and
     secrets in /etc/gatus (env, mode 600, empty until alerting), started by
     /etc/init.d/gatus as nobody; the three paths are in /etc/sysupgrade.conf.
-  ui: http://192.168.8.1:8090        # LAN side only
+  ui: >-
+    https://gatus.home through core's Gateway, local only; http://192.168.8.1:8090
+    directly, which still answers when controlplane does not
   verified: >-
     2026-10-01: v5.37.0, 32 of 32 checks passing, 31 MB resident.
 

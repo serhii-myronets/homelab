@@ -67,6 +67,8 @@ endpoints:
      conditions: ["[STATUS] == 200", "[BODY].database == ok", "[CERTIFICATE_EXPIRATION] > 240h"]}
   - {<<: *home, group: Cluster, name: Headlamp, url: https://headlamp.home/}
   - {<<: *home, group: Cluster, name: Flux, url: https://flux.home/}
+  - {<<: *home, group: Cluster, name: This page through the Gateway, url: https://gatus.home/health,
+     conditions: ["[STATUS] == 200", "[BODY].status == UP", "[CERTIFICATE_EXPIRATION] > 240h"]}
   - {<<: *home, group: Cluster, name: home-ca root, url: http://ca.home/root.crt,
      conditions: ["[STATUS] == 200"]}
 
