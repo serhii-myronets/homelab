@@ -1,6 +1,6 @@
 # What runs on the router and is reached through the cluster's Gateway, so it
-# has a *.home name and home-ca's certificate like everything else. Nothing
-# here runs in the cluster.
+# has a *.home name and home-ca's certificate like everything else. Only the
+# small proxies that carry the traffic there run in the cluster.
 apiVersion: v1
 kind: Namespace
 metadata:

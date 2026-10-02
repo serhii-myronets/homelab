@@ -1372,3 +1372,33 @@ traps:
       (torrent-web), and keep the Local policy only on the LoadBalancer
       Service that needs it.
     diagnosed: 2026-10-01, Gatus's first run from worker-1
+
+  - id: cilium-gateway-cannot-reach-outside-the-cluster
+    applies_to: [cilium, gateway, router, kubernetes]
+    symptom: >-
+      An HTTPRoute to a Service whose hand-written EndpointSlice names an
+      address outside the cluster - here the router's Gatus at
+      192.168.8.1:8090 - answers "upstream connect error or disconnect/reset
+      before headers. reset reason: connection timeout". A pod on either node
+      reaches the same address at once.
+    cause: >-
+      Cilium's Envoy opens the connection from the Gateway's own address,
+      10.244.0.42, with a transparent socket; BPF masquerades it to the node's
+      192.168.8.10 and the router's SYN-ACK comes back and is translated back.
+      But the reply is never given the 0x200 mark that routes it to the
+      socket (ip rule fwmark 0x200 lookup 2004), so it follows the pod-CIDR
+      route into cilium_host and is lost - no drop event, no RST. Cilium's
+      maintainers do not support manual EndpointSlices behind Gateway API at
+      all, because such slices can point a Service anywhere
+      (kubernetes#103675): cilium/cilium#46798, open since 2026-06.
+    tell: >-
+      On the router, conntrack holds the connection in SYN_RECV with the
+      SYN-ACK retransmitted; on controlplane, `talosctl pcap -i br0` shows the
+      SYN-ACK arriving and the SYN repeated; `cilium-dbg bpf nat list` shows
+      both directions translated; `ss state syn-sent` in the host namespace
+      shows 10.244.0.42 as the local address.
+    fix: >-
+      Send the route to a pod that forwards: socat in the router namespace
+      (gatus-proxy). Envoy Gateway's Backend resource is the way without a
+      pod, at the price of replacing the Gateway implementation.
+    diagnosed: 2026-10-01, putting the router's Gatus behind gatus.home
