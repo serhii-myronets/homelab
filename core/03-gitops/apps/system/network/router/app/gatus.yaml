@@ -5,31 +5,64 @@
 # It goes down with controlplane, when the status matters most; the router
 # answers directly at http://192.168.8.1:8090 regardless.
 #
-# A Service without a selector and an EndpointSlice written by hand: the one
-# endpoint is outside the cluster. Not ExternalName, which takes a DNS name
-# rather than an address and which Cilium's Gateway does not route to.
+# Through a pod, not a Service whose EndpointSlice names the router: Cilium's
+# Gateway does not route to addresses outside the cluster - its Envoy dials
+# from the Gateway's own address and the reply never finds it (traps.yaml,
+# cilium-gateway-cannot-reach-outside-the-cluster). Plain pods reach the router
+# fine. socat rather than nginx: the Gateway already does everything HTTP, so
+# this only has to carry bytes, and the router's address is in Git here
+# rather than in a hand-written EndpointSlice.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatus-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gatus-proxy
+  template:
+    metadata:
+      labels:
+        app: gatus-proxy
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: socat
+          image: alpine/socat:1.8.1.3
+          args:
+            - TCP-LISTEN:8090,fork,reuseaddr
+            - TCP:192.168.8.1:8090,connect-timeout=5
+          ports:
+            - {name: http, containerPort: 8090}
+          # Ready only while the router answers, so the Gateway says 503
+          # rather than hanging when it does not.
+          readinessProbe:
+            exec:
+              command: [socat, -u, /dev/null, "TCP:192.168.8.1:8090,connect-timeout=2"]
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests: {cpu: 5m, memory: 8Mi}
+            limits: {memory: 32Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: gatus
 spec:
+  selector:
+    app: gatus-proxy
   ports:
-    - {name: http, port: 80, targetPort: 8090}
----
-apiVersion: discovery.k8s.io/v1
-kind: EndpointSlice
-metadata:
-  name: gatus
-  labels:
-    kubernetes.io/service-name: gatus
-    # Not the EndpointSlice controller's; it leaves this one alone.
-    endpointslice.kubernetes.io/managed-by: homelab
-addressType: IPv4
-ports:
-  - {name: http, port: 8090, protocol: TCP}
-endpoints:
-  - addresses: ["192.168.8.1"]
-    conditions: {ready: true}
+    - {name: http, port: 80, targetPort: http}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
