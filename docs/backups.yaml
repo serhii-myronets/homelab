@@ -45,8 +45,9 @@ etcd_to_r2:
     needs core/01-talos/secrets.yaml as well: Talos encrypts Secrets inside
     etcd with a key from it.
   verified: >-
-    Recovery from a local snapshot worked on 2026-09-29; none from R2 yet,
-    and the rebuilt cluster has not run the job yet.
+    Recovery from a local snapshot worked on 2026-09-29; none from R2 yet.
+    The rebuilt cluster's first run was 2026-10-01 at 03:30, snapshot
+    8c746e83, 36.8 MiB read and 6.7 MiB stored.
 
 not_backed_up:
   - >-
