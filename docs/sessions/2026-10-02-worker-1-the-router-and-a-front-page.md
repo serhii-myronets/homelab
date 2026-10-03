@@ -83,10 +83,11 @@ the year, since TMDb and Toloka disagree for films like The Gentlemen;
 RuTracker was switched off at the owner's wish, in Prowlarr and in both apps.
 
 One slip: a Prowlarr API key reached the screen inside an error message while
-testing RuTracker. It has not been rotated yet.
+testing RuTracker. It was rotated on 2026-10-02 - a new key in config.xml,
+synced to Sonarr and Radarr, every enabled indexer tested, and Infisical's
+copy replaced, which Reloader carried to Homepage.
 
 Still open:
-- Rotate Prowlarr's API key.
 - A second copy of Immich's originals, now about 103 GB - R2, the ORICO, or both.
 - A daily backup of the router's configuration, through a forced-command
   ssh key added in LuCI.
