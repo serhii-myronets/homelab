@@ -1,5 +1,23 @@
 terraform {
   required_version = ">= 1.5.0"
+
+  # State in R2, beside the backups, so the cluster can be rebuilt without
+  # this Mac. Credentials come from the r2 profile in ~/.aws/credentials - the
+  # backup key pair in Infisical /system/backups. The state holds the cluster's
+  # keys in the clear (secrets.yaml is imported into it), and the cluster's own
+  # R2 key can read this bucket: accepted, see docs/decisions/0037. No lock
+  # table - one administrator.
+  backend "s3" {
+    bucket                      = "homelab-backups"
+    key                         = "terraform/core-01-talos.tfstate"
+    region                      = "auto"
+    endpoint                    = "https://32bd020558a0bb7293a40decd3f7b161.r2.cloudflarestorage.com"
+    profile                     = "r2"
+    force_path_style            = true
+    skip_credentials_validation = true
+    skip_region_validation      = true
+    skip_metadata_api_check     = true
+  }
   required_providers {
     talos = {
       source  = "siderolabs/talos"

@@ -93,4 +93,3 @@ Still open:
   ssh key added in LuCI.
 - Alerting (0008): a Telegram bot and a healthchecks.io account, then
   Gatus's alerting block and its heartbeat.
-- Terraform state in R2.
