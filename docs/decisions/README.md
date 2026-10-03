@@ -18,7 +18,7 @@ are not reused.
 | [0014](0014-terraform-for-core-talos.md) | Manage core's Talos bootstrap with Terraform | accepted | talos, terraform, bootstrap, secrets |
 | [0015](0015-core-talos-platform-bootstrap.md) | Bootstrap the platform with Helmfile and External Secrets | accepted | talos, kubernetes, helmfile, cilium, external-secrets, infisical |
 | [0016](0016-beelink-media-disks.md) | Keep the HDDs as two XFS volumes behind static local PVs | accepted | talos, kubernetes, storage, hdd, media |
-| [0018](0018-renovate-for-pinned-versions.md) | Keep pinned versions current with Renovate | accepted | renovate, gitops, versions |
+| [0018](0018-renovate-for-pinned-versions.md) | Keep pinned versions current with Renovate | accepted | renovate, gitops, versions, flux |
 | [0019](0019-beelink-backups-to-r2.md) | Back up to R2, and let volumes restore themselves | accepted | backup, volsync, lvm, openebs, r2 |
 | [0020](0020-flux-for-gitops.md) | Flux replaces Argo CD | accepted | flux, gitops, resources, helm |
 | [0021](0021-flux-operator-for-the-web-interface.md) | The Flux Operator installs Flux, for its web interface | accepted | flux, gitops, ui |
