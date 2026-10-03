@@ -18,7 +18,11 @@ identity:
   api_without_login: >-
     http://10.1.1.100:8008/api/* - ProxMenux Monitor answers unauthenticated,
     the quickest way to hardware and guest facts.
-  deployed_from_here: no           # its Terraform lives elsewhere
+  deployed_from_here: no           # its Terraform lives elsewhere:
+  built_from: >-
+    github.com/serhii-myronets/terraform-talos-gitops-cluster, checked out
+    at ~/Documents/GitHub/terraform-talos-gitops-homelab on its homelab
+    branch, which its Argo CD follows. Its AGENTS.md points back here.
 
 os: {distribution: Proxmox VE 9.2.18, cluster: standalone}
 
