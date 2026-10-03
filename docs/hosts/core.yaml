@@ -166,7 +166,6 @@ services:
       they see only the Gateway's address, so Cloudflare Access is their gate.
   sure:
     names: [sure.home, sure.serhii.link]
-    version: a prerelease on purpose, for Plaid investment links; Renovate skips it
     providers: >-
       Plaid's Trial plan, ten Items and a slot never returned - eight are
       spent. Re-authorise a connection, never delete and re-add it.

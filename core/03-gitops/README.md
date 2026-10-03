@@ -93,3 +93,16 @@ kubectl -n flux-system annotate gitrepository homelab \
 Cilium, External Secrets and Flux itself remain Helmfile-managed in
 `../02-platform/`. Renovate proposes updates; merging a Helmfile update does
 not apply it. Merging updates under the Flux-managed tree does.
+
+To see what Renovate would propose after changing `renovate.json5`, from
+the repository root - it needs a Node release Renovate supports, not the
+newest:
+
+```sh
+LOG_LEVEL=debug npx -p node@24 -p renovate -- renovate \
+  --platform=local --dry-run=lookup --require-config=optional
+```
+
+The log's `packageFiles with updates` lists each dependency and its proposed
+versions. GitHub releases - Talos, Kubernetes, the Gateway API - are skipped
+without a GitHub token.

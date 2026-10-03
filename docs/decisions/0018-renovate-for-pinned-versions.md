@@ -1,28 +1,46 @@
 ---
 id: "0018"
-title: Keep the Beelink's pinned versions current with Renovate
+title: Keep pinned versions current with Renovate
 date: 2026-09-19
 status: accepted
-tags: [beelink, renovate, gitops, versions]
+tags: [renovate, gitops, versions, flux]
 ---
 
-# Keep the Beelink's pinned versions current with Renovate
+# Keep pinned versions current with Renovate
 
-Every image, chart and remote base under `core-talos/` is pinned, so a
-reinstall reproduces the same cluster. Renovate, as the GitHub App, proposes
-their updates as pull requests; merging one lets Argo deploy it. Its
-configuration is `renovate.json5` at the repository root.
+Revised 2026-10-02 for Flux and `core/`.
 
-Updates Argo deploys by itself arrive as one weekly pull request, before
-Monday morning. Helmfile releases and the Gateway API CRDs get their own pull
-requests, noting that merging does not deploy them. Talos, Kubernetes and the
-Talos Terraform provider only appear on the dependency dashboard until
-approved there, because upgrading them is a procedure rather than a version
-change. `core/` is excluded: it follows floating tags and is being retired.
+Every image, chart and version under `core/` and `router/` is pinned, so a
+rebuild reproduces the same cluster. Renovate proposes their updates as pull
+requests; merging one under `core/03-gitops/` lets Flux deploy it. Its
+configuration is `renovate.json5` at the repository root, and the GitOps
+README shows how to try it locally.
+
+It runs as Mend's hosted GitHub App. From 2026-09-19 to 2026-10-02 the
+configuration sat here with the App never installed, and no one noticed:
+nothing in the repository shows whether Renovate runs. Its pull requests and
+the Dependency Dashboard issue do.
+
+What Flux deploys by itself arrives as one weekly pull request before Monday
+morning; majors come one by one. Helmfile releases, the Gateway API CRDs and
+Gatus on the router get their own pull requests, noting that merging does
+not deploy them. Talos, Kubernetes, the Talos Terraform provider and a
+Postgres major wait on the Dependency Dashboard until approved there,
+because each is a procedure rather than a new tag. Nothing merges itself.
 
 Renovate commits under the owner's name and adds no footer to its pull
 requests, keeping the history to one author.
 
-Dependabot was the alternative. It is built into GitHub but does not read Argo
-CD Applications, Helmfile or remote Kustomize bases, which hold most of the
-versions here.
+## Rejected
+
+- **Dependabot.** Built into GitHub, but it reads neither Flux HelmReleases
+  nor Helmfile, which hold most of the versions here.
+- **Renovate run by GitHub Actions or a CronJob in the cluster.** More
+  control over when it runs, for a token with write access to keep - in the
+  cluster, readable by anything that reaches External Secrets
+  (decisions/0037).
+- **Flux's image automation.** It commits to main without a pull request and
+  understands none of the composite tags the rules here decode.
+- **version-checker or WUD** for a view of what is out of date. The
+  Dependency Dashboard is that view; WUD watches Docker hosts, not
+  Kubernetes.
