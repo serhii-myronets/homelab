@@ -111,7 +111,7 @@ services:
     storage: >-
       Originals on hdd-a under photos/, copied nightly to the ORICO and not
       yet outside the house (backups.yaml, photos_to_orico). Postgres on an
-      lvm claim, backed up hourly; the model cache is its own claim and never
+      lvm claim, backed up nightly; the model cache is its own claim and never
       backed up.
     database: >-
       Immich's own Postgres image with VectorChord; the major version is

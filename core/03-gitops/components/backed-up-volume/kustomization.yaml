@@ -1,14 +1,14 @@
 # A backed-up, self-restoring volume named `data`, shared by every service
 # that includes this component. The service supplies a local ConfigMap named
 # `backed-up-volume` with APP, the R2 folder, CAPACITY, and MINUTE - the minute past
-# each hour when its backup runs:
+# 09:00 UTC when its nightly backup runs:
 #
 #   components: [../../../../components/backed-up-volume]
 #   configMapGenerator:
 #     - name: backed-up-volume
 #       literals: [APP=jellyfin, CAPACITY=5Gi, MINUTE=20]
 #
-# MINUTE exists to keep the four apart. Sharing one minute meant four movers
+# MINUTE exists to keep them apart. Sharing one minute meant four movers
 # snapshotting, reading and uploading at the same instant on four cores, which
 # throttled the snapshot controller's own API client and left it racing itself
 # over the content it was deleting - see traps.yaml. Give each service a

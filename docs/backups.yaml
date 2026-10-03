@@ -12,11 +12,13 @@ meta:
 volsync_to_r2:
   covers: >-
     One claim per service, named data, under volsync/<service>: immich,
-    jellyfin, library, sure, torrent and vaultwarden. Hourly,
-    from a thin snapshot so the application keeps running, each service on
-    its own minute past the hour (MINUTE in its kustomization) - sharing one
-    throttled the snapshot controller once. Keeps 24 hourly, 7 daily,
-    4 weekly, 3 monthly.
+    jellyfin, library, sure, torrent and vaultwarden. Nightly since
+    2026-10-03, hourly before - each run costs the WD some 225 MB of writes
+    (traps.yaml) and nothing here changes fast enough to need it. From a thin
+    snapshot so the application keeps running, each service on its own
+    minute (MINUTE in its kustomization) - sharing one throttled the snapshot
+    controller once. Schedule and retention are in
+    components/backed-up-volume/replicationsource.yaml.
   restore: >-
     Each claim declares where it restores from, so an empty cluster fills
     it from R2 before the service starts. It restores into a volume of its
@@ -30,7 +32,7 @@ volsync_to_r2:
     A ReplicationSource with an empty lastSyncTime has never run, and looks
     like a healthy one at a glance (traps.yaml). VictoriaMetrics scrapes
     VolSync since 2026-10-02: volsync_volume_out_of_sync{role="source"} is 1
-    for a backup that missed its hour, and dash.home shows the count. VolSync
+    for a backup that missed its run, and dash.home shows the count. VolSync
     keeps reporting an archived service until its controller restarts.
   leftover: >-
     volsync/actual and volsync/uptime-kuma, from archived services; nothing

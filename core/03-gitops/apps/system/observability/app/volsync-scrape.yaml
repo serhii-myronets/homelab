@@ -1,5 +1,5 @@
 # VolSync's own metrics - above all volsync_volume_out_of_sync, a backup that
-# has missed its hour - for Grafana and Homepage. The controller serves them
+# has missed its run - for Grafana and Homepage. The controller serves them
 # over HTTPS and asks the API server whether the caller may read /metrics;
 # rather than switch that check off, vmagent is given the chart's own
 # metrics-reader role. Here rather than beside VolSync, because the scrape is

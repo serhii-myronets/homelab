@@ -1,6 +1,12 @@
-# Hourly: snapshot the volume, then send what changed to R2. The minute is
-# replaced per service from the `backed-up-volume` ConfigMap, so they do not
-# run at once; the value here is only the shape.
+# Nightly: snapshot the volume, then send what changed to R2. The hour is
+# 09:00 UTC - after one in the morning in Los Angeles, whatever the season,
+# and before the etcd and router backups. The minute is replaced per service
+# from the `backed-up-volume` ConfigMap, so they do not run at once; the value
+# here is only the shape.
+#
+# Daily, not hourly: nothing here changes fast enough to miss an hour of, and
+# every run writes some 225 MB to the WD whatever the volume's size
+# (traps.yaml, every-volsync-run-rewrites-the-xfs-log).
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
@@ -8,7 +14,7 @@ metadata:
 spec:
   sourcePVC: data
   trigger:
-    schedule: "15 * * * *"
+    schedule: "15 9 * * *"
   restic:
     repository: volsync-restic
     copyMethod: Snapshot
@@ -16,7 +22,7 @@ spec:
     volumeSnapshotClassName: lvm
     cacheStorageClassName: lvm
     pruneIntervalDays: 7
-    retain: {hourly: 24, daily: 7, weekly: 4, monthly: 3}
+    retain: {daily: 14, weekly: 4, monthly: 6}
     # Media applications share UID 1000; the mover must read their files.
     moverSecurityContext: {runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000}
     # A limit, so Talos's OOM controller scores the mover zero. Without one it

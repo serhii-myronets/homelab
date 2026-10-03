@@ -1463,7 +1463,8 @@ traps:
       a backup minute plus one, and "Successfully updated xfs filesystem
       UUID" for a volsync-src claim at the same time.
     fix: >-
-      Not fixed. The cost is per run, so fewer runs is the lever; ext4, which
-      allows duplicate UUIDs, may avoid it but means recreating every claim.
-      At this rate the WD's 300 TBW lasts well past its warranty.
+      The cost is per run, so fewer runs is the lever: nightly since
+      2026-10-03, about 1.4 GB a day instead of 32. ext4, which allows
+      duplicate UUIDs, may avoid it altogether, but means recreating every
+      claim; untested.
     diagnosed: 2026-10-03, looking for what wears the WD

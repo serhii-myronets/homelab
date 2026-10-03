@@ -140,7 +140,7 @@
           url: http://vmsingle-vm.observability.svc.cluster.local:8428
           refreshInterval: 60000
           metrics:
-            # 1 for a backup that has missed its hour. Backups only - restores
+            # 1 for a backup that has missed its run. Backups only - restores
             # are role destination - and only in namespaces that still exist:
             # VolSync keeps reporting an archived service until it restarts.
             - label: behind
