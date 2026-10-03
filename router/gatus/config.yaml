@@ -63,6 +63,7 @@ endpoints:
   - {<<: *home, group: Media, name: qBittorrent, url: https://torrent.home/}
   - {<<: *home, group: Money, name: Sure, url: https://sure.home/up}
   - {<<: *home, group: Passwords, name: Vaultwarden, url: https://vault.home/alive}
+  - {<<: *home, group: Cluster, name: Homepage, url: https://dash.home/api/healthcheck}
   - {<<: *home, group: Cluster, name: Grafana, url: https://grafana.home/api/health,
      conditions: ["[STATUS] == 200", "[BODY].database == ok", "[CERTIFICATE_EXPIRATION] > 240h"]}
   - {<<: *home, group: Cluster, name: Headlamp, url: https://headlamp.home/}
