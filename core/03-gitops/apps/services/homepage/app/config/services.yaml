@@ -2,11 +2,7 @@
 # address through the Gateway, with home-ca trusted; namespace and
 # podSelector tie a card to its pods for their state and load; widget is the
 # live numbers, read inside the cluster.
-#
-# Immich and Jellyfin carry no widget yet: each needs an API key made in its
-# own interface (Immich: Account settings, API keys, with server.statistics;
-# Jellyfin: Dashboard, API keys), stored as /services/homepage/IMMICH_API_KEY and
-# /services/homepage/JELLYFIN_API_KEY in Infisical and added to externalsecret.yaml.
+
 
 - Photos & media:
     - Immich:
@@ -17,6 +13,12 @@
         namespace: immich
         app: server
         podSelector: app=server
+        widget:
+          type: immich
+          version: 2
+          url: http://server.immich.svc.cluster.local:2283
+          key: "{{HOMEPAGE_VAR_IMMICH_KEY}}"
+          fields: [photos, videos, storage]
     - Jellyfin:
         href: https://jellyfin.home
         description: Films and series
@@ -25,6 +27,17 @@
         namespace: jellyfin
         app: jellyfin
         podSelector: app=jellyfin
+        widget:
+          type: jellyfin
+          version: 2
+          url: http://jellyfin.jellyfin.svc.cluster.local:8096
+          key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+          # The library's size, and who is watching what right now.
+          enableBlocks: true
+          enableNowPlaying: true
+          enableUser: true
+          enableMediaControl: false
+          showEpisodeNumber: true
     - Seerr:
         href: https://seerr.home
         description: Ask for something to watch

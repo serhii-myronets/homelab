@@ -174,9 +174,9 @@ services:
     names: [dash.home]                       # local only
     where: >-
       worker-1, stateless: the cards are config/ in Git and the widgets' API
-      keys are copies in Infisical /services/homepage of Sonarr's, Radarr's,
-      Prowlarr's and Seerr's own. Immich and Jellyfin have no widget until
-      each gets an API key made in its own interface. qBittorrent's widget
+      keys sit in Infisical /services/homepage: Sonarr's, Radarr's,
+      Prowlarr's and Seerr's copied from their own configuration, Immich's and
+      Jellyfin's made in their interfaces for Homepage. qBittorrent's widget
       needs none, as its whitelist admits the pod network. The storage and
       backup cards query VictoriaMetrics directly.
   samba:
