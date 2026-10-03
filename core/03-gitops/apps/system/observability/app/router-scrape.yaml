@@ -1,0 +1,14 @@
+# The router's own metrics, from the Lua node exporter router/node-exporter
+# installs there: CPU, memory, every interface - eth1 is the WAN - conntrack
+# and Wi-Fi clients. A static target, as the router is outside the cluster;
+# vmagent reaches it like any pod reaches the LAN.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMStaticScrape
+metadata:
+  name: router
+spec:
+  jobName: router
+  targetEndpoints:
+    - targets: ["192.168.8.1:9100"]
+      labels:
+        node: router

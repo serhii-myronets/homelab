@@ -4,7 +4,7 @@
 |---|---|---|
 | **core** | the cluster where the services and their data live — everything depends on it. Nodes `controlplane` (a Beelink ME Pro, 192.168.8.10) and `worker-1` (the old OpenMediaVault box, .11, tainted) | yes, out of `core/` |
 | **proxmox** | the lab, built and destroyed on purpose — unreachable since the router's reflash | no |
-| **router** | the boundary with the internet — DNS, DHCP, firewall, WireGuard | only Gatus, by `router/gatus/install.sh` ([0036](docs/decisions/0036-gatus-on-the-router.md)); nothing else, and never its settings over ssh |
+| **router** | the boundary with the internet — DNS, DHCP, firewall, WireGuard | only Gatus and its metrics exporter, by the scripts under `router/` ([0036](docs/decisions/0036-gatus-on-the-router.md)); nothing else, and never its settings over ssh |
 
 Machines are named for their role, not their hardware. Older commits say
 `beelink` for the cluster, `core-talos/` for its directory, and `core` or
@@ -24,7 +24,7 @@ one file that answers it. Before debugging anything that should work, check
 | `core/01-talos/` | Terraform for both nodes; state, `secrets.yaml` and generated configs are local and ignored |
 | `core/02-platform/` | Helmfile bootstrap, applied by hand |
 | `core/03-gitops/` | everything Flux reconciles |
-| `router/gatus/` | the house's watcher on the router; `install.sh` from the Mac delivers every change |
+| `router/` | what runs on the router, each with an `install.sh` run from the Mac: `gatus/`, the house's watcher, and `node-exporter/`, its metrics |
 | `docs/` | facts, decisions, the last session |
 | `archive/` | switched-off setups, with how to bring each back |
 
@@ -52,8 +52,8 @@ What the manifests say — images, versions, resources — is not repeated in
 **Never change the router over ssh.** GL.iNet's firmware regenerates its uci
 from its own state. Read facts, write them to `docs/hosts/router.yaml`, and
 describe fixes as UI steps — [`decisions/0007`](docs/decisions/0007-router-config-is-not-ours-to-edit.md).
-The one exception is `router/gatus/install.sh`, which writes only Gatus's own
-files — [`decisions/0036`](docs/decisions/0036-gatus-on-the-router.md).
+The exceptions are the install scripts under `router/`, which write only what
+they install — [`decisions/0036`](docs/decisions/0036-gatus-on-the-router.md).
 
 **Ask before anything stateful.** Deleting data or volumes, wiping or
 resetting a node, rebooting a host: the owner's call, not a step in a plan.

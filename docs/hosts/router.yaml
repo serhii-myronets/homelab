@@ -96,6 +96,15 @@ gatus:
   verified: >-
     2026-10-01: v5.37.0, 32 of 32 checks passing, 31 MB resident.
 
+node_exporter:
+  what: >-
+    prometheus-node-exporter-lua with its openwrt and wifi_stations modules,
+    installed by router/node-exporter/install.sh (decisions/0036), listening
+    on 192.168.8.1:9100 and scraped by core's vmagent as job router. The WAN
+    is eth1. About 2 MB. The 2022.04.18 package in this feed has no thermal
+    module, so the router's temperature is not among its metrics.
+  verified: 2026-10-02
+
 dhcp:
   pools:
     - {network: lan, range: 192.168.8.100-249, lease: 12h}
