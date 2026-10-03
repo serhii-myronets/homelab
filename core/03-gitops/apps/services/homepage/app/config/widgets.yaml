@@ -11,6 +11,15 @@
       cpu: true
       memory: true
       showLabel: true
+- openmeteo:
+    label: Beaverton
+    latitude: 45.4871
+    longitude: -122.8037
+    timezone: America/Los_Angeles
+    units: metric
+    cache: 5
+    format:
+      maximumFractionDigits: 0
 - search:
     provider: duckduckgo
     target: _blank
