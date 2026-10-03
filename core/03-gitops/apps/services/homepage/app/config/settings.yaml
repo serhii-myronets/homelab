@@ -29,10 +29,10 @@ layout:
     style: row
     columns: 2
     icon: mdi-calendar
-  Storage & backups:
+  Health:
     style: row
-    columns: 2
-    icon: mdi-database
+    columns: 4
+    icon: mdi-heart-pulse
   Home:
     style: row
     columns: 2
