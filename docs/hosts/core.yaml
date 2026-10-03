@@ -75,7 +75,9 @@ platform:
     outside /archive, which keeps them as they were.
     Read through one
     ClusterSecretStore. The machine credential is the one hand-placed secret:
-    core/02-platform/prepare-hook/initial-secret.yaml, local and ignored.
+    core/02-platform/prepare-hook/initial-secret.yaml, local and ignored;
+    a copy of its two values is in Infisical at /system/infisical, for a
+    rebuild from another machine.
     A running pod never sees a changed secret; Reloader restarts the
     Deployments annotated reloader.stakater.com/auto - Homepage, Sure,
     torrent, Immich's server, cloudflared, external-dns - within seconds of
@@ -198,8 +200,12 @@ config:
   talos: core/01-talos/
   platform: core/02-platform/
   gitops: core/03-gitops/
-  local_only:                      # ignored by Git; back it up elsewhere
-    - core/02-platform/prepare-hook/initial-secret.yaml   # the key into Infisical itself
-  elsewhere:                       # decisions/0037
-    terraform_state: R2 homelab-backups, terraform/core-01-talos.tfstate
-    talos_secrets: Infisical /system/talos/SECRETS_YAML, and the local file
+  ignored_but_kept_elsewhere:      # local files Git ignores, each with a copy
+    terraform_state: R2 homelab-backups, terraform/core-01-talos.tfstate (decisions/0037)
+    talos_secrets: core/01-talos/secrets.yaml, and Infisical /system/talos/SECRETS_YAML
+    infisical_credential: core/02-platform/prepare-hook/initial-secret.yaml, and Infisical /system/infisical
+  outside_infisical: >-
+    What reaches Infisical and the backups belongs in a password manager as
+    well, since a locked account would close everything else: the Infisical
+    and Cloudflare logins, the restic password, the router's admin password
+    and the Mac's ssh key.
