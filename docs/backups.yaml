@@ -6,7 +6,7 @@
 # Verified 2026-09-30, including a full restore.
 
 meta:
-  updated: 2026-09-30
+  updated: 2026-10-02
   tags: [backup, restic, volsync, r2, etcd, disaster-recovery]
 
 volsync_to_r2:
@@ -75,12 +75,32 @@ router_to_r2:
     wireless, firewall, dhcp, wireguard_server, shadow and authorized_keys
     among them. No restore onto the router itself yet.
 
+photos_to_orico:
+  what: >-
+    Immich's originals - photos/library, upload, profile and backups (its own
+    database dumps) on hdd-a; thumbnails and encoded video are made again
+    from them. Nightly at 01:15 Pacific by immich/photo-copy into restic at
+    rest-server on worker-1, which keeps them on the ORICO. No forget: the
+    server is append-only to the restic client, so what is deleted in Immich
+    stays here. Anything with admin on the cluster can still delete the
+    volume itself.
+  restore: >-
+    From a pod in the immich namespace with envFrom the Secret
+    photo-copy-restic, HOME=/tmp and hdd-a mounted at /photos with subPath
+    photos: `restic restore latest --target / --include <path>` for one file,
+    or without --include for all of it, as uid 1000, whom Immich writes as.
+    The snapshot's paths are /photos/..., so they land where they were.
+  verified: >-
+    2026-10-02, the first run: 12,185 files, 98.5 GiB, 95.9 GiB stored, in
+    25 minutes, through the seven minutes the ORICO's pool was full
+    (traps.yaml). restic check --read-data read all 5,787 packs and found no
+    errors, and one photo restored in a pod matched its original by sha256.
+
 not_backed_up:
   - >-
-    Immich's photographs - the only irreplaceable data in the house, on one
-    HDD with no mirror and no second copy. The largest open gap. Planned: a
-    copy to R2 (about $0.015 per GB a month) and an append-only one on the
-    router's T7.
+    Immich's photographs outside the house. Their one copy is on the ORICO,
+    in worker-1, a metre from the original - a fire or a thief takes both.
+    Planned: R2 as well (about $0.015 per GB a month).
   - The films and series on hdd-a, treated as re-downloadable.
   - Every cache - models, transcodes, thumbnails, incomplete downloads.
   - >-

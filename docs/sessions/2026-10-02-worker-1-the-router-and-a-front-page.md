@@ -1,7 +1,7 @@
 ---
 date: 2026-10-02
 title: worker-1 given its job, a watcher on the router, and a front page
-tags: [worker-1, router, gatus, homepage, observability, infisical, volsync, cilium, immich, torrent, traps]
+tags: [worker-1, router, gatus, homepage, observability, infisical, volsync, cilium, immich, torrent, backup, terraform, traps]
 hosts: [core, worker-1, router]
 ---
 
@@ -87,9 +87,21 @@ testing RuTracker. It was rotated on 2026-10-02 - a new key in config.xml,
 synced to Sonarr and Radarr, every enabled indexer tested, and Infisical's
 copy replaced, which Reloader carried to Homepage.
 
+## Second copies
+
+Immich's originals now go nightly to restic's append-only rest-server on
+worker-1 and the ORICO - 98.5 GiB the first time, one photo restored and
+matching by sha256. That first run found the ORICO's thin pool only 50 GiB:
+OpenEBS sizes a pool by the first claim made in it, and for seven minutes
+every volume on worker-1 failed to write (traps.yaml). The pool Job now sets
+the size on every run. The router's configuration goes nightly to R2 through
+a key forced to `sysupgrade -b`, and came back from R2 whole.
+
+Terraform's state moved to R2 and secrets.yaml into Infisical, with the
+cluster's own Infisical credential beside it (0037), so nothing that rebuilds
+core lives on the Mac alone.
+
 Still open:
-- A second copy of Immich's originals, now about 103 GB - R2, the ORICO, or both.
-- A daily backup of the router's configuration, through a forced-command
-  ssh key added in LuCI.
+- Immich's originals outside the house - R2.
 - Alerting (0008): a Telegram bot and a healthchecks.io account, then
   Gatus's alerting block and its heartbeat.

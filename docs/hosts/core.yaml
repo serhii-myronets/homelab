@@ -109,9 +109,10 @@ services:
   immich:
     names: [immich.home]                     # never published
     storage: >-
-      Originals on hdd-a under photos/, with no second copy anywhere - the
-      largest open gap (backups.yaml). Postgres on an lvm claim, backed up
-      hourly; the model cache is its own claim and never backed up.
+      Originals on hdd-a under photos/, copied nightly to the ORICO and not
+      yet outside the house (backups.yaml, photos_to_orico). Postgres on an
+      lvm claim, backed up hourly; the model cache is its own claim and never
+      backed up.
     database: >-
       Immich's own Postgres image with VectorChord; the major version is
       pinned on purpose, since crossing one needs a dump and restore.
