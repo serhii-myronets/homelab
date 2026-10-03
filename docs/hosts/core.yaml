@@ -165,6 +165,14 @@ services:
   vaultwarden:
     names: [vault.home]                      # local only
     why_local: Cloudflare Access is not a transport Bitwarden clients can pass
+  homepage:
+    names: [dash.home]                       # local only
+    where: >-
+      worker-1, stateless: the cards are config/ in Git and the widgets' API
+      keys are copies in Infisical /homepage of Sonarr's, Radarr's,
+      Prowlarr's and Seerr's own. Immich and Jellyfin have no widget until
+      each gets an API key made in its own interface. qBittorrent's widget
+      needs none, as its whitelist admits the pod network.
   samba:
     address: 192.168.8.10, host network, Beelink.local
     auth: guest
