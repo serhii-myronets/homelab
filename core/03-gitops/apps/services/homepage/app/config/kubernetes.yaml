@@ -1,2 +1,5 @@
-# Inside the cluster, through the pod's service account (rbac.yaml).
+# Inside the cluster, through the pod's service account (rbac.yaml). No
+# discovery: every card is in services.yaml, and this cluster has no
+# Ingresses for Homepage to keep asking about.
 mode: cluster
+ingress: false
