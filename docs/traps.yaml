@@ -1402,3 +1402,31 @@ traps:
       (gatus-proxy). Envoy Gateway's Backend resource is the way without a
       pod, at the price of replacing the Gateway implementation.
     diagnosed: 2026-10-01, putting the router's Gatus behind gatus.home
+
+  - id: downloads-saturate-the-wd
+    applies_to: [torrent, qbittorrent, openebs, lvm, controlplane, disks]
+    symptom: >-
+      NodeDiskIOSaturation fires on controlplane for nvme1n1 - the WD - and
+      for dm-1, dm-2 and one more dm device, for half an hour at a time:
+      2026-10-01 19:20-19:40 and 2026-10-02 18:45-18:55. Everything on the
+      WD's volumes, the databases included, waits behind it meanwhile.
+    cause: >-
+      qBittorrent filling its staging volume, torrent/cache: up to 428 MB/s
+      of reads and writes from that pod, pieces written out of order, six
+      downloads at once. Two things multiplied it. The thin pool zeroed every
+      fresh chunk before use, doubling the writes into new space, and the
+      staging volume is nothing but new space; and libtorrent's
+      memory-mapped files flushed from the page cache in bursts. The WD has
+      one PCIe 3.0 lane.
+    tell: >-
+      Read the device names: dm-1 and dm-2 are nvme_thinpool_tdata and
+      nvme_thinpool-tpool, and /sys/block/dm-N/dm/name in the OpenEBS node
+      plugin names the volume - here pvc-cd048311..., torrent/cache. `lvs -o
+      zero` showing "zero" on the pool, and the torrent pod topping
+      container_fs reads and writes in the same window.
+    fix: >-
+      Since 2026-10-02: lvchange --zero n on both thin pools, in the pool
+      Jobs so a rebuild keeps it; qBittorrent on DiskIOType=Posix and three
+      active downloads instead of six. If it still fires, the staging volume
+      can move to its own disk.
+    diagnosed: 2026-10-02, from the alert on dash.home
