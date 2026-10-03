@@ -76,6 +76,10 @@ platform:
     Read through one
     ClusterSecretStore. The machine credential is the one hand-placed secret:
     core/02-platform/prepare-hook/initial-secret.yaml, local and ignored.
+    A running pod never sees a changed secret; Reloader restarts the
+    Deployments annotated reloader.stakater.com/auto - Homepage, Sure,
+    torrent, Immich's server, cloudflared, external-dns - within seconds of
+    one changing. Verified 2026-10-02 on Homepage.
   memory: >-
     Every application pod has a memory limit, init containers included,
     except Immich's machine learning - so it is the one pod Talos's OOM
