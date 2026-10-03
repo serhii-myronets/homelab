@@ -26,7 +26,7 @@ spec:
           initContainers:
             # talosctl writes the snapshot; restic below uploads it.
             - name: snapshot
-              image: ghcr.io/siderolabs/talosctl:v1.14.1
+              image: ghcr.io/siderolabs/talosctl:v1.14.2
               env:
                 - name: NODE_IP
                   valueFrom:

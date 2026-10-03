@@ -35,7 +35,7 @@ spec:
           hostnames: [retracker.local]
       initContainers:
         - name: prepare
-          image: busybox:1.37
+          image: busybox:1.38
           # A memory limit on every container, this one included, gives the pod
           # memory.max and keeps Talos's OOM controller off it; see traps.yaml.
           resources:
@@ -127,7 +127,7 @@ spec:
             limits: {memory: 512Mi}
       containers:
         - name: qbittorrent
-          image: ghcr.io/linuxserver/qbittorrent:5.2.3_v2.0.14-ls475
+          image: ghcr.io/linuxserver/qbittorrent:5.2.4_v2.0.15-ls479
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: PUID, value: "1000"}

@@ -25,7 +25,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: prepare-data
-          image: busybox:1.37
+          image: busybox:1.38
           command:
             - sh
             - -c
@@ -68,7 +68,7 @@ spec:
         # Redis contains only the Sidekiq queue; jobs are retried after a pod
         # restart and are not financial records, so it deliberately has no PVC.
         - name: redis
-          image: docker.io/library/redis:8.4
+          image: docker.io/library/redis:8.10
           command: [redis-server, --save, "", --appendonly, "no"]
           readinessProbe:
             exec: {command: [redis-cli, ping]}
@@ -84,7 +84,7 @@ spec:
           # liabilities product only when the account being linked is one;
           # before it Plaid hides such institutions from its search with no
           # error.
-          image: ghcr.io/we-promise/sure:0.7.5-alpha.10
+          image: ghcr.io/we-promise/sure:0.7.5-hotfix.1
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -155,7 +155,7 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /rails/storage, subPath: storage}
         - name: worker
-          image: ghcr.io/we-promise/sure:0.7.5-alpha.10
+          image: ghcr.io/we-promise/sure:0.7.5-hotfix.1
           # args, not command: command replaces the image's entrypoint, which is
           # what preloads jemalloc; without it Sidekiq ran on glibc malloc.
           args: [bundle, exec, sidekiq]
