@@ -30,9 +30,6 @@
         description: Ask for something to watch
         icon: seerr.png
         siteMonitor: https://seerr.home/api/v1/status
-        namespace: library
-        app: library
-        podSelector: app=library
         widget:
           type: seerr
           url: http://seerr.library.svc.cluster.local:5055
@@ -84,6 +81,63 @@
           type: qbittorrent
           url: http://torrent-web.torrent.svc.cluster.local:8080
           enableLeechProgress: true
+
+- Coming up:
+    - Next to arrive:
+        description: Episodes and films due, from Sonarr and Radarr
+        icon: mdi-calendar-star
+        widget:
+          type: calendar
+          view: agenda
+          maxEvents: 8
+          previousDays: 1
+          showTime: true
+          integrations:
+            - {type: sonarr, service_group: Library, service_name: Sonarr, baseUrl: "https://sonarr.home"}
+            - {type: radarr, service_group: Library, service_name: Radarr, baseUrl: "https://radarr.home"}
+
+- Storage & backups:
+    # Straight from VictoriaMetrics, which keeps every number here already.
+    - Disks:
+        href: https://grafana.home
+        description: The HDDs, the fullest volume, controlplane's swap
+        icon: mdi-harddisk
+        widget:
+          type: prometheusmetric
+          url: http://vmsingle-vm.observability.svc.cluster.local:8428
+          refreshInterval: 60000
+          metrics:
+            - label: Photos disk free
+              query: node_filesystem_avail_bytes{mountpoint="/var/mnt/hdd-a"}
+              format: {type: bytes}
+            - label: Second disk free
+              query: node_filesystem_avail_bytes{mountpoint="/var/mnt/hdd-b"}
+              format: {type: bytes}
+            - label: Fullest volume
+              query: max(kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) * 100
+              format: {type: number, suffix: "%", options: {maximumFractionDigits: 0}}
+            - label: Swap in use
+              query: node_memory_SwapTotal_bytes{instance="192.168.8.10:9100"} - node_memory_SwapFree_bytes{instance="192.168.8.10:9100"}
+              format: {type: bytes}
+    - Backups:
+        href: https://grafana.home
+        description: Hourly to R2 for every service, nightly for etcd
+        icon: mdi-backup-restore
+        widget:
+          type: prometheusmetric
+          url: http://vmsingle-vm.observability.svc.cluster.local:8428
+          refreshInterval: 60000
+          metrics:
+            # 1 for a ReplicationSource that has missed its hour.
+            - label: Services behind
+              query: sum(volsync_volume_out_of_sync) or vector(0)
+              format: {type: number}
+            - label: Services backed up
+              query: count(volsync_volume_out_of_sync)
+              format: {type: number}
+            - label: etcd, hours ago
+              query: (time() - max(kube_cronjob_status_last_successful_time{cronjob="etcd-backup"})) / 3600
+              format: {type: number, options: {maximumFractionDigits: 1}}
 
 - Home:
     - Sure:
