@@ -68,7 +68,12 @@ platform:
     on lvm-worker-1 must tolerate worker-1's taint. Nothing crosses between
     nodes except over the network - the HDDs are controlplane's alone.
   secrets: >-
-    Infisical, project homelab, environment prod, through one
+    Infisical, project homelab, environment prod, laid out as the repository
+    is: /system/<component> for the cluster's own (home-ca, cloudflare,
+    backups), /services/<application> for each service, /router/<thing> for
+    the router, /archive for what nothing reads. Keys are UPPER_SNAKE
+    outside /archive, which keeps them as they were.
+    Read through one
     ClusterSecretStore. The machine credential is the one hand-placed secret:
     core/02-platform/prepare-hook/initial-secret.yaml, local and ignored.
   memory: >-
@@ -86,7 +91,7 @@ access:
   certificate: >-
     One certificate lists every HTTPS .home name - a new route needs its
     name added there. It is signed by home-ca, a root that lives in
-    Infisical /home-ca (valid to 2036-09-17, renewed by nothing) and is
+    Infisical /system/home-ca (valid to 2036-09-17, renewed by nothing) and is
     served at ca.home/root.crt.
   public: >-
     *.serhii.link through the Cloudflare tunnel beelink, locally managed from
@@ -118,7 +123,7 @@ services:
       gluetun to NordVPN over WireGuard, the Netherlands; qBittorrent binds to
       tun0. Some endpoints accept WireGuard and carry nothing, so gluetun
       hunts, and its probe allows ten minutes for that. Key in Infisical
-      /nordvpn.
+      /services/torrent.
     downloads: >-
       hdd-a's torrents/, as /downloads and inside /data, the path the *arr
       share; incomplete downloads on a 200Gi cache claim, never backed up.
@@ -169,7 +174,7 @@ services:
     names: [dash.home]                       # local only
     where: >-
       worker-1, stateless: the cards are config/ in Git and the widgets' API
-      keys are copies in Infisical /homepage of Sonarr's, Radarr's,
+      keys are copies in Infisical /services/homepage of Sonarr's, Radarr's,
       Prowlarr's and Seerr's own. Immich and Jellyfin have no widget until
       each gets an API key made in its own interface. qBittorrent's widget
       needs none, as its whitelist admits the pod network. The storage and

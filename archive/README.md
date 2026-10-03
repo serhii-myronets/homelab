@@ -28,7 +28,7 @@ The Cluster carries `bootstrap.recovery` from R2, so a cluster recreated this
 way restores itself from the archive rather than starting empty, and then
 keeps writing to the same series. That is safe only while the cluster it
 recovers from is gone. Its one secret, the R2 key pair, is read from Infisical
-at `/backups/R2`; nothing here has to be pasted back by hand.
+at `/system/backups`; nothing here has to be pasted back by hand.
 
 ## uptime-kuma — Uptime Kuma 2.5
 
@@ -66,7 +66,7 @@ component directory and convert its archived `applications/` into Flux
 resources under `apps/`. Validate the build before committing.
 
 Then add `pulse.home` back to the `home-ca` certificate. Its agent token
-is still in Infisical at `/pulse/AGENT_TOKEN`, and a new server will not
+is still in Infisical at `/archive/pulse/AGENT_TOKEN`, and a new server will not
 accept it - mint another after the administrator account exists. Two of
 its lessons stayed in [`traps.yaml`](../docs/traps.yaml): a probe
 that cannot reach what it probes, and what happens when an operator and
@@ -101,4 +101,4 @@ application restores the budget.
 To restore it, move `actual/` back to `core/03-gitops/apps/services/`,
 add its `ks.yaml` to the root apps Kustomization, and add `actual.home` to the
 local certificate. Validate the build before committing. Its only secret is
-the shared R2 key pair in Infisical at `/backups/R2`.
+the shared R2 key pair in Infisical at `/system/backups`.

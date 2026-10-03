@@ -5,8 +5,8 @@
 #
 # Immich and Jellyfin carry no widget yet: each needs an API key made in its
 # own interface (Immich: Account settings, API keys, with server.statistics;
-# Jellyfin: Dashboard, API keys), stored as /homepage/IMMICH_API_KEY and
-# /homepage/JELLYFIN_API_KEY in Infisical and added to externalsecret.yaml.
+# Jellyfin: Dashboard, API keys), stored as /services/homepage/IMMICH_API_KEY and
+# /services/homepage/JELLYFIN_API_KEY in Infisical and added to externalsecret.yaml.
 
 - Photos & media:
     - Immich:

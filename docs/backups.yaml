@@ -1,7 +1,7 @@
 # What is backed up, where to, and what is not. Everything lands in Cloudflare
 # R2, bucket homelab-backups, the one copy outside the house. The R2 key pair
 # and the restic password - one password for every repository - are in
-# Infisical /backups/R2; keep that password in a password manager too, since
+# Infisical /system/backups; keep that password in a password manager too, since
 # without it nothing below can be read.
 # Verified 2026-09-30, including a full restore.
 
