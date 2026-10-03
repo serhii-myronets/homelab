@@ -13,8 +13,8 @@ the way it is and what went wrong getting there.
 
 | Machine | Role | |
 |---|---|---|
-| Beelink ME Pro - Intel N95, 12 GB | `controlplane`: runs nearly everything | 500 GB NVMe for application data, 2x 10 TB HDDs for media and photos |
-| Old OpenMediaVault box - Celeron J4125, 8 GB | `worker-1`: monitoring, the dashboard, a second copy of the photos | 2 TB SATA SSD |
+| Beelink ME Pro, Intel N95, 12 GB | `controlplane`: runs nearly everything | 500 GB NVMe for application data, 2x 10 TB HDDs for media and photos |
+| Intel Celeron J4125, 8 GB | `worker-1`: monitoring, the dashboard, a second copy of the photos | 2 TB SATA SSD |
 | GL.iNet Flint 2 | the router: DNS, DHCP, WireGuard - and the status page | configured by hand, never from here |
 
 Machines are named for their role. A Proxmox lab appears in the history and
