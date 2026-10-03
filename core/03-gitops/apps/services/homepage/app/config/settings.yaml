@@ -31,7 +31,7 @@ layout:
     icon: mdi-calendar
   Health:
     style: row
-    columns: 4
+    columns: 3
     icon: mdi-heart-pulse
   Home:
     style: row
