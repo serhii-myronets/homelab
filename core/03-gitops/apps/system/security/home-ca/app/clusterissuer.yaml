@@ -29,9 +29,9 @@ spec:
         tls.key: "{{ .key }}"
   data:
     - secretKey: crt
-      remoteRef: {key: /home-ca/TLS_CRT}
+      remoteRef: {key: /system/home-ca/TLS_CRT}
     - secretKey: key
-      remoteRef: {key: /home-ca/TLS_KEY}
+      remoteRef: {key: /system/home-ca/TLS_KEY}
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer

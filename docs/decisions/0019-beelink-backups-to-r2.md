@@ -10,7 +10,7 @@ tags: [beelink, backup, volsync, cloudnative-pg, lvm, openebs, r2]
 
 Cloudflare R2 holds the backups: its free tier covers this data, egress is
 free, and it is the first copy of anything here that lives outside the house.
-Credentials are in Infisical under `/backups/R2`; the restic password also
+Credentials are in Infisical under `/system/backups`; the restic password also
 belongs in a password manager, because without it the backups are unreadable.
 
 Postgres backs itself up through CloudNativePG's Barman Cloud plugin:
