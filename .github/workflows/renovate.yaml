@@ -1,0 +1,34 @@
+# Renovate, self-hosted on the run's own GITHUB_TOKEN: nothing outside the
+# repository holds write access to it, and the token ends with the run.
+# What it proposes is renovate.json5's business; when it runs is this file's.
+# Decision 0018.
+name: Renovate
+
+on:
+  schedule:
+    # Monday 12:00 UTC - 05:00 in Los Angeles in summer, 04:00 in winter.
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: renovate
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # The action clones the repository itself; no checkout. Pinned by
+      # commit, as anything given a write token should be, and updated by
+      # hand: the token may not write under .github/workflows.
+      - uses: renovatebot/github-action@6d26fcf0275dc65624cbc3d51fe78bc773f98321 # v46.3.6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          LOG_LEVEL: info

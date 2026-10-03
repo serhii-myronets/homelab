@@ -1,8 +1,8 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: ["config:recommended"],
-  timezone: "America/Los_Angeles",
-  schedule: ["before 6am on monday"],
+  // No schedule: the workflow decides when it runs, and a run by hand should
+  // act at once rather than wait for Monday.
   semanticCommits: "disabled",
 
   // Commits and pull requests carry the owner's name only; see AGENTS.md.
@@ -54,6 +54,12 @@
   ],
 
   packageRules: [
+    {
+      // The run's token may not write under .github/workflows, so an update
+      // there could only fail; the workflow names its own version.
+      matchManagers: ["github-actions"],
+      enabled: false,
+    },
     {
       // archive/ is deployed by nothing, so its versions are not worth a pull
       // request. A rule rather than ignorePaths, which config:recommended's
