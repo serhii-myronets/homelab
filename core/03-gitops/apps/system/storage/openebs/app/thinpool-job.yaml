@@ -16,6 +16,13 @@
 # (NodeDiskIOSaturation, traps.yaml). The volumes are XFS on a single tenant;
 # nothing reads a block it has not written. lvchange is idempotent, so the
 # step runs every time.
+#
+# Size, checked every time too, not only at creation: a pool that already
+# exists is grown to 95% of its group and 2 GiB of metadata. worker-1's pool
+# had been made by OpenEBS at its first claim's 50 GiB and filled on
+# 2026-10-02 with 1.8 TB free beside it (traps.yaml,
+# openebs-lvm-thin-pool-sized-to-first-claim). lvextend fails harmlessly
+# when the pool is already that size.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -39,6 +46,7 @@ spec:
               vgs nvme || { pvs "$DISK" || pvcreate "$DISK"; vgcreate nvme "$DISK"; };
               lvs nvme/nvme_thinpool ||
               lvcreate --type thin-pool --extents 95%FREE --name nvme_thinpool nvme;
+              lvextend -l 95%VG nvme/nvme_thinpool 2>/dev/null || true;
               lvchange --zero n nvme/nvme_thinpool;
               vgs nvme; lvs nvme
           env:
@@ -77,6 +85,8 @@ spec:
               vgs ssd || { pvs "$DISK" || pvcreate "$DISK"; vgcreate ssd "$DISK"; };
               lvs ssd/ssd_thinpool ||
               lvcreate --type thin-pool --extents 95%FREE --name ssd_thinpool ssd;
+              lvextend --poolmetadatasize 2G ssd/ssd_thinpool 2>/dev/null || true;
+              lvextend -l 95%VG ssd/ssd_thinpool 2>/dev/null || true;
               lvchange --zero n ssd/ssd_thinpool;
               vgs ssd; lvs ssd
           env:

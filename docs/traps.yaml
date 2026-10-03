@@ -180,7 +180,18 @@ traps:
       does not exist yet, so none can create a small pool. Watch the pool's
       usage: when a thin pool fills, every volume in it stops accepting
       writes.
-    diagnosed: 2026-09-19, on the Beelink
+    happened_again: >-
+      2026-10-02 on worker-1, despite a Job that made the pool: the pool in
+      place was OpenEBS's, created at 2026-09-30 20:50:41 with the first
+      claim (VictoriaLogs, 50 GiB), and the Job only checked that one
+      existed. The first photo copy filled it; for seven minutes every
+      volume on the ORICO returned write errors, VictoriaMetrics and
+      VictoriaLogs restarted, and lvs showed the pool twi-aot-D- at 100%
+      with 1.81 TB free in its group. Grown in place with lvextend
+      --poolmetadatasize 2G and -l 95%VG; the Job now grows any pool smaller
+      than that on every run. Nothing exports a thin pool's own fill - OpenEBS
+      reports the group, which shows the pool as used space - so nothing
+      warned.
 
   - id: openebs-brings-a-second-snapshot-controller
     applies_to: [openebs, volsync, kubernetes]

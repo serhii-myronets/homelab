@@ -198,7 +198,8 @@ config:
   talos: core/01-talos/
   platform: core/02-platform/
   gitops: core/03-gitops/
-  local_only:                      # ignored by Git; back them up elsewhere
-    - core/01-talos/terraform.tfstate
-    - core/01-talos/secrets.yaml
-    - core/02-platform/prepare-hook/initial-secret.yaml
+  local_only:                      # ignored by Git; back it up elsewhere
+    - core/02-platform/prepare-hook/initial-secret.yaml   # the key into Infisical itself
+  elsewhere:                       # decisions/0037
+    terraform_state: R2 homelab-backups, terraform/core-01-talos.tfstate
+    talos_secrets: Infisical /system/talos/SECRETS_YAML, and the local file

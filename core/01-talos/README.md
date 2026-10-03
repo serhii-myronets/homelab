@@ -28,10 +28,21 @@ volume group for OpenEBS LVM LocalPV, created by a Job in `03-gitops` because
 this provider's configuration contract has no LVMVolumeGroupConfig. See
 `docs/decisions/0019`.
 
-`terraform.tfstate`, its backups and `secrets.yaml` are plaintext local files
-ignored by Git. Back them up securely outside the repository. The state is the
-authoritative record that the node was configured and bootstrapped; do not
-delete it or import the secrets again over an existing state.
+The state lives in R2, bucket `homelab-backups`, key
+`terraform/core-01-talos.tfstate`, through the s3 backend in `main.tf`. It
+reads its credentials from an `r2` profile in `~/.aws/credentials`; on a new
+Mac, make it from Infisical's `/system/backups` before `terraform init`:
+
+```ini
+[r2]
+aws_access_key_id = <R2_ACCESS_KEY_ID>
+aws_secret_access_key = <R2_SECRET_ACCESS_KEY>
+```
+
+`secrets.yaml` is in Infisical at `/system/talos/SECRETS_YAML` and stays here
+as a local, ignored file too; the state imported it once and holds the same
+keys. Both are readable by the cluster itself - accepted in
+`docs/decisions/0037`. Do not import the secrets again over an existing state.
 
 The Talos and Kubernetes client configurations live in their standard paths:
 

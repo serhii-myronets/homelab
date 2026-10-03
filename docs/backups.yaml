@@ -84,6 +84,8 @@ not_backed_up:
   - The films and series on hdd-a, treated as re-downloadable.
   - Every cache - models, transcodes, thumbnails, incomplete downloads.
   - >-
-    core's Terraform state and secrets.yaml, which exist only on the Mac;
-    without them the cluster can be run but not rebuilt. Planned: the state
-    in R2 as a Terraform backend.
+    core/02-platform/prepare-hook/initial-secret.yaml, the machine credential
+    the cluster signs in to Infisical with: on the Mac only, and it cannot
+    live in Infisical alone, since it is the way in. Keep it in a password
+    manager. Terraform's state is in R2 and secrets.yaml in Infisical since
+    2026-10-02 (decisions/0037).
