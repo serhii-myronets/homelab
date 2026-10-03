@@ -6,7 +6,7 @@
 #
 # The machines, named for their role:
 #   core      the cluster the house depends on   controlplane .10, worker-1 .11
-#   proxmox   the lab, built and destroyed       10.1.1.100 - unreachable now
+#   proxmox   the lab, built and destroyed       192.168.8.30
 #   router    the boundary with the internet     192.168.8.1, GL.iNet
 #
 # core/ is deployed onto core, through Terraform, Helmfile and Flux. archive/
@@ -24,7 +24,7 @@ files:
     holds: core's second node, the old OpenMediaVault box - hardware, disks, its taint
     tags: [worker-1, talos, hardware]
   - path: docs/hosts/proxmox.yaml
-    holds: the lab hypervisor - hardware, guests, why it is unreachable
+    holds: the lab hypervisor - hardware, disk layout, guests
     tags: [proxmox, lab]
   - path: docs/hosts/router.yaml
     holds: GL.iNet GL-MT6000 - DNS, DHCP, firewall, WireGuard, what a reflash loses

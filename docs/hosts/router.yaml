@@ -50,8 +50,8 @@ other_networks:
 not_rebuilt:
   homelab_vlan: >-
     VLAN 10 (10.1.1.0/24 on lan1), its interface and the homelabzone firewall
-    zone were LuCI-made and went with the reflash. Proxmox still expects
-    10.1.1.100 behind 10.1.1.1, so it is unreachable until they return.
+    zone were LuCI-made and went with the reflash. Nothing waits on them:
+    Proxmox was reinstalled onto the LAN at .30 on 2026-10-03.
   reservations: >-
     F8:89:D2:5B:E3:1B -> .110, paused by the owner. The old OpenMediaVault
     box needs none now - it is core's worker-1, static at .11.

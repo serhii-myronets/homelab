@@ -1,54 +1,60 @@
 # The hypervisor and lab: clusters get built and destroyed here, so nothing
 # that must stay up lives on it.
 #
-# Unreachable since the router's reflash on 2026-09-28: it still expects
-# 10.1.1.100 behind VLAN 10 at 10.1.1.1, which the router no longer has.
-# Everything below was last verified on 2026-09-12 and waits on the choice
-# between a flat LAN and a rebuilt VLAN.
+# Reinstalled on 2026-10-03 onto the flat LAN, replacing the VLAN 10 setup
+# the router lost in its reflash. The procedure is in the lab repository's
+# 00-prerequisite/README.md. Verified 2026-10-03.
 
 meta:
   host: proxmox
-  updated: 2026-09-30
+  updated: 2026-10-03
   tags: [proxmox, hypervisor, lab, talos, terraform]
 
 identity:
-  hostname: proxmox
-  ip: 10.1.1.100                   # VLAN 10, not routed at present
-  ssh: root@10.1.1.100             # key at ~/.ssh/id_ed25519
-  api_without_login: >-
-    http://10.1.1.100:8008/api/* - ProxMenux Monitor answers unauthenticated,
-    the quickest way to hardware and guest facts.
+  hostname: proxmox.home           # *.home is AdGuard's wildcard to core's
+                                   # Gateway; the name needs its own rewrite
+  ip: 192.168.8.30                 # static, set in the installer
+  ui: https://192.168.8.30:8006
+  ssh: root@192.168.8.30           # key at ~/.ssh/id_ed25519
   deployed_from_here: no           # its Terraform lives elsewhere:
   built_from: >-
     github.com/serhii-myronets/terraform-talos-gitops-cluster, checked out
     at ~/Documents/GitHub/terraform-talos-gitops-homelab on its homelab
     branch, which its Argo CD follows. Its AGENTS.md points back here.
 
-os: {distribution: Proxmox VE 9.2.18, cluster: standalone}
+os:
+  distribution: Proxmox VE 9.2.21, kernel 7.0.14-20-pve
+  cluster: standalone              # pve-ha-lrm and pve-ha-crm disabled
+  repositories: >-
+    pve-no-subscription; enterprise and Ceph enterprise disabled; the
+    subscription nag removed by the community post-pve-install script.
+  cpu_governor: powersave          # cpu-powersave.service, oneshot at boot
 
 hardware:
   cpu: {model: Intel Core i9-12900HK, cores: 14, threads: 20}
-  ram_gb: 62                       # about 28 in use, 2026-09-12
+  ram_gb: 62
   gpu: Intel Iris Xe, Quick Sync
 
 disks:
   - model: Samsung SSD 980 PRO 2TB
-    role: local-lvm (1.67 TB thin, 3% used) and /var/lib/vz (94 GB)
-    health: 7% worn, no media errors, no reallocation (2026-09-12)
+    role: >-
+      ZFS rpool (RAID0 of the one disk, ashift 12, compression on), about
+      1.6 TB; about 200 GB left unpartitioned. VM disks in local-zfs
+      (rpool/data, sync=disabled - the guests are disposable).
+    zfs_arc_max: 6.4 GB            # the installer's default, 10% of RAM
+    health: 7% worn, no media errors (2026-10-03)
 
 guests: >-
-  Seven VMs on 2026-09-12, two Talos clusters: talos-controlplane-01 with
-  talos-worker-01..03, and control-plane with worker01..02. Allocation exceeds
-  physical memory, fine at the use seen then. No vzdump schedule: the guests
-  are rebuilt from Terraform.
+  None since the reinstall. No vzdump schedule: the guests are rebuilt from
+  Terraform.
 
-nics:
-  - {name: enp2s0, role: vmbr0, cabled to the router's lan1}
-  - {name: enp3s0, role: spare, uncabled}
+nics:                              # names pinned by the installer
+  - {name: nic2, pci: "0000:03:00.0", role: vmbr0, cabled to the router's lan1}
+  - {name: nic0, pci: "0000:02:00.0", role: spare, uncabled}
 
 risks:
   - >-
-    65 of 115 power cycles were unsafe shutdowns: more than half the time it
+    69 of 123 power cycles were unsafe shutdowns: more than half the time it
     loses power without flushing, which threatens etcd and guest filesystems
     long before disk wear does. A UPS, or finding what cuts the power, comes
     before anything here is meant to last.

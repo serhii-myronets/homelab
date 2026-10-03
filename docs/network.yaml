@@ -1,20 +1,19 @@
 # The parts of the network that span hosts. Per-host detail lives in
-# docs/hosts/. Verified 2026-09-30.
+# docs/hosts/. Verified 2026-09-30; the lab moved onto the LAN 2026-10-03.
 
 meta:
-  updated: 2026-09-30
+  updated: 2026-10-03
   tags: [network, subnets, dns, tls, vpn, wireguard]
 
 subnets:
-  - {cidr: 192.168.8.0/24, use: LAN, hosts: [controlplane, worker-1], gateway: 192.168.8.1}
-  - {cidr: 10.1.1.0/24, use: lab, vlan: 10, hosts: [proxmox], gateway: 10.1.1.1,
-     routed: no}                   # VLAN not rebuilt after the reflash
+  - {cidr: 192.168.8.0/24, use: LAN, hosts: [controlplane, worker-1, proxmox], gateway: 192.168.8.1}
   - {cidr: 192.168.9.0/24, use: guest, gateway: 192.168.9.1, enabled: no}
   - {cidr: 10.1.0.0/24, use: wireguard clients, gateway: 10.1.0.1}
 
 address_plan:                      # the LAN in tens, set 2026-09-29
   core: 192.168.8.10-19            # controlplane .10, worker-1 .11, load
                                    # balancer .15-.19; .20-.29 is free again
+  lab: 192.168.8.30-49             # proxmox .30, its VMs and their VIP
   dhcp_pool: 192.168.8.100-249
 
 load_balancers:
@@ -42,11 +41,8 @@ tls:
     core/03-gitops/apps/system/network/cloudflared, not in the dashboard.
 
 reachability:                      # who can reach whom, as configured today
-  lan_to_lab: no                   # no VLAN 10 on the router at all
-  lab_to_lan: no
   vpn_to_internet: yes             # wgserver2wan
   vpn_to_lan: yes                  # verified 2026-09-29 from outside
-  vpn_to_lab: no
   guest_to_anything: no            # wan only
   wan_to_lan: no                   # no port forwards; public access is the
                                    # Cloudflare tunnel, which dials outward
