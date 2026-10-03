@@ -52,6 +52,29 @@ etcd_to_r2:
     The rebuilt cluster's first run was 2026-10-01 at 03:30, snapshot
     8c746e83, 36.8 MiB read and 6.7 MiB stored.
 
+router_to_r2:
+  what: >-
+    The router's own backup - sysupgrade -b, the archive GL.iNet's UI exports:
+    every /etc/config, the WireGuard and Wi-Fi keys, the passwords, AdGuard's
+    configuration and what router/ installed; 161 files, 24 MiB. Nightly at
+    03:45 Pacific by router-backup on worker-1, through a key whose
+    authorized_keys line forces that one command (router/backup), into
+    restic at router in R2; 30 daily and 12 monthly kept.
+  restore: >-
+    On the Mac (brew install restic), export AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY and RESTIC_PASSWORD from Infisical /system/backups
+    and RESTIC_REPOSITORY=s3:<R2_ENDPOINT>/homelab-backups/router, then
+    `restic restore latest --target ./router`. Upload
+    backup/router-config.tar.gz in LuCI - System, Backup / Flash Firmware,
+    Restore backup - on the same model and a firmware close to the one that
+    made it, and the router reboots with its settings, the backup key
+    included. A reflash also changes the router's host keys: refresh
+    router-backup's known_hosts with ssh-keyscan before its next run.
+  verified: >-
+    2026-10-02, the first run restored from R2 in a pod: 161 files, network,
+    wireless, firewall, dhcp, wireguard_server, shadow and authorized_keys
+    among them. No restore onto the router itself yet.
+
 not_backed_up:
   - >-
     Immich's photographs - the only irreplaceable data in the house, on one
@@ -64,6 +87,3 @@ not_backed_up:
     core's Terraform state and secrets.yaml, which exist only on the Mac;
     without them the cluster can be run but not rebuilt. Planned: the state
     in R2 as a Terraform backend.
-  - >-
-    The router's configuration - a reflash wiped it once (traps.yaml); only
-    hosts/router.yaml describes it.

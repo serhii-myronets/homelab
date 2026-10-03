@@ -96,6 +96,11 @@ gatus:
   verified: >-
     2026-10-01: v5.37.0, 32 of 32 checks passing, 31 MB resident.
 
+backup: >-
+  Nightly to R2 by core's router-backup since 2026-10-02, through a key
+  limited to `sysupgrade -b -`; how it restores is in backups.yaml. It holds
+  the WireGuard and Wi-Fi keys, so it lives encrypted in restic, never here.
+
 node_exporter:
   what: >-
     prometheus-node-exporter-lua with its openwrt and wifi_stations modules,
@@ -172,15 +177,6 @@ wifi:
   - {ssid: GL-MT6000-3f6-5G-IoT, network: iot, enabled: false}
 
 gaps:
-  no_config_backup:
-    severity: high
-    symptom: >-
-      A reflash on 2026-09-28 lost every setting, and nothing held a copy —
-      the rebuild came from this file, which is descriptive, not a backup.
-    fix: >-
-      Download a configuration backup in the GL.iNet UI before every firmware
-      update and after every change worth keeping. It holds the WireGuard and
-      Wi-Fi keys, so it belongs outside this repository.
   wireguard_subnet_overlap:
     severity: medium
     symptom: >-
