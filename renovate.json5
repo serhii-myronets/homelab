@@ -8,6 +8,10 @@
   // Commits and pull requests carry the owner's name only; see AGENTS.md.
   gitAuthor: "Serhii Myronets <hardmail88@gmail.com>",
   prFooter: "",
+  // On an app's token Renovate commits through GitHub's API by default, and
+  // the commit is then the app's, whatever gitAuthor says. Plain git pushes
+  // keep the owner's name.
+  platformCommit: "disabled",
 
   // This repository itself, which Flux follows on main.
   ignoreDeps: ["https://github.com/serhii-myronets/homelab.git"],
