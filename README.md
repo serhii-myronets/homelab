@@ -1,5 +1,7 @@
 # homelab
 
+[![Validate](https://github.com/serhii-myronets/homelab/actions/workflows/validate.yaml/badge.svg)](https://github.com/serhii-myronets/homelab/actions/workflows/validate.yaml)
+
 A small home Kubernetes cluster, run entirely from this repository: two
 low-power machines on [Talos Linux](https://www.talos.dev/), reconciled by
 [Flux](https://fluxcd.io/), with every volume that matters backed up to

@@ -1,0 +1,40 @@
+# Runs .github/validate.sh: every kustomization Flux applies builds and
+# matches its schemas, and docs/ parses. Flux would refuse a broken
+# kustomization too, but only after main had it.
+#
+# Renovate's pull requests are opened with GITHUB_TOKEN, which starts no
+# workflow; this runs on them once merged, or by hand from their branch.
+# Versions are updated by hand, as the token cannot write workflows (0018).
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KUSTOMIZE_VERSION: v5.8.2
+  KUBECONFORM_VERSION: v0.8.0
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install kustomize, kubeconform and PyYAML
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -sSfL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" \
+            | tar xz -C "$RUNNER_TEMP/bin" kustomize
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar xz -C "$RUNNER_TEMP/bin" kubeconform
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          python3 -m pip install --quiet pyyaml
+
+      - run: .github/validate.sh

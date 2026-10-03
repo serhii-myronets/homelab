@@ -106,3 +106,7 @@ LOG_LEVEL=debug npx -p node@24 -p renovate -- renovate \
 The log's `packageFiles with updates` lists each dependency and its proposed
 versions. GitHub releases - Talos, Kubernetes, the Gateway API - are skipped
 without a GitHub token.
+
+`.github/validate.sh` builds every kustomization here and checks it against
+the Kubernetes and CRD schemas, and checks that `docs/` parses; CI runs it on
+every push. Locally it needs kustomize, kubeconform and PyYAML.
