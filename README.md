@@ -20,6 +20,48 @@ the way it is and what went wrong getting there.
 Machines are named for their role. A Proxmox lab appears in the history and
 the docs; it is not part of what runs.
 
+```mermaid
+flowchart TB
+  internet((Internet))
+
+  subgraph cloud [Outside the house]
+    direction LR
+    cf[Cloudflare<br/>Tunnel and Access]
+    gh[GitHub<br/>this repository]
+    inf[Infisical<br/>secrets]
+    r2[(Cloudflare R2<br/>volumes, etcd, router,<br/>Terraform state)]
+  end
+
+  subgraph home [Home network]
+    router[Router<br/>DNS, DHCP, WireGuard, Gatus]
+
+    subgraph cp [controlplane]
+      gw[Cilium Gateway]
+      apps[Immich, Jellyfin, Sonarr, Radarr,<br/>qBittorrent, Sure, Vaultwarden]
+      nvme[(NVMe<br/>application data)]
+      hdd[(2x 10 TB HDD<br/>media, photos)]
+    end
+
+    subgraph w1 [worker-1]
+      mon[VictoriaMetrics, Grafana,<br/>Homepage]
+      copy[(SSD<br/>second copy of the photos)]
+    end
+  end
+
+  internet --> cf
+  cf --> gw
+  gh -- "Flux pulls" --> cp
+  inf -- "External Secrets" --> cp
+  router -- "*.home" --> gw
+  gw --> apps
+  apps --- nvme
+  apps --- hdd
+  nvme -- "VolSync, nightly" --> r2
+  router -- "config backup" --> r2
+  hdd -- "restic, nightly" --> copy
+  mon -. "scrapes" .-> cp
+```
+
 ## Stack
 
 | | |
