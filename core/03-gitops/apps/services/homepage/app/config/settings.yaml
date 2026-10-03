@@ -24,6 +24,14 @@ layout:
     style: row
     columns: 4
     icon: mdi-bookshelf
+  Coming up:
+    style: row
+    columns: 1
+    icon: mdi-calendar
+  Storage & backups:
+    style: row
+    columns: 2
+    icon: mdi-database
   Home:
     style: row
     columns: 2
