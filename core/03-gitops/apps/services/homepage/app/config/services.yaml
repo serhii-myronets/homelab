@@ -128,12 +128,14 @@
           url: http://vmsingle-vm.observability.svc.cluster.local:8428
           refreshInterval: 60000
           metrics:
-            # 1 for a ReplicationSource that has missed its hour.
+            # 1 for a backup that has missed its hour. Backups only - restores
+            # are role destination - and only in namespaces that still exist:
+            # VolSync keeps reporting an archived service until it restarts.
             - label: Services behind
-              query: sum(volsync_volume_out_of_sync) or vector(0)
+              query: sum(volsync_volume_out_of_sync{role="source"} and on(obj_namespace) label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)")) or vector(0)
               format: {type: number}
             - label: Services backed up
-              query: count(volsync_volume_out_of_sync)
+              query: count(volsync_volume_out_of_sync{role="source"} and on(obj_namespace) label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)"))
               format: {type: number}
             - label: etcd, hours ago
               query: (time() - max(kube_cronjob_status_last_successful_time{cronjob="etcd-backup"})) / 3600
