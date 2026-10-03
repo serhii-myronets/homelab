@@ -108,7 +108,7 @@
           url: http://torrent-web.torrent.svc.cluster.local:8080
           enableLeechProgress: true
 
-- Storage & backups:
+- Health:
     # Straight from VictoriaMetrics, which keeps every number here already.
     - Disks:
         href: https://grafana.home
@@ -152,6 +152,44 @@
             - label: etcd, hours ago
               query: (time() - max(kube_cronjob_status_last_successful_time{cronjob="etcd-backup"})) / 3600
               format: {type: number, options: {maximumFractionDigits: 1}}
+    - Nodes:
+        href: https://grafana.home
+        description: How warm each machine runs, and how long since a reboot
+        icon: mdi-thermometer
+        widget:
+          type: prometheusmetric
+          url: http://vmsingle-vm.observability.svc.cluster.local:8428
+          refreshInterval: 60000
+          metrics:
+            - label: controlplane CPU
+              query: max(node_hwmon_temp_celsius{instance="192.168.8.10:9100", chip=~".*coretemp.*"})
+              format: {type: number, suffix: " °C", options: {maximumFractionDigits: 0}}
+            - label: controlplane NVMe
+              query: max(node_hwmon_temp_celsius{instance="192.168.8.10:9100", chip=~".*nvme.*"})
+              format: {type: number, suffix: " °C", options: {maximumFractionDigits: 0}}
+            - label: worker-1 CPU
+              query: max(node_hwmon_temp_celsius{instance="192.168.8.11:9100", chip=~".*coretemp.*"})
+              format: {type: number, suffix: " °C", options: {maximumFractionDigits: 0}}
+            - label: Up, days
+              query: min(node_time_seconds - node_boot_time_seconds) / 86400
+              format: {type: number, options: {maximumFractionDigits: 1}}
+    - Alerts:
+        href: https://grafana.home/alerting/groups
+        description: What vmalert has firing - nothing reaches anyone yet
+        icon: mdi-bell-alert
+        widget:
+          type: prometheusmetric
+          url: http://vmsingle-vm.observability.svc.cluster.local:8428
+          refreshInterval: 60000
+          metrics:
+            # Watchdog and InfoInhibitor always fire, by design, at severity
+            # none; they are left out.
+            - label: Critical
+              query: count(ALERTS{alertstate="firing", severity="critical"}) or vector(0)
+              format: {type: number}
+            - label: Warning
+              query: count(ALERTS{alertstate="firing", severity="warning"}) or vector(0)
+              format: {type: number}
 
 - Home:
     - Sure:
