@@ -242,8 +242,27 @@
 - Network:
     - Router:
         href: https://192.168.8.1
-        description: GL.iNet Flint 2
+        description: GL.iNet Flint 2 - the WAN right now
         icon: glinet.png
+        # The router's node exporter (router/node-exporter), through
+        # VictoriaMetrics; eth1 is the WAN.
+        widget:
+          type: prometheusmetric
+          url: http://vmsingle-vm.observability.svc.cluster.local:8428
+          refreshInterval: 30000
+          metrics:
+            - label: Down
+              query: rate(node_network_receive_bytes_total{job="router", device="eth1"}[2m]) * 8
+              format: {type: bitrate}
+            - label: Up
+              query: rate(node_network_transmit_bytes_total{job="router", device="eth1"}[2m]) * 8
+              format: {type: bitrate}
+            - label: Connections
+              query: node_nf_conntrack_entries{job="router"}
+              format: {type: number}
+            - label: Wi-Fi clients
+              query: sum(wifi_stations{job="router"})
+              format: {type: number}
     - AdGuard Home:
         href: http://192.168.8.1:3000
         description: DNS and blocking, on the router

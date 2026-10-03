@@ -6,3 +6,4 @@ resources:
   - helmrelease.yaml
   - httproute.yaml
   - volsync-scrape.yaml
+  - router-scrape.yaml

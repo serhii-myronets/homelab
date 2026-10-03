@@ -1,6 +1,6 @@
 ---
 id: "0036"
-title: Gatus runs on the router, the one thing installed there over ssh
+title: Gatus and a metrics exporter run on the router, installed over ssh
 date: 2026-10-01
 status: accepted
 tags: [router, gatus, monitoring, alerting, ssh]
@@ -8,7 +8,7 @@ hosts: [router, core, worker-1]
 amends: ["0007"]
 ---
 
-# Gatus runs on the router, the one thing installed there over ssh
+# Gatus and a metrics exporter run on the router, installed over ssh
 
 The house needed a watcher that does not share the fate of what it watches -
 the "watcher on the router" in service-ideas. Gatus ran first on worker-1 and
@@ -32,9 +32,19 @@ setting, no cron entry. It lives in /opt/gatus and /etc/gatus, starts from
 upgrade keeps it. The firmware has nothing of its own there to overwrite, which
 is the distinction 0007 already draws for LuCI-only settings.
 
-So the exception is narrow: `router/gatus/install.sh` is the only thing in
-this repository that writes to the router, and only those paths. Everything
-else on the router stays as 0007 has it.
+So the exception is narrow: `router/gatus/install.sh` and
+`router/node-exporter/install.sh` are the only things in this repository that
+write to the router, and only to what they install. Everything else on the
+router stays as 0007 has it.
+
+## The exporter, added 2026-10-02
+
+The same reasoning took in a second package: prometheus-node-exporter-lua,
+from the router's own opkg feed, with its openwrt and wifi_stations modules,
+and its own configuration set to listen on the LAN. vmagent scrapes it, so
+the router's CPU, memory, WAN traffic, connections and Wi-Fi clients sit in
+Grafana and on dash.home. It holds about 2 MB. A firmware upgrade keeps its
+configuration but not the package; running its install.sh again restores it.
 
 ## How it stays declarative
 
