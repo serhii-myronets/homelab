@@ -16,6 +16,9 @@ spec:
   driftDetection:
     mode: enabled
   values:
+    # Restarted when its Cloudflare token changes (reloader.yaml).
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
     provider:
       name: cloudflare
 

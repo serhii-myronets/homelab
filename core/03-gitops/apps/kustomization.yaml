@@ -26,10 +26,11 @@ resources:
 
   - system/observability/ks.yaml
 
-  # Two that need no directory of their own: a HelmRelease with no manifests
-  # beside it, and one that carries its own upstream source.
+  # Three that need no directory of their own: two HelmReleases with no
+  # manifests beside them, and one that carries its own upstream source.
   - system/platform/intel-gpu.yaml
   - system/platform/metrics-server.yaml
+  - system/platform/reloader.yaml
   - system/platform/headlamp/ks.yaml
 
   - system/security/cert-manager/ks.yaml
