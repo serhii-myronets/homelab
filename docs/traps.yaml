@@ -1441,3 +1441,29 @@ traps:
       active downloads instead of six. If it still fires, the staging volume
       can move to its own disk.
     diagnosed: 2026-10-02, from the alert on dash.home
+
+  - id: every-volsync-run-rewrites-the-xfs-log
+    applies_to: [volsync, openebs, lvm, xfs, controlplane, disks]
+    symptom: >-
+      The WD's thin pool (dm-1, nvme_thinpool_tdata) writes about 2 GB an
+      hour at rest, while every volume on it together writes a fifth of that.
+      Per minute, the excess is six spikes of 220-275 MB an hour, each a
+      minute after a service's backup minute.
+    cause: >-
+      Each VolSync run snapshots the claim and mounts a clone of it. XFS
+      refuses two mounted filesystems with one UUID, so OpenEBS gives the
+      clone a new one first - xfs_admin, "Clearing log and setting UUID" in
+      the node plugin's log - and that writes the whole log and every
+      superblock, each write copying a 256 KiB chunk the clone still shares.
+      About 225 MB whatever the claim's size: 2Gi Vaultwarden costs what
+      20Gi Immich does. Six services hourly come to some 32 GB a day, two
+      thirds of the WD's writes outside downloads.
+    tell: >-
+      increase(node_disk_written_bytes_total{device="dm-1"}[1m]) spiking at
+      a backup minute plus one, and "Successfully updated xfs filesystem
+      UUID" for a volsync-src claim at the same time.
+    fix: >-
+      Not fixed. The cost is per run, so fewer runs is the lever; ext4, which
+      allows duplicate UUIDs, may avoid it but means recreating every claim.
+      At this rate the WD's 300 TBW lasts well past its warranty.
+    diagnosed: 2026-10-03, looking for what wears the WD
