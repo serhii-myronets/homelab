@@ -18,15 +18,16 @@ quicklaunch:
 layout:
   Photos & media:
     style: row
-    columns: 3
+    columns: 2
     icon: mdi-play-box-multiple
   Library:
     style: row
     columns: 4
     icon: mdi-bookshelf
+  # The two tall cards - the calendar and the transfers - share a row.
   Coming up:
     style: row
-    columns: 1
+    columns: 2
     icon: mdi-calendar
   Storage & backups:
     style: row
