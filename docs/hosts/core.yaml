@@ -172,7 +172,8 @@ services:
       keys are copies in Infisical /homepage of Sonarr's, Radarr's,
       Prowlarr's and Seerr's own. Immich and Jellyfin have no widget until
       each gets an API key made in its own interface. qBittorrent's widget
-      needs none, as its whitelist admits the pod network.
+      needs none, as its whitelist admits the pod network. The storage and
+      backup cards query VictoriaMetrics directly.
   samba:
     address: 192.168.8.10, host network, Beelink.local
     auth: guest

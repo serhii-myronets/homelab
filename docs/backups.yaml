@@ -28,7 +28,10 @@ volsync_to_r2:
     Vaultwarden, Sure, Uptime Kuma and the rest.
   watch: >-
     A ReplicationSource with an empty lastSyncTime has never run, and looks
-    like a healthy one at a glance (traps.yaml).
+    like a healthy one at a glance (traps.yaml). VictoriaMetrics scrapes
+    VolSync since 2026-10-02: volsync_volume_out_of_sync{role="source"} is 1
+    for a backup that missed its hour, and dash.home shows the count. VolSync
+    keeps reporting an archived service until its controller restarts.
   leftover: >-
     volsync/actual and volsync/uptime-kuma, from archived services; nothing
     writes or prunes them, and each restores its service if it returns
