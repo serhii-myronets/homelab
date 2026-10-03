@@ -8,6 +8,14 @@
 # Every step is skipped when it is already done, and nothing here erases a
 # disk: on a disk that still holds partitions, pvcreate fails and the job
 # retries until the disk is wiped by hand.
+#
+# Zeroing off: by default a thin pool writes zeros over every chunk before
+# handing it to a volume, which doubles the writes of anything filling fresh
+# space. qBittorrent's staging volume does exactly that, and on the WD - one
+# PCIe 3.0 lane - it held the disk saturated for half an hour at a time
+# (NodeDiskIOSaturation, traps.yaml). The volumes are XFS on a single tenant;
+# nothing reads a block it has not written. lvchange is idempotent, so the
+# step runs every time.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -31,6 +39,7 @@ spec:
               vgs nvme || { pvs "$DISK" || pvcreate "$DISK"; vgcreate nvme "$DISK"; };
               lvs nvme/nvme_thinpool ||
               lvcreate --type thin-pool --extents 95%FREE --name nvme_thinpool nvme;
+              lvchange --zero n nvme/nvme_thinpool;
               vgs nvme; lvs nvme
           env:
             # No udev inside the container.
@@ -68,6 +77,7 @@ spec:
               vgs ssd || { pvs "$DISK" || pvcreate "$DISK"; vgcreate ssd "$DISK"; };
               lvs ssd/ssd_thinpool ||
               lvcreate --type thin-pool --extents 95%FREE --name ssd_thinpool ssd;
+              lvchange --zero n ssd/ssd_thinpool;
               vgs ssd; lvs ssd
           env:
             - {name: DM_DISABLE_UDEV, value: "1"}
