@@ -1,0 +1,12 @@
+# The repositories themselves, on the ORICO. Not backed up: they are the
+# backup (decisions/0035).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: lvm-worker-1
+  resources:
+    requests:
+      storage: 400Gi

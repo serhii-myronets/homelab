@@ -1,0 +1,83 @@
+# Immich's originals, copied every night to rest-server on worker-1 - a second
+# machine and the ORICO, so the HDD they live on can die without taking them.
+# The photographs only: library, upload, profile and Immich's own database
+# dumps under backups. Thumbnails and encoded video are left out; Immich makes
+# them again from the originals.
+#
+# No forget: the server is append-only, and keeping what was deleted in Immich
+# is the point of a copy. Restoring is in docs/backups.yaml.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: photo-copy
+spec:
+  schedule: "15 1 * * *"
+  timeZone: America/Los_Angeles
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          # Any user can read the originals (644 and 755); nothing here writes.
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile: {type: RuntimeDefault}
+          containers:
+            - name: restic
+              image: restic/restic:0.19.1
+              command:
+                - sh
+                - -c
+                - >-
+                  set -e;
+                  restic cat config >/dev/null 2>&1 || restic init;
+                  restic backup --host immich --tag photos
+                  /photos/library /photos/upload /photos/profile /photos/backups
+              env:
+                - {name: HOME, value: /tmp}
+                - {name: RESTIC_CACHE_DIR, value: /tmp/restic-cache}
+              envFrom:
+                - secretRef: {name: photo-copy-restic}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: [ALL]}
+              # A limit keeps Talos's OOM controller off it; see traps.yaml.
+              resources:
+                requests: {cpu: 50m, memory: 128Mi}
+                limits: {memory: 1Gi}
+              volumeMounts:
+                - {name: photos, mountPath: /photos, readOnly: true}
+                - {name: tmp, mountPath: /tmp}
+          volumes:
+            - name: photos
+              persistentVolumeClaim: {claimName: hdd-a, readOnly: true}
+            - name: tmp
+              emptyDir: {sizeLimit: 2Gi}
+---
+# rest-server on worker-1, and the restic password every repository here
+# shares.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: photo-copy-restic
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: infisical-cloud
+  target:
+    name: photo-copy-restic
+    template:
+      data:
+        RESTIC_REPOSITORY: "rest:http://immich:{{ .REST_PASSWORD }}@rest-server.rest-server.svc.cluster.local:8000/immich/"
+        RESTIC_PASSWORD: "{{ .RESTIC_PASSWORD }}"
+  data:
+    - {secretKey: REST_PASSWORD, remoteRef: {key: /services/immich/PHOTO_COPY_REST_PASSWORD}}
+    - {secretKey: RESTIC_PASSWORD, remoteRef: {key: /system/backups/RESTIC_PASSWORD}}

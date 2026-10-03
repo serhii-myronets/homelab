@@ -1,0 +1,97 @@
+# The router's configuration, every night, to R2 - the backup GL.iNet's own UI
+# makes, so it restores the same way (docs/backups.yaml). A reflash once lost
+# every setting with nothing to restore from (traps.yaml,
+# router-reflash-wipes-everything). Stateless, so on worker-1.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: router-backup
+spec:
+  schedule: "45 3 * * *"
+  timeZone: America/Los_Angeles
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: worker-1
+          tolerations:
+            - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            fsGroup: 65534
+            seccompProfile: {type: RuntimeDefault}
+          initContainers:
+            # ssh fetches the archive; restic below uploads it. The router
+            # ignores the command asked for and runs the one its key forces.
+            - name: fetch
+              image: alpine/git:v2.54.0
+              command:
+                - sh
+                - -c
+                # ssh refuses a key others can read, and a Secret's files
+                # cannot be 0600 to this user; hence the copy.
+                - >-
+                  set -e;
+                  cp /keys/id_ed25519 /tmp/id && chmod 600 /tmp/id;
+                  ssh -i /tmp/id -o BatchMode=yes -o StrictHostKeyChecking=yes
+                  -o UserKnownHostsFile=/known/known_hosts root@192.168.8.1 backup
+                  > /backup/router-config.tar.gz;
+                  tar tzf /backup/router-config.tar.gz > /dev/null;
+                  echo "$(tar tzf /backup/router-config.tar.gz | wc -l) files"
+              env:
+                - {name: HOME, value: /tmp}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: [ALL]}
+              resources:
+                requests: {cpu: 10m, memory: 16Mi}
+                limits: {memory: 64Mi}
+              volumeMounts:
+                - {name: backup, mountPath: /backup}
+                - {name: tmp, mountPath: /tmp}
+                - {name: key, mountPath: /keys, readOnly: true}
+                - {name: known-hosts, mountPath: /known, readOnly: true}
+          containers:
+            - name: restic
+              image: restic/restic:0.19.1
+              command:
+                - sh
+                - -c
+                - >-
+                  set -e;
+                  restic cat config >/dev/null 2>&1 || restic init;
+                  restic backup --host router --tag config /backup/router-config.tar.gz;
+                  restic forget --host router --tag config --keep-daily 30 --keep-monthly 12 --prune
+              env:
+                - {name: HOME, value: /tmp}
+                - {name: RESTIC_CACHE_DIR, value: /tmp/restic-cache}
+              envFrom:
+                - secretRef: {name: router-backup-restic}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: [ALL]}
+              resources:
+                requests: {cpu: 10m, memory: 64Mi}
+                limits: {memory: 512Mi}
+              volumeMounts:
+                - {name: backup, mountPath: /backup, readOnly: true}
+                - {name: tmp, mountPath: /tmp}
+          volumes:
+            - name: backup
+              emptyDir: {sizeLimit: 64Mi}
+            - name: tmp
+              emptyDir: {sizeLimit: 512Mi}
+            - name: key
+              secret: {secretName: router-backup-ssh, defaultMode: 0440}
+            - name: known-hosts
+              configMap: {name: router-known-hosts}

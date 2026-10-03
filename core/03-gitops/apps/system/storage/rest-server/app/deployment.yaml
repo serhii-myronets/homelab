@@ -1,0 +1,83 @@
+# restic's REST server on worker-1, holding copies of what controlplane keeps:
+# today Immich's originals. A second machine and a second disk from the HDD
+# they come from, so a dead hdd-a costs nothing.
+#
+# Append-only: a client can add snapshots and never delete one, so a broken
+# or compromised backup job cannot take the copies with it. Pruning, when it
+# is ever wanted, is done here by hand. Private repositories: each user sees
+# only the path named after it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rest-server
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: 1
+  # The repositories are an lvm volume, which mounts into one pod only.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: rest-server
+  template:
+    metadata:
+      labels:
+        app: rest-server
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-1
+      tolerations:
+        - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: rest-server
+          image: restic/rest-server:0.14.0
+          command: [rest-server]
+          args:
+            - --path=/data
+            - --listen=:8000
+            - --htpasswd-file=/etc/rest-server/.htpasswd
+            - --append-only
+            - --private-repos
+            - --prometheus
+            - --prometheus-no-auth
+          ports:
+            - {name: http, containerPort: 8000}
+          readinessProbe:
+            tcpSocket: {port: http}
+          livenessProbe:
+            tcpSocket: {port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 256Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+            - {name: htpasswd, mountPath: /etc/rest-server, readOnly: true}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: data}
+        - name: htpasswd
+          secret: {secretName: htpasswd}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rest-server
+  labels:
+    app: rest-server
+spec:
+  selector:
+    app: rest-server
+  ports:
+    - {name: http, port: 8000, targetPort: http}

@@ -10,6 +10,7 @@ resources:
   - machine-learning.yaml
   - deployment.yaml
   - httproute.yaml
+  - photo-copy.yaml
 components:
   - ../../../../components/backed-up-volume
 # The claim this declares, `data`, is Postgres's. It is the only part of
