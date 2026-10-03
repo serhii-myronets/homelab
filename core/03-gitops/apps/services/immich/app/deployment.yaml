@@ -24,7 +24,7 @@ spec:
         # Kubelet creates a missing subPath directory owned by root, and the
         # server writes as the user the image runs as.
         - name: prepare
-          image: busybox:1.37
+          image: busybox:1.38
           command: [sh, -c, "mkdir -p /data && chown 1000:1000 /data"]
           # Equal to its limits, so the pod stays Guaranteed; see below.
           resources:
@@ -34,7 +34,7 @@ spec:
             - {name: hdd-a, mountPath: /data, subPath: photos}
       containers:
         - name: server
-          image: ghcr.io/immich-app/immich-server:v3.2.2
+          image: ghcr.io/immich-app/immich-server:v3.2.4
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: DB_HOSTNAME, value: postgres}

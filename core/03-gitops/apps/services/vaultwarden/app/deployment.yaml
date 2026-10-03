@@ -22,7 +22,7 @@ spec:
         # A restored claim may be owned by the VolSync mover, while the image
         # deliberately runs unprivileged as UID 1000.
         - name: prepare-data
-          image: busybox:1.37
+          image: busybox:1.38
           # A memory limit on every container, this one included, gives the pod
           # memory.max and keeps Talos's OOM controller off it; see traps.yaml.
           resources:

@@ -25,7 +25,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: prepare-data
-          image: busybox:1.37
+          image: busybox:1.38
           command:
             - sh
             - -c
@@ -68,7 +68,7 @@ spec:
         # Redis contains only the Sidekiq queue; jobs are retried after a pod
         # restart and are not financial records, so it deliberately has no PVC.
         - name: redis
-          image: docker.io/library/redis:8.4
+          image: docker.io/library/redis:8.10
           command: [redis-server, --save, "", --appendonly, "no"]
           readinessProbe:
             exec: {command: [redis-cli, ping]}

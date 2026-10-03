@@ -17,7 +17,7 @@ spec:
       initContainers:
         # A fresh or restored volume may be root-owned.
         - name: prepare
-          image: busybox:1.37
+          image: busybox:1.38
           # A memory limit on every container, this one included, gives the pod
           # memory.max and keeps Talos's OOM controller off it; see traps.yaml.
           resources:
