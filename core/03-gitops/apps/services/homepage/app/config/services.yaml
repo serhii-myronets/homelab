@@ -1,0 +1,144 @@
+# Every card. href is what a person opens; siteMonitor checks that same
+# address through the Gateway, with home-ca trusted; namespace and
+# podSelector tie a card to its pods for their state and load; widget is the
+# live numbers, read inside the cluster.
+#
+# Immich and Jellyfin carry no widget yet: each needs an API key made in its
+# own interface (Immich: Account settings, API keys, with server.statistics;
+# Jellyfin: Dashboard, API keys), stored as /homepage/IMMICH_API_KEY and
+# /homepage/JELLYFIN_API_KEY in Infisical and added to externalsecret.yaml.
+
+- Photos & media:
+    - Immich:
+        href: https://immich.home
+        description: Photos and videos
+        icon: immich.png
+        siteMonitor: https://immich.home/api/server/ping
+        namespace: immich
+        app: server
+        podSelector: app=server
+    - Jellyfin:
+        href: https://jellyfin.home
+        description: Films and series
+        icon: jellyfin.png
+        siteMonitor: https://jellyfin.home/health
+        namespace: jellyfin
+        app: jellyfin
+        podSelector: app=jellyfin
+    - Seerr:
+        href: https://seerr.home
+        description: Ask for something to watch
+        icon: seerr.png
+        siteMonitor: https://seerr.home/api/v1/status
+        namespace: library
+        app: library
+        podSelector: app=library
+        widget:
+          type: seerr
+          url: http://seerr.library.svc.cluster.local:5055
+          key: "{{HOMEPAGE_VAR_SEERR_KEY}}"
+          fields: [pending, approved, available]
+
+- Library:
+    - Sonarr:
+        href: https://sonarr.home
+        description: Series
+        icon: sonarr.png
+        siteMonitor: https://sonarr.home/ping
+        widget:
+          type: sonarr
+          url: http://sonarr.library.svc.cluster.local:8989
+          key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
+          fields: [wanted, queued, series]
+    - Radarr:
+        href: https://radarr.home
+        description: Films
+        icon: radarr.png
+        siteMonitor: https://radarr.home/ping
+        widget:
+          type: radarr
+          url: http://radarr.library.svc.cluster.local:7878
+          key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
+          fields: [wanted, queued, movies]
+    - Prowlarr:
+        href: https://prowlarr.home
+        description: Indexers
+        icon: prowlarr.png
+        siteMonitor: https://prowlarr.home/ping
+        widget:
+          type: prowlarr
+          url: http://prowlarr.library.svc.cluster.local:9696
+          key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"
+          fields: [numberOfGrabs, numberOfQueries, numberOfFailGrabs]
+    - qBittorrent:
+        href: https://torrent.home
+        description: Downloads, through NordVPN
+        icon: qbittorrent.png
+        siteMonitor: https://torrent.home/
+        namespace: torrent
+        app: torrent
+        podSelector: app=torrent
+        # No credentials: qBittorrent admits the pod network without a
+        # password (AuthSubnetWhitelist in its qBittorrent.conf).
+        widget:
+          type: qbittorrent
+          url: http://torrent-web.torrent.svc.cluster.local:8080
+          enableLeechProgress: true
+
+- Home:
+    - Sure:
+        href: https://sure.home
+        description: Money
+        icon: sure.png
+        siteMonitor: https://sure.home/up
+        namespace: sure
+        app: sure
+        podSelector: app=sure
+    - Vaultwarden:
+        href: https://vault.home
+        description: Passwords
+        icon: vaultwarden.png
+        siteMonitor: https://vault.home/alive
+        namespace: vaultwarden
+        app: vaultwarden
+        podSelector: app=vaultwarden
+
+- Cluster:
+    - Gatus:
+        href: https://gatus.home
+        description: Checks, from the router
+        icon: gatus.png
+        siteMonitor: https://gatus.home/health
+        widget:
+          type: gatus
+          url: http://192.168.8.1:8090
+          fields: [up, down, uptime]
+    - Grafana:
+        href: https://grafana.home
+        description: Metrics and logs
+        icon: grafana.png
+        siteMonitor: https://grafana.home/api/health
+        namespace: observability
+        app: grafana
+    - Headlamp:
+        href: https://headlamp.home
+        description: The cluster's objects
+        icon: headlamp.png
+        siteMonitor: https://headlamp.home/
+        namespace: headlamp
+        app: headlamp
+    - Flux:
+        href: https://flux.home
+        description: What Git has deployed
+        icon: flux-cd.png
+        siteMonitor: https://flux.home/
+
+- Network:
+    - Router:
+        href: https://192.168.8.1
+        description: GL.iNet Flint 2
+        icon: glinet.png
+    - AdGuard Home:
+        href: http://192.168.8.1:3000
+        description: DNS and blocking, on the router
+        icon: adguard-home.png

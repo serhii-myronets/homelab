@@ -1,0 +1,38 @@
+# Look and layout. Groups are named in services.yaml; their order and shape
+# are set here.
+title: Home
+description: Everything the house runs, and how it is doing
+favicon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/kubernetes.png
+theme: dark
+color: slate
+headerStyle: boxedWidgets
+statusStyle: dot
+useEqualHeights: true
+hideVersion: true
+target: _self
+language: en
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: false
+  provider: duckduckgo
+layout:
+  Photos & media:
+    style: row
+    columns: 3
+    icon: mdi-play-box-multiple
+  Library:
+    style: row
+    columns: 4
+    icon: mdi-bookshelf
+  Home:
+    style: row
+    columns: 2
+    icon: mdi-home-heart
+  Cluster:
+    style: row
+    columns: 4
+    icon: mdi-kubernetes
+  Network:
+    style: row
+    columns: 2
+    icon: mdi-router-network

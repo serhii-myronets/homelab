@@ -1,0 +1,16 @@
+# What lives outside the house, and the way in when the cluster is down.
+- Outside:
+    - Cloudflare:
+        - icon: cloudflare.png
+          href: https://dash.cloudflare.com
+    - Infisical:
+        - icon: infisical.png
+          href: https://app.infisical.com
+    - Repository:
+        - icon: github.png
+          href: https://github.com/serhii-myronets/homelab
+- When the cluster is down:
+    - Gatus on the router:
+        - icon: gatus.png
+          href: http://192.168.8.1:8090
+          description: answers without the cluster
