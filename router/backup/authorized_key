@@ -1,0 +1,1 @@
+command="sysupgrade -b - 2>/dev/null",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJNRkULKeeHJKW4I2zv0dsfFDmRUQHErBU0fhsF+PZHa router-backup

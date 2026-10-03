@@ -133,7 +133,7 @@
               format: {type: bytes}
     - Backups:
         href: https://grafana.home
-        description: R2 · etcd
+        description: R2 · ORICO
         icon: mdi-backup-restore
         widget:
           type: prometheusmetric
@@ -146,11 +146,14 @@
             - label: behind
               query: sum(volsync_volume_out_of_sync{role="source"} and on(obj_namespace) label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)")) or vector(0)
               format: {type: number}
-            - label: services
-              query: count(volsync_volume_out_of_sync{role="source"} and on(obj_namespace) label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)"))
-              format: {type: number}
             - label: etcd, h
               query: (time() - max(kube_cronjob_status_last_successful_time{cronjob="etcd-backup"})) / 3600
+              format: {type: number, options: {maximumFractionDigits: 1}}
+            - label: photos, h
+              query: (time() - max(kube_cronjob_status_last_successful_time{cronjob="photo-copy"})) / 3600
+              format: {type: number, options: {maximumFractionDigits: 1}}
+            - label: router, h
+              query: (time() - max(kube_cronjob_status_last_successful_time{cronjob="router-backup"})) / 3600
               format: {type: number, options: {maximumFractionDigits: 1}}
     - Alerts:
         href: https://grafana.home/alerting/groups

@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: router-backup
+resources:
+  - namespace.yaml
+  - externalsecret.yaml
+  - cronjob.yaml
+# The router's public host keys, so the job refuses a router it does not know.
+# A reflash makes new ones: refresh this with ssh-keyscan 192.168.8.1.
+configMapGenerator:
+  - name: router-known-hosts
+    files:
+      - config/known_hosts
