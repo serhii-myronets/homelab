@@ -3,7 +3,6 @@
 # podSelector tie a card to its pods for their state and load; widget is the
 # live numbers, read inside the cluster.
 
-
 - Photos & media:
     - Immich:
         href: https://immich.home
@@ -38,6 +37,8 @@
           enableUser: true
           enableMediaControl: false
           showEpisodeNumber: true
+
+- Library:
     - Seerr:
         href: https://seerr.home
         description: Ask for something to watch
@@ -48,8 +49,6 @@
           url: http://seerr.library.svc.cluster.local:5055
           key: "{{HOMEPAGE_VAR_SEERR_KEY}}"
           fields: [pending, approved, available]
-
-- Library:
     - Sonarr:
         href: https://sonarr.home
         description: Series
@@ -80,20 +79,6 @@
           url: http://prowlarr.library.svc.cluster.local:9696
           key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"
           fields: [numberOfGrabs, numberOfQueries, numberOfFailGrabs]
-    - qBittorrent:
-        href: https://torrent.home
-        description: Downloads, through NordVPN
-        icon: qbittorrent.png
-        siteMonitor: https://torrent.home/
-        namespace: torrent
-        app: torrent
-        podSelector: app=torrent
-        # No credentials: qBittorrent admits the pod network without a
-        # password (AuthSubnetWhitelist in its qBittorrent.conf).
-        widget:
-          type: qbittorrent
-          url: http://torrent-web.torrent.svc.cluster.local:8080
-          enableLeechProgress: true
 
 - Coming up:
     - Next to arrive:
@@ -108,6 +93,20 @@
           integrations:
             - {type: sonarr, service_group: Library, service_name: Sonarr, baseUrl: "https://sonarr.home"}
             - {type: radarr, service_group: Library, service_name: Radarr, baseUrl: "https://radarr.home"}
+    - qBittorrent:
+        href: https://torrent.home
+        description: Downloads, through NordVPN
+        icon: qbittorrent.png
+        siteMonitor: https://torrent.home/
+        namespace: torrent
+        app: torrent
+        podSelector: app=torrent
+        # No credentials: qBittorrent admits the pod network without a
+        # password (AuthSubnetWhitelist in its qBittorrent.conf).
+        widget:
+          type: qbittorrent
+          url: http://torrent-web.torrent.svc.cluster.local:8080
+          enableLeechProgress: true
 
 - Storage & backups:
     # Straight from VictoriaMetrics, which keeps every number here already.
