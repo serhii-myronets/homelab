@@ -1,0 +1,2 @@
+# Inside the cluster, through the pod's service account (rbac.yaml).
+mode: cluster

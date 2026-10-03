@@ -1,0 +1,85 @@
+# The house's front page at dash.home: every service, its state, and the live
+# numbers worth a glance. Stateless - its configuration is config/ in Git and
+# its keys come from Infisical - so it runs on worker-1 (decisions/0035).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homepage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homepage
+  template:
+    metadata:
+      labels:
+        app: homepage
+    spec:
+      serviceAccountName: homepage
+      nodeSelector:
+        kubernetes.io/hostname: worker-1
+      tolerations:
+        - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: homepage
+          image: ghcr.io/gethomepage/homepage:v2.4.0
+          env:
+            - {name: TZ, value: America/Los_Angeles}
+            - name: MY_POD_IP
+              valueFrom: {fieldRef: {fieldPath: status.podIP}}
+            # Homepage answers only the names it is told; the pod's own address
+            # is for the probes below.
+            - {name: HOMEPAGE_ALLOWED_HOSTS, value: "dash.home,$(MY_POD_IP):3000"}
+            - {name: NODE_EXTRA_CA_CERTS, value: /etc/home-ca/home-ca.crt}
+            - {name: LOG_TARGETS, value: stdout}
+          envFrom:
+            - secretRef: {name: homepage-keys}
+          ports:
+            - {name: http, containerPort: 3000}
+          readinessProbe:
+            httpGet: {path: /api/healthcheck, port: http}
+          livenessProbe:
+            httpGet: {path: /api/healthcheck, port: http}
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 20m, memory: 128Mi}
+            limits: {memory: 384Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            # Homepage writes into /app/config the files it is not given, so
+            # the directory is scratch and only the files below are Git's.
+            - {name: scratch, mountPath: /app/config}
+            - {name: config, mountPath: /app/config/settings.yaml, subPath: settings.yaml}
+            - {name: config, mountPath: /app/config/services.yaml, subPath: services.yaml}
+            - {name: config, mountPath: /app/config/widgets.yaml, subPath: widgets.yaml}
+            - {name: config, mountPath: /app/config/bookmarks.yaml, subPath: bookmarks.yaml}
+            - {name: config, mountPath: /app/config/kubernetes.yaml, subPath: kubernetes.yaml}
+            - {name: config, mountPath: /app/config/custom.css, subPath: custom.css}
+            - {name: cache, mountPath: /app/.next/cache}
+            - {name: home-ca, mountPath: /etc/home-ca, readOnly: true}
+      volumes:
+        - name: config
+          configMap: {name: homepage-config}
+        - name: scratch
+          emptyDir: {sizeLimit: 64Mi}
+        - name: cache
+          emptyDir: {sizeLimit: 256Mi}
+        - name: home-ca
+          secret: {secretName: home-ca-root}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homepage
+spec:
+  selector:
+    app: homepage
+  ports:
+    - {name: http, port: 80, targetPort: http}
