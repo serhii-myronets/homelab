@@ -101,6 +101,24 @@ Terraform's state moved to R2 and secrets.yaml into Infisical, with the
 cluster's own Infisical credential beside it (0037), so nothing that rebuilds
 core lives on the Mac alone.
 
+## Updates, and the repository made public-facing
+
+Renovate had been configured since 2026-09-19 and never run: no App was
+installed. It now runs in GitHub Actions on each run's own token, after a
+first morning with Mend's App and the workflow both opening pull requests
+against each other (0018). Looking for what wears the WD found every VolSync
+run writing about 225 MB whatever the volume's size (traps.yaml), and the six
+services went from hourly backups to nightly.
+
+On 2026-10-03 main's history was rewritten and force-pushed: Co-Authored-By
+trailers naming the assistant removed from 81 commits, an old
+docker-compose file for a long-gone self-hosted Infisical - with its real
+keys - removed from every commit, and the two spellings of the author's name
+made one. The tree is byte-identical; the previous history is in a bundle
+outside the repository. The keys stay reachable on GitHub through old
+pull-request refs, which only GitHub can remove; the instance they opened no
+longer exists. The README now addresses other readers, under MIT.
+
 Still open:
 - Immich's originals outside the house - R2.
 - Alerting (0008): a Telegram bot and a healthchecks.io account, then
