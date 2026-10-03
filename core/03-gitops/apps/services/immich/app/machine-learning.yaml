@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: machine-learning
-          image: ghcr.io/immich-app/immich-machine-learning:v3.2.2-openvino
+          image: ghcr.io/immich-app/immich-machine-learning:v3.2.4-openvino
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: MACHINE_LEARNING_WORKERS, value: "1"}
