@@ -2,6 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cloudflared
+  annotations:
+    # Restarted when a Secret or ConfigMap it reads changes (reloader.yaml).
+    reloader.stakater.com/auto: "true"
 spec:
   # One node, so a second replica would not survive its loss; each connector
   # already keeps four connections to Cloudflare, and a rolling update starts
