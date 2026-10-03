@@ -111,7 +111,7 @@ run writing about 225 MB whatever the volume's size (traps.yaml), and the six
 services went from hourly backups to nightly.
 
 On 2026-10-03 main's history was rewritten and force-pushed: Co-Authored-By
-trailers naming the assistant removed from 81 commits, an old
+trailers naming the assistant removed from 50 commits, an old
 docker-compose file for a long-gone self-hosted Infisical - with its real
 keys - removed from every commit, and the two spellings of the author's name
 made one. The tree is byte-identical; the previous history is in a bundle
