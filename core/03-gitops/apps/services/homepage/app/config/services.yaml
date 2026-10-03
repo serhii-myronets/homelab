@@ -6,7 +6,7 @@
 - Photos & media:
     - Immich:
         href: https://immich.home
-        description: Photos and videos
+        description: Photos
         icon: immich.png
         siteMonitor: https://immich.home/api/server/ping
         namespace: immich
@@ -20,7 +20,7 @@
           fields: [photos, videos, storage]
     - Jellyfin:
         href: https://jellyfin.home
-        description: Films and series
+        description: Media
         icon: jellyfin.png
         siteMonitor: https://jellyfin.home/health
         namespace: jellyfin
@@ -41,7 +41,7 @@
 - Library:
     - Seerr:
         href: https://seerr.home
-        description: Ask for something to watch
+        description: Requests
         icon: seerr.png
         siteMonitor: https://seerr.home/api/v1/status
         widget:
@@ -81,8 +81,8 @@
           fields: [numberOfGrabs, numberOfQueries, numberOfFailGrabs]
 
 - Coming up:
-    - Next to arrive:
-        description: Episodes and films due, from Sonarr and Radarr
+    - Calendar:
+        description: Sonarr · Radarr
         icon: mdi-calendar-star
         widget:
           type: calendar
@@ -95,7 +95,7 @@
             - {type: radarr, service_group: Library, service_name: Radarr, baseUrl: "https://radarr.home"}
     - qBittorrent:
         href: https://torrent.home
-        description: Downloads, through NordVPN
+        description: via NordVPN
         icon: qbittorrent.png
         siteMonitor: https://torrent.home/
         namespace: torrent
@@ -112,28 +112,28 @@
     # Straight from VictoriaMetrics, which keeps every number here already.
     - Disks:
         href: https://grafana.home
-        description: The HDDs, the fullest volume, controlplane's swap
+        description: Free space
         icon: mdi-harddisk
         widget:
           type: prometheusmetric
           url: http://vmsingle-vm.observability.svc.cluster.local:8428
           refreshInterval: 60000
           metrics:
-            - label: Photos disk free
+            - label: hdd-a
               query: node_filesystem_avail_bytes{mountpoint="/var/mnt/hdd-a"}
               format: {type: bytes}
-            - label: Second disk free
+            - label: hdd-b
               query: node_filesystem_avail_bytes{mountpoint="/var/mnt/hdd-b"}
               format: {type: bytes}
-            - label: Fullest volume
+            - label: fullest PVC
               query: max(kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) * 100
               format: {type: number, suffix: "%", options: {maximumFractionDigits: 0}}
-            - label: Swap in use
+            - label: swap
               query: node_memory_SwapTotal_bytes{instance="192.168.8.10:9100"} - node_memory_SwapFree_bytes{instance="192.168.8.10:9100"}
               format: {type: bytes}
     - Backups:
         href: https://grafana.home
-        description: Hourly to R2 for every service, nightly for etcd
+        description: R2 · etcd
         icon: mdi-backup-restore
         widget:
           type: prometheusmetric
@@ -143,39 +143,18 @@
             # 1 for a backup that has missed its hour. Backups only - restores
             # are role destination - and only in namespaces that still exist:
             # VolSync keeps reporting an archived service until it restarts.
-            - label: Services behind
+            - label: behind
               query: sum(volsync_volume_out_of_sync{role="source"} and on(obj_namespace) label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)")) or vector(0)
               format: {type: number}
-            - label: Services backed up
+            - label: services
               query: count(volsync_volume_out_of_sync{role="source"} and on(obj_namespace) label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)"))
               format: {type: number}
-            - label: etcd, hours ago
+            - label: etcd, h
               query: (time() - max(kube_cronjob_status_last_successful_time{cronjob="etcd-backup"})) / 3600
-              format: {type: number, options: {maximumFractionDigits: 1}}
-    - Nodes:
-        href: https://grafana.home
-        description: How warm each machine runs, and how long since a reboot
-        icon: mdi-thermometer
-        widget:
-          type: prometheusmetric
-          url: http://vmsingle-vm.observability.svc.cluster.local:8428
-          refreshInterval: 60000
-          metrics:
-            - label: controlplane CPU
-              query: max(node_hwmon_temp_celsius{instance="192.168.8.10:9100", chip=~".*coretemp.*"})
-              format: {type: number, suffix: " °C", options: {maximumFractionDigits: 0}}
-            - label: controlplane NVMe
-              query: max(node_hwmon_temp_celsius{instance="192.168.8.10:9100", chip=~".*nvme.*"})
-              format: {type: number, suffix: " °C", options: {maximumFractionDigits: 0}}
-            - label: worker-1 CPU
-              query: max(node_hwmon_temp_celsius{instance="192.168.8.11:9100", chip=~".*coretemp.*"})
-              format: {type: number, suffix: " °C", options: {maximumFractionDigits: 0}}
-            - label: Up, days
-              query: min(node_time_seconds - node_boot_time_seconds) / 86400
               format: {type: number, options: {maximumFractionDigits: 1}}
     - Alerts:
         href: https://grafana.home/alerting/groups
-        description: What vmalert has firing - nothing reaches anyone yet
+        description: vmalert
         icon: mdi-bell-alert
         widget:
           type: prometheusmetric
@@ -184,10 +163,10 @@
           metrics:
             # Watchdog and InfoInhibitor always fire, by design, at severity
             # none; they are left out.
-            - label: Critical
+            - label: critical
               query: count(ALERTS{alertstate="firing", severity="critical"}) or vector(0)
               format: {type: number}
-            - label: Warning
+            - label: warning
               query: count(ALERTS{alertstate="firing", severity="warning"}) or vector(0)
               format: {type: number}
 
@@ -212,7 +191,7 @@
 - Cluster:
     - Gatus:
         href: https://gatus.home
-        description: Checks, from the router
+        description: on the router
         icon: gatus.png
         siteMonitor: https://gatus.home/health
         widget:
@@ -221,28 +200,28 @@
           fields: [up, down, uptime]
     - Grafana:
         href: https://grafana.home
-        description: Metrics and logs
+        description: Metrics · logs
         icon: grafana.png
         siteMonitor: https://grafana.home/api/health
         namespace: observability
         app: grafana
     - Headlamp:
         href: https://headlamp.home
-        description: The cluster's objects
+        description: Kubernetes
         icon: headlamp.png
         siteMonitor: https://headlamp.home/
         namespace: headlamp
         app: headlamp
     - Flux:
         href: https://flux.home
-        description: What Git has deployed
+        description: GitOps
         icon: flux-cd.png
         siteMonitor: https://flux.home/
 
 - Network:
     - Router:
         href: https://192.168.8.1
-        description: GL.iNet Flint 2 - the WAN right now
+        description: WAN
         icon: glinet.png
         # The router's node exporter (router/node-exporter), through
         # VictoriaMetrics; eth1 is the WAN.
@@ -251,19 +230,19 @@
           url: http://vmsingle-vm.observability.svc.cluster.local:8428
           refreshInterval: 30000
           metrics:
-            - label: Down
+            - label: down
               query: rate(node_network_receive_bytes_total{job="router", device="eth1"}[2m]) * 8
               format: {type: bitrate}
-            - label: Up
+            - label: up
               query: rate(node_network_transmit_bytes_total{job="router", device="eth1"}[2m]) * 8
               format: {type: bitrate}
-            - label: Connections
+            - label: conns
               query: node_nf_conntrack_entries{job="router"}
               format: {type: number}
-            - label: Wi-Fi clients
+            - label: wi-fi
               query: sum(wifi_stations{job="router"})
               format: {type: number}
     - AdGuard Home:
         href: http://192.168.8.1:3000
-        description: DNS and blocking, on the router
+        description: DNS
         icon: adguard-home.png
