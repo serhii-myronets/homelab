@@ -84,7 +84,7 @@ spec:
           # liabilities product only when the account being linked is one;
           # before it Plaid hides such institutions from its search with no
           # error.
-          image: ghcr.io/we-promise/sure:0.7.5-alpha.10
+          image: ghcr.io/we-promise/sure:0.7.5-hotfix.1
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -155,7 +155,7 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /rails/storage, subPath: storage}
         - name: worker
-          image: ghcr.io/we-promise/sure:0.7.5-alpha.10
+          image: ghcr.io/we-promise/sure:0.7.5-hotfix.1
           # args, not command: command replaces the image's entrypoint, which is
           # what preloads jemalloc; without it Sidekiq ran on glibc malloc.
           args: [bundle, exec, sidekiq]
