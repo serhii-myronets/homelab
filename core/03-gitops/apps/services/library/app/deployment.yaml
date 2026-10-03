@@ -39,7 +39,7 @@ spec:
         # only on the first download - until then each reports the path as
         # missing. Owned by the UID every media application shares.
         - name: prepare
-          image: busybox:1.37
+          image: busybox:1.38
           # A memory limit on every container, this one included, gives the pod
           # memory.max and keeps Talos's OOM controller off it; see traps.yaml.
           resources:
@@ -69,7 +69,7 @@ spec:
         # The indexer manager: it holds the tracker definitions and pushes
         # them to the two below, which then store none of their own.
         - name: prowlarr
-          image: ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls161
+          image: ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls162
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: PUID, value: "1000"}
@@ -94,7 +94,7 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /config, subPath: prowlarr}
         - name: sonarr
-          image: ghcr.io/linuxserver/sonarr:4.0.20.3014-ls325
+          image: ghcr.io/linuxserver/sonarr:4.0.20.3014-ls326
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: PUID, value: "1000"}
@@ -120,7 +120,7 @@ spec:
             - {name: data, mountPath: /config, subPath: sonarr}
             - {name: hdd-a, mountPath: /data}
         - name: radarr
-          image: ghcr.io/linuxserver/radarr:6.4.4.10685-ls317
+          image: ghcr.io/linuxserver/radarr:6.4.4.10685-ls318
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: PUID, value: "1000"}
@@ -156,7 +156,7 @@ spec:
         # local name followed on 2026-09-22 and is seerr.home; only the
         # subPath above still says jellyseerr, because that one is data.
         - name: seerr
-          image: ghcr.io/seerr-team/seerr:v3.4.1
+          image: ghcr.io/seerr-team/seerr:v3.5.0
           env:
             - {name: TZ, value: America/Los_Angeles}
             # Node would otherwise look for a home directory this uid cannot
