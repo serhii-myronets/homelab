@@ -1,5 +1,7 @@
-# The hypervisor and lab: clusters get built and destroyed here, so nothing
-# that must stay up lives on it.
+# The hypervisor of the lab: the owner's production-like cluster, for the
+# owner's own services and for learning. Its VMs can be destroyed and rebuilt
+# from Terraform; its persistent volumes are disks of this host and outlive
+# them.
 #
 # Reinstalled on 2026-10-03 onto the flat LAN, replacing the VLAN 10 setup
 # the router lost in its reflash. The procedure is in the lab repository's
@@ -65,6 +67,18 @@ guests: >-
   8 vCPU and 18 GB), the API VIP at .50 - names that repeat core's node
   names, so a VM's name alone does not say which cluster. 48 GB of the 62 go to the
   guests. No vzdump schedule: the guests are rebuilt from Terraform.
+
+volumes: >-
+  The lab's persistent volumes, through Proxmox CSI: one zvol per claim in
+  local-zfs, named vm-9999-pvc-<uuid> - owned by no VM, so destroying a VM
+  leaves it - attached as a SCSI disk to the worker that runs the pod. None
+  on 2026-10-03. The lab repository's docs/decisions/0007.
+
+api_users: >-
+  root@pam!terraform, the lab's Terraform (privilege separation off);
+  kubernetes-csi@pve!csi, the lab's Proxmox CSI, with the role CSI -
+  VM.Audit, VM.Config.Disk, Datastore.Allocate, Datastore.AllocateSpace,
+  Datastore.Audit - on /. Both tokens in the lab's Infisical project.
 
 nics:                              # names pinned by the installer
   - {name: nic2, pci: "0000:03:00.0", role: vmbr0, cabled to the router's lan1}

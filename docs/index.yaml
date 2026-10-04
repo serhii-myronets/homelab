@@ -6,7 +6,7 @@
 #
 # The machines, named for their role:
 #   core      the cluster the house depends on   controlplane .10, worker-1 .11
-#   proxmox   the lab, built and destroyed       192.168.8.30
+#   proxmox   the lab, production-like           192.168.8.30
 #   router    the boundary with the internet     192.168.8.1, GL.iNet
 #
 # core/ is deployed onto core, through Terraform, Helmfile and Flux. archive/

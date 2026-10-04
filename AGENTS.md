@@ -3,7 +3,7 @@
 | | | Deployed from here |
 |---|---|---|
 | **core** | the cluster where the services and their data live — everything depends on it. Nodes `controlplane` (a Beelink ME Pro, 192.168.8.10) and `worker-1` (the old OpenMediaVault box, .11, tainted) | yes, out of `core/` |
-| **proxmox** | the lab, built and destroyed on purpose, at 192.168.8.30 | no: from [terraform-talos-gitops-cluster](https://github.com/serhii-myronets/terraform-talos-gitops-cluster) |
+| **proxmox** | the lab, the owner's production-like cluster for own services and learning, at 192.168.8.30 | no: from [terraform-talos-gitops-cluster](https://github.com/serhii-myronets/terraform-talos-gitops-cluster) |
 | **router** | the boundary with the internet — DNS, DHCP, firewall, WireGuard | only Gatus and its metrics exporter, by the scripts under `router/` ([0036](docs/decisions/0036-gatus-on-the-router.md)); nothing else, and never its settings over ssh |
 
 Machines are named for their role, not their hardware. Older commits say
