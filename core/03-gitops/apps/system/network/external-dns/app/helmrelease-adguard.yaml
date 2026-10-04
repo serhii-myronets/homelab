@@ -50,14 +50,17 @@ spec:
 
     sources:
       - gateway-httproute
-    domainFilters:
-      - home
-    # The Gateway's target annotation names the Cloudflare tunnel, for the
-    # other external-dns; on the LAN every name answers at the Gateway's own
-    # address instead.
     extraArgs:
-      - --default-targets=192.168.8.15
-      - --force-default-targets
+      # Its own annotation prefix, so it does not read the Gateway's
+      # external-dns.kubernetes.io/target - the Cloudflare tunnel, for the
+      # other external-dns - and answers every name at the Gateway's own
+      # address, 192.168.8.15. --force-default-targets does not beat that
+      # annotation.
+      - --annotation-prefix=adguard.external-dns.kubernetes.io/
+      # .home names only, and never a wildcard: home-redirect's *.home would
+      # catch every name the lab publishes.
+      - --regex-domain-filter=\.home$
+      - --regex-domain-exclusion=^\*\.
 
     # Only its own records: the lab's are owned by lab. Upsert-only until the
     # first records are checked, then sync.
