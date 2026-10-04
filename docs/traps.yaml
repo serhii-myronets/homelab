@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-10-03
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns]
+  updated: 2026-10-04
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1492,7 +1492,7 @@ traps:
     diagnosed: 2026-10-03, publishing .home from core
 
   - id: glinet-adguard-admits-only-the-router-session
-    applies_to: [router, glinet, adguard, dns, external-dns]
+    applies_to: [router, glinet, adguard, dns, external-dns, argocd]
     symptom: >-
       AdGuard Home's API on the router answers 401 to every client: with no
       credentials, with basic auth for a user added to its config.yaml, and
@@ -1536,3 +1536,24 @@ traps:
       (the lab repository's decisions/0010 and 0011). A key from a file
       kept in step with the secrets would also pass.
     diagnosed: 2026-10-04, moving the lab's External Secrets to JWT
+
+  - id: argo-cd-keeps-a-stale-health-in-its-redis
+    applies_to: [argocd, lab]
+    symptom: >-
+      An Application stays Progressing (or OutOfSync) though every resource
+      is in place: the lab's tetragon showed its DaemonSet at "2 of 5 updated
+      pods are available" while the DaemonSet reported 5 of 5. A hard refresh
+      and a restart of the application controller changed nothing.
+    cause: >-
+      Argo CD 3 keeps each resource's health in the application tree in its
+      Redis (status.resourceHealthSource appTree), and its default
+      ignoreResourceUpdates for /status skips updates that change only the
+      status - so a health caught mid-rollout can stay. The live object Argo
+      CD reads is correct; only the stored tree is not.
+    tell: >-
+      The Argo CD API's resource endpoint shows the right status while its
+      resource-tree shows the old message.
+    fix: >-
+      kubectl -n argocd rollout restart deploy/argocd-redis, then a hard
+      refresh of the Application. Redis holds only cache.
+    diagnosed: 2026-10-04, on the lab's Tetragon DaemonSet; cert-manager's and CloudNativePG's stale OutOfSync the same day cleared with a hard refresh alone
