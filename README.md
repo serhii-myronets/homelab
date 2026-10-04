@@ -35,7 +35,7 @@ flowchart TB
   end
 
   subgraph home [Home network]
-    router[Router<br/>DNS, DHCP, WireGuard, Gatus]
+    router[Router<br/>DNS and BIND for .home, DHCP,<br/>WireGuard, Gatus]
 
     subgraph cp [controlplane]
       gw[Cilium Gateway]

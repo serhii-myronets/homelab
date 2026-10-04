@@ -67,9 +67,18 @@ protection, and the matching protection on the claims, prevents Git removal
 from deleting them. This is separate from a StorageClass's reclaim policy;
 do not delete claims as a way to restart services.
 
-A public HTTPRoute under `serhii.link` is published by external-dns as a proxied
-CNAME to the tunnel `beelink`. cloudflared forwards to the Gateway, and Cloudflare
-Access guards those names. Routes under `.home` remain local.
+Names are published from the HTTPRoutes by two external-dns in
+`apps/system/network/external-dns`, both as owner `core`. Under `serhii.link`,
+`external-dns` writes a proxied CNAME to the tunnel `beelink` in Cloudflare;
+cloudflared forwards to the Gateway, and Cloudflare Access guards those names.
+Under `.home`, `external-dns-bind` writes an A record to the Gateway's address
+in the router's BIND, over RFC 2136 with core's TSIG key - see
+[decisions/0039](../../docs/decisions/0039-home-served-by-bind-on-the-router.md).
+A route's names appear with it and go with it; a `.home` name also needs its
+place in the Gateway certificate. Something outside the cluster - Gatus on the
+router, the Proxmox host - gets its name as a route to a small socat pod in
+`apps/system/network/proxies`, since the Gateway cannot route outside the
+cluster itself.
 
 The operator serves a read-only web view of all of this on `flux.home`, and
 on `flux.serhii.link` behind Cloudflare Access - see

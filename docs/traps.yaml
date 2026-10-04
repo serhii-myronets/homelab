@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-09-30
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router]
+  updated: 2026-10-03
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1468,3 +1468,49 @@ traps:
       duplicate UUIDs, may avoid it altogether, but means recreating every
       claim; untested.
     diagnosed: 2026-10-03, looking for what wears the WD
+
+  - id: external-dns-follows-the-gateway-target-whatever-the-flags
+    applies_to: [external-dns, gateway-api, dns, cloudflare, bind]
+    symptom: >-
+      A second external-dns, meant to publish the .home names as A records
+      to the Gateway's address, plans CNAMEs to the Cloudflare tunnel
+      instead - and with a provider that cannot take them, writes nothing
+      and reports "All records are already up to date".
+    cause: >-
+      The gateway-httproute source takes its target from the Gateway's
+      external-dns.kubernetes.io/target annotation, set there for the
+      Cloudflare instance. --default-targets with --force-default-targets
+      does not override it in external-dns 0.23.
+    tell: >-
+      At logLevel debug, "Endpoints generated from HTTPRoute ..." lists the
+      .home names with the tunnel's cfargotunnel.com as their target.
+    fix: >-
+      Give the second instance its own --annotation-prefix (core:
+      bind.external-dns.kubernetes.io/). It then reads no target annotation
+      and falls back to the Gateway's status address, 192.168.8.15. A regex
+      filter keeps home-redirect's *.home out as well.
+    diagnosed: 2026-10-03, publishing .home from core
+
+  - id: glinet-adguard-admits-only-the-router-session
+    applies_to: [router, glinet, adguard, dns, external-dns]
+    symptom: >-
+      AdGuard Home's API on the router answers 401 to every client: with no
+      credentials, with basic auth for a user added to its config.yaml, and
+      on loopback.
+    cause: >-
+      The firmware starts it with --glinet. In that mode upstream AdGuard
+      (internal/home/authglinet.go, 0.107.73) swaps its own authentication
+      for one check: an Admin-Token cookie naming a fresh
+      /tmp/gl_token_<token> file, which only the router's login writes. Its
+      own users are not consulted at all - it is one middleware or the
+      other.
+    tell: >-
+      `ps w | grep AdGuardHome` on the router shows --glinet; the 401 does
+      not change with a user in config.yaml.
+    fix: >-
+      Leave AdGuard alone and let nothing else write to it. Removing
+      --glinet works, but takes AdGuard out from behind the router's login,
+      edits a file the firmware owns and restores on upgrade, and was undone
+      on 2026-10-03. .home is BIND on the router instead (decisions/0039);
+      AdGuard only forwards to it.
+    diagnosed: 2026-09-29 for Homepage's widget, confirmed 2026-10-03 for external-dns
