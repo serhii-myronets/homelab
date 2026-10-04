@@ -1,4 +1,4 @@
-# A console for this cluster: browse objects and read logs. It watches
+# A console for core and the lab: browse objects and read logs. It watches
 # nothing and alerts on nothing - see docs/decisions/0008.
 #
 # Nothing is stored: no claim, no database, no CRDs. Losing the pod loses a
@@ -29,14 +29,32 @@ spec:
       requests: {cpu: 25m, memory: 96Mi}
       limits: {memory: 256Mi}
 
+    # Two clusters from two kubeconfigs, kubeconfigs.yaml (decisions/0042).
+    # Not in-cluster mode: there Headlamp hands its own token only to its
+    # own cluster and asks the browser for one for any other, so the lab
+    # would want a token pasted every session. Read from kubeconfigs, each
+    # cluster uses the credentials in its file and nothing is asked.
+    #
+    # No sign-in either way: every visitor gets what the two files hold -
+    # core through the service account below, the lab as its admin.
     config:
-      inCluster: true
-      inClusterContextName: main
-      # No sign-in: every visitor is handed the service account below. What
-      # that is worth is decided entirely by the role it is bound to, which
-      # is why the binding underneath is not the chart's default.
-      unsafeUseServiceAccountToken: true
+      inCluster: false
       sessionTTL: 86400
+      extraArgs:
+        - -kubeconfig=/headlamp/kubeconfigs/core:/headlamp/kubeconfigs/lab
+
+    volumes:
+      - name: kubeconfigs
+        projected:
+          sources:
+            - configMap:
+                name: kubeconfig-core
+                items: [{key: config, path: core}]
+            - secret:
+                name: kubeconfig-lab
+                items: [{key: config, path: lab}]
+    volumeMounts:
+      - {name: kubeconfigs, mountPath: /headlamp/kubeconfigs, readOnly: true}
 
     # cluster-admin, and with no sign-in in front of it, which is the owner's
     # decision taken knowingly on 2026-09-20 rather than a default left alone.

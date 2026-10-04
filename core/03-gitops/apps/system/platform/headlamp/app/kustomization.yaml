@@ -3,5 +3,6 @@ kind: Kustomization
 namespace: headlamp
 resources:
   - namespace.yaml
+  - kubeconfigs.yaml
   - helmrelease.yaml
   - httproute.yaml
