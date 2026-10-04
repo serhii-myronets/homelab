@@ -34,7 +34,6 @@ are not reused.
 | [0034](0034-satellite-joins-core.md) | The old box is core's worker, not a cluster of its own | accepted | worker-1, core, talos, memory |
 | [0035](0035-worker-1-holds-nothing-volsync-backs-up.md) | worker-1 holds nothing that VolSync backs up | accepted | worker-1, volsync, storage, scheduling |
 | [0037](0037-terraform-state-in-r2.md) | Terraform state in R2 and secrets.yaml in Infisical, where the cluster can read them | accepted | terraform, talos, r2, secrets |
-| [0038](0038-adguard-api-for-external-dns.md) | AdGuard Home on the router runs outside GL.iNet's login, so external-dns can write .home | accepted | router, adguard, dns, external-dns |
 | [0036](0036-gatus-on-the-router.md) | Gatus and a metrics exporter run on the router, installed over ssh | accepted | router, gatus, monitoring |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing

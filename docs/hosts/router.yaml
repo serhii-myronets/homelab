@@ -69,12 +69,12 @@ dns:
     192.168.8.21, every other .home name still answered 192.168.8.15.
     Verified 2026-09-30; no exact rewrite remains.
   adguard_api: >-
-    AdGuard Home listens on 0.0.0.0:3000. Since 2026-10-03 it runs without
-    --glinet and with one user, external-dns, so its API takes basic auth
-    (200) and refuses anything else (401) - decisions/0038. Before that,
-    GL.iNet's admin session was the only way in. A firmware upgrade puts
-    --glinet back in /etc/init.d/adguardhome. Verified after a reboot,
-    2026-10-03.
+    AdGuard Home listens on 0.0.0.0:3000, but GL.iNet guards it with its own
+    admin session: /control/* answers 401 and / redirects to the router's
+    login, while AdGuard's own config.yaml has users: []. So nothing can drive
+    it with AdGuard credentials - external-dns's AdGuard webhooks included -
+    without adding a user to that file over ssh, which decisions/0007 rules
+    out and the firmware would likely undo. Verified 2026-09-29.
 
   own_lookups: >-
     The router's own processes resolve through the WAN's servers, not
