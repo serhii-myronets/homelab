@@ -50,11 +50,11 @@ spec:
       - --regex-domain-filter=\.home$
       - --regex-domain-exclusion=^\*\.
 
-    # Only its own records: the lab's are owned by lab. Upsert-only until the
-    # first records are checked, then sync.
+    # Only its own records: the lab's are owned by lab, and the zone's
+    # static names by no one.
     registry: txt
     txtOwnerId: beelink
-    policy: upsert-only
+    policy: sync
 
     resources:
       requests: {cpu: 10m, memory: 32Mi}
