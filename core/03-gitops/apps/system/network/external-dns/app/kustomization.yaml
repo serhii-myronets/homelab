@@ -5,3 +5,5 @@ resources:
 - namespace.yaml
 - externalsecret.yaml
 - helmrelease.yaml
+- externalsecret-adguard.yaml
+- helmrelease-adguard.yaml

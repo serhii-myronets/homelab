@@ -1,0 +1,70 @@
+# A second external-dns, for the house's own names: it publishes each .home
+# name of an HTTPRoute in the router's AdGuard Home, through the AdGuard
+# webhook, as owner beelink - the lab publishes its own as owner lab. The
+# router's AdGuard admits it only since decisions/0038.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: external-dns-adguard
+  namespace: external-dns
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: external-dns
+      version: "1.23.0"
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+        namespace: flux-system
+  driftDetection:
+    mode: enabled
+  values:
+    # Restarted when its AdGuard credential changes (reloader.yaml).
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
+    provider:
+      name: webhook
+      webhook:
+        image:
+          repository: ghcr.io/muhlba91/external-dns-provider-adguard
+          tag: v11.2.0
+        env:
+          - name: ADGUARD_URL
+            value: http://192.168.8.1:3000
+          - name: ADGUARD_USER
+            valueFrom:
+              secretKeyRef: {name: adguard-credentials, key: USERNAME}
+          - name: ADGUARD_PASSWORD
+            valueFrom:
+              secretKeyRef: {name: adguard-credentials, key: PASSWORD}
+        livenessProbe:
+          httpGet: {path: /healthz, port: 8080}
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet: {path: /healthz, port: 8080}
+          initialDelaySeconds: 10
+        resources:
+          requests: {cpu: 10m, memory: 32Mi}
+          limits: {memory: 128Mi}
+
+    sources:
+      - gateway-httproute
+    domainFilters:
+      - home
+    # The Gateway's target annotation names the Cloudflare tunnel, for the
+    # other external-dns; on the LAN every name answers at the Gateway's own
+    # address instead.
+    extraArgs:
+      - --default-targets=192.168.8.15
+      - --force-default-targets
+
+    # Only its own records: the lab's are owned by lab. Upsert-only until the
+    # first records are checked, then sync.
+    registry: txt
+    txtOwnerId: beelink
+    policy: upsert-only
+
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 128Mi}
