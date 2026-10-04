@@ -21,7 +21,7 @@ identity:
   ip: 192.168.8.10                 # static in Talos, decisions/0028
   access:
     talos: talosctl -n 192.168.8.10
-    kubernetes_context: admin@core # talos context core; both written by core/01-talos's apply
+    kubernetes_context: core # the talos context is core too; both written by core/01-talos's apply
   rebuilt: >-
     2026-09-30, under fixed names: reset of STATE and EPHEMERAL only, a new
     bootstrap, Flux rebuilt everything and VolSync restored every service's
@@ -199,7 +199,7 @@ services:
       None, with cluster-admin behind it - the owner's choice. headlamp.home
       has no gate at all; anyone on the LAN has full control of the cluster.
     clusters: >-
-      core and the lab (admin@lab), from two kubeconfigs rather than
+      core and the lab, as the contexts core and lab, from two kubeconfigs rather than
       in-cluster mode, since 2026-10-04 (decisions/0042): the lab as its
       admin too. Verified that day - each cluster's nodes listed with no
       token asked.

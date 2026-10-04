@@ -1,8 +1,8 @@
-# Pinned to the kubeconfig context Terraform generates, `admin@core`, hook
+# Pinned to the kubeconfig context Terraform generates, `core`, hook
 # included: the hook runs plain kubectl, which would otherwise use whatever
 # context is current.
 helmDefaults:
-  kubeContext: admin@core
+  kubeContext: core
 
 repositories:
   - name: cilium
@@ -14,7 +14,7 @@ hooks:
   - events: [ "prepare" ]
     showlogs: true
     command: "kubectl"
-    args: [ "--context", "admin@core", "apply", "-k", "./prepare-hook/", "--server-side" ]
+    args: [ "--context", "core", "apply", "-k", "./prepare-hook/", "--server-side" ]
 
 releases:
   - name: cilium

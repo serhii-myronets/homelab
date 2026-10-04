@@ -57,7 +57,8 @@ From the secrets, on every run and never kept in the state, Terraform makes
 the admin's talosconfig and kubeconfig, valid as long as their CAs. An apply
 writes them to Infisical as `/system/talos/TALOSCONFIG` and `KUBECONFIG`, and
 `scripts/contexts.sh` merges them into `~/.talos/config` and `~/.kube/config`
-as the contexts `core` and `admin@core`, replacing core's and leaving the
+as the context `core` in each - Kubernetes's renamed from Talos's
+`admin@core` - replacing core's and leaving the
 lab's, and which context is current, alone. On another Mac, after
 `infisical login`:
 

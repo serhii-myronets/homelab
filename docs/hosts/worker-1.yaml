@@ -19,7 +19,7 @@ identity:
                                                  # renamed from homelab/satellite with kubectl
   access:
     talos: talosctl -n 192.168.8.11 -e 192.168.8.10
-    kubernetes_context: admin@core
+    kubernetes_context: core
   config: core/01-talos, patches/common and patches/worker; resource worker_1
 
 hardware:

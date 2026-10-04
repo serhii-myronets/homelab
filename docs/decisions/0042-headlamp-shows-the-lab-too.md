@@ -14,7 +14,7 @@ kubeconfig - made from its Talos secrets, the same at every rebuild - into
 this project, `/system/headlamp/LAB_KUBECONFIG`; an ExternalSecret brings
 it to Headlamp, beside a kubeconfig for core that points at Headlamp's own
 ServiceAccount token and CA (`core/03-gitops/apps/system/platform/headlamp`).
-Headlamp loads both with `-kubeconfig`, and shows `core` and `admin@lab`.
+Headlamp loads both with `-kubeconfig`, and shows `core` and `lab`.
 
 Headlamp was in in-cluster mode before, handing every visitor its own
 ServiceAccount's token. Headlamp 0.45 does that for its own cluster only: in

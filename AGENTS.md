@@ -33,11 +33,11 @@ procedure lives in one of them, never in two.
 
 ## Access
 
-The nodes have no shell. `kubectl --context admin@core`; `talosctl -n
+The nodes have no shell. `kubectl --context core`; `talosctl -n
 192.168.8.10` for controlplane, `-n 192.168.8.11 -e 192.168.8.10` for
 worker-1. Both configs are written by `terraform apply` in `core/01-talos`
-into `~/.talos/config` and `~/.kube/config` - contexts `core` and
-`admin@core` - and kept in Infisical at `/system/talos`. The router takes `ssh root@192.168.8.1` with
+into `~/.talos/config` and `~/.kube/config` - the context `core` in each -
+and kept in Infisical at `/system/talos`. The router takes `ssh root@192.168.8.1` with
 `~/.ssh/id_ed25519` — read-only, see the rules.
 
 ## Rules

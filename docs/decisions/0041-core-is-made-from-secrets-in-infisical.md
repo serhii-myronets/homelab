@@ -25,8 +25,8 @@ Talos provider's ephemeral resources (0.11.0 has them), valid as long as the
 CAs and never kept in the state; the nodes take the client configuration
 write-only. An apply writes them to `/system/talos/TALOSCONFIG` and
 `KUBECONFIG`, and `scripts/contexts.sh` - the lab's script - merges them
-into the Mac's `~/.talos/config` and `~/.kube/config` as `core` and
-`admin@core`. The Talos context left over as `beelink`, from when the
+into the Mac's `~/.talos/config` and `~/.kube/config`, as the context
+`core` in each - Talos's `admin@core` renamed for Kubernetes. The Talos context left over as `beelink`, from when the
 cluster had that name, was removed with the stale `satellite`.
 
 **External Secrets.** It logged in as the identity `core` with a Universal
