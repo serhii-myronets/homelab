@@ -45,8 +45,10 @@ disks:
     health: 7% worn, no media errors (2026-10-03)
 
 guests: >-
-  None since the reinstall. No vzdump schedule: the guests are rebuilt from
-  Terraform.
+  The Talos cluster `lab`, built 2026-10-03: lab-controlplane-1..3 (VMs
+  140-142, .40-.42, 4 vCPU and 4 GB each) and lab-worker-1..2 (145-146,
+  .45-.46, 8 vCPU and 18 GB), the API VIP at .50. 48 GB of the 62 go to the
+  guests. No vzdump schedule: the guests are rebuilt from Terraform.
 
 nics:                              # names pinned by the installer
   - {name: nic2, pci: "0000:03:00.0", role: vmbr0, cabled to the router's lan1}

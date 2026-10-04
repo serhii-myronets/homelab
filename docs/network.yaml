@@ -13,7 +13,8 @@ subnets:
 address_plan:                      # the LAN in tens, set 2026-09-29
   core: 192.168.8.10-19            # controlplane .10, worker-1 .11, load
                                    # balancer .15-.19; .20-.29 is free again
-  lab: 192.168.8.30-49             # proxmox .30, its VMs and their VIP
+  lab: 192.168.8.30-50             # proxmox .30, control planes .40-.44,
+                                   # workers .45-.49, the API VIP .50
   dhcp_pool: 192.168.8.100-249
 
 load_balancers:
