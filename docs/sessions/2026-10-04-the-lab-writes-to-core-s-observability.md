@@ -52,5 +52,5 @@ Still open:
 - Immich's originals outside the house - R2.
 - Alerting (0008): a Telegram bot and a healthchecks.io account, then
   Gatus's alerting block and its heartbeat.
-- core/01-talos: its R2 backend needs the parameters Terraform 1.16 asks for
-  before its next init, and its README still writes the kubeconfig with `>`.
+- core/01-talos: its README still writes the kubeconfig with `>`. (Its R2
+  backend took Terraform 1.16's parameters on 2026-10-04 and initialises.)

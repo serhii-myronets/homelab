@@ -11,12 +11,14 @@ terraform {
     bucket                      = "homelab-backups"
     key                         = "terraform/core-01-talos.tfstate"
     region                      = "auto"
-    endpoint                    = "https://32bd020558a0bb7293a40decd3f7b161.r2.cloudflarestorage.com"
+    endpoints                   = { s3 = "https://32bd020558a0bb7293a40decd3f7b161.r2.cloudflarestorage.com" }
     profile                     = "r2"
-    force_path_style            = true
+    use_path_style              = true
     skip_credentials_validation = true
     skip_region_validation      = true
+    skip_requesting_account_id  = true
     skip_metadata_api_check     = true
+    skip_s3_checksum            = true # R2 does not take the AWS SDK's default checksums
   }
   required_providers {
     talos = {
