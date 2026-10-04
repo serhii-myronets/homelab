@@ -65,6 +65,8 @@ spec:
     txtOwnerId: beelink
     policy: upsert-only
 
+    logLevel: debug   # temporary, while its first records are checked
+
     resources:
       requests: {cpu: 10m, memory: 32Mi}
       limits: {memory: 128Mi}
