@@ -78,8 +78,9 @@ spec:
 
     vmsingle:
       spec:
-        # Three months; the ORICO's thin pool has room to spare.
-        retentionPeriod: "3"
+        # A month, as the logs below: what is looked back at here is the last
+        # days, and since 2026-10-04 the lab's series are stored too.
+        retentionPeriod: "30d"
         nodeSelector: {kubernetes.io/hostname: worker-1}
         tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         storage:
