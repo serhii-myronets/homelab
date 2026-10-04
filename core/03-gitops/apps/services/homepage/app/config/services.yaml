@@ -271,9 +271,14 @@
         icon: mdi-monitor-dashboard
         siteMonitor: https://proxmenux.home/api/health
     # The lab's Gateway serves a certificate from lab-ca, an intermediate
-    # under home-ca, so the same root verifies it.
+    # under home-ca, so the same root verifies it. No key: the lab's Argo CD
+    # admits anyone as admin, by the owner's choice, and ignores the token.
     - Argo CD:
         href: https://argocd.home
         description: The lab's GitOps
         icon: argo-cd.png
         siteMonitor: https://argocd.home/healthz
+        widget:
+          type: argocd
+          url: https://argocd.home
+          fields: [apps, synced, outOfSync, degraded]
