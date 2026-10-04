@@ -33,10 +33,10 @@ dns:
   home: >-
     .home is BIND on the router, forwarded to by AdGuard. Each cluster's
     external-dns publishes the .home names of its HTTPRoutes there and
-    removes them with the route - owner core at 192.168.8.15 since
-    2026-10-03; the lab's, owner lab, is still to come. A name outside the
-    clusters gets a route through a proxy on core rather than a static
-    record: gatus.home, proxmox.home. decisions/0039.
+    removes them with the route - owner core at 192.168.8.15, owner lab at
+    the lab's Gateway, 192.168.8.31, both since 2026-10-03. A name outside
+    the clusters gets a route through a proxy on core rather than a static
+    record: gatus.home, proxmox.home, proxmenux.home. decisions/0039.
   note: >-
     A new internal hostname needs only its HTTPRoute for DNS, and an entry in
     the Gateway certificate before the Gateway can serve it.

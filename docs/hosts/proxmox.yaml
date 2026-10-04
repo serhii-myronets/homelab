@@ -31,6 +31,10 @@ os:
     pve-no-subscription; enterprise and Ceph enterprise disabled; the
     subscription nag removed by the community post-pve-install script.
   cpu_governor: powersave          # cpu-powersave.service, oneshot at boot
+  api_users: >-
+    homepage@pve, PVEAuditor on /, with the token homepage@pve!homepage
+    (privilege separation off) for Homepage's Proxmox card on core; its
+    secret is in core's Infisical at /services/homepage/PROXMOX_TOKEN.
   proxmenux: >-
     ProxMenux 1.2.6, installed 2026-10-03 for its Monitor (the web app reports
     1.2.2): proxmenux-monitor.service, as root, http://192.168.8.30:8008, and
@@ -56,9 +60,10 @@ disks:
     health: 7% worn, no media errors (2026-10-03)
 
 guests: >-
-  The Talos cluster `lab`, built 2026-10-03: lab-controlplane-1..3 (VMs
-  140-142, .40-.42, 4 vCPU and 4 GB each) and lab-worker-1..2 (145-146,
-  .45-.46, 8 vCPU and 18 GB), the API VIP at .50. 48 GB of the 62 go to the
+  The Talos cluster `lab`, built 2026-10-03: controlplane-1..3 (VMs
+  140-142, .40-.42, 4 vCPU and 4 GB each) and worker-1..2 (145-146, .45-.46,
+  8 vCPU and 18 GB), the API VIP at .50 - names that repeat core's node
+  names, so a VM's name alone does not say which cluster. 48 GB of the 62 go to the
   guests. No vzdump schedule: the guests are rebuilt from Terraform.
 
 nics:                              # names pinned by the installer
