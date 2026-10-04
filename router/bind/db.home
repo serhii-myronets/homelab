@@ -1,0 +1,9 @@
+; The .home zone as install.sh first writes it. After that named owns the
+; file: the clusters' external-dns add and remove their names, and install.sh
+; does not overwrite it. Only names no cluster publishes live here.
+$TTL 300
+@        IN SOA  ns.home. hostmaster.home. ( 1 3600 600 86400 300 )
+         IN NS   ns.home.
+ns       IN A    192.168.8.1
+; The lab's hypervisor, not a cluster name.
+proxmox  IN A    192.168.8.30

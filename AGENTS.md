@@ -24,7 +24,7 @@ one file that answers it. Before debugging anything that should work, check
 | `core/01-talos/` | Terraform for both nodes; state in R2, `secrets.yaml` local and in Infisical ([0037](docs/decisions/0037-terraform-state-in-r2.md)) |
 | `core/02-platform/` | Helmfile bootstrap, applied by hand |
 | `core/03-gitops/` | everything Flux reconciles |
-| `router/` | what runs on the router, each with an `install.sh` run from the Mac: `gatus/`, the house's watcher, and `node-exporter/`, its metrics |
+| `router/` | what runs on the router, each with an `install.sh` run from the Mac: `gatus/`, the house's watcher, `node-exporter/`, its metrics, and `bind/`, the authoritative server for `.home` ([0039](docs/decisions/0039-home-served-by-bind-on-the-router.md)) |
 | `docs/` | facts, decisions, the last session |
 | `archive/` | switched-off setups, with how to bring each back |
 
