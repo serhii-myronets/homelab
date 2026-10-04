@@ -210,7 +210,7 @@ config:
   gitops: core/03-gitops/
   ignored_but_kept_elsewhere:      # local files Git ignores, each with a copy
     terraform_state: R2 homelab-backups, terraform/core-01-talos.tfstate (decisions/0037)
-    talos_secrets: core/01-talos/secrets.yaml, a copy of Infisical /system/talos/SECRETS_YAML, which Terraform reads
+    talos_secrets: Infisical /system/talos/SECRETS_YAML, which Terraform reads (decisions/0041); core/01-talos/secrets.yaml is an ignored local copy
   outside_infisical: >-
     What reaches Infisical and the backups belongs in a password manager as
     well, since a locked account would close everything else: the Infisical
