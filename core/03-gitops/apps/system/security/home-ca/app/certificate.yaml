@@ -23,6 +23,7 @@ spec:
     - headlamp.home
     - jellyfin.home
     - immich.home
+    - ingest.home
     - seerr.home
     - prowlarr.home
     - proxmenux.home

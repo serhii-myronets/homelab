@@ -88,9 +88,11 @@ spec:
             requests: {storage: 100Gi}
         # Observational data with a one-month life: no VolSync source points
         # here on purpose. Losing it costs history, not state.
+        # About 474Mi for core alone on 2026-10-04; the lab's series, written
+        # in through ingest.yaml, come to as many again.
         resources:
-          requests: {cpu: 100m, memory: 320Mi}
-          limits: {memory: 1Gi}
+          requests: {cpu: 100m, memory: 512Mi}
+          limits: {memory: 1536Mi}
 
     # Load-bearing, despite VMSingle being able to scrape on its own. Turn
     # vmagent off and the chart still renders VMSingle without scrape
@@ -187,6 +189,11 @@ spec:
         requests: {cpu: 50m, memory: 128Mi}
         limits: {memory: 768Mi}
       sidecar:
+        dashboards:
+          # The lab writes here too (decisions/0040): every dashboard gets a
+          # cluster selector, rather than adding core's and the lab's series
+          # into one line.
+          multicluster: true
         resources:
           requests: {cpu: 10m, memory: 48Mi}
           limits: {memory: 128Mi}
@@ -224,6 +231,9 @@ spec:
       spec:
         k8sCollector:
           enabled: true
+          # Logs carry no external labels; this field tells core's from the
+          # lab's, which writes {"cluster":"lab"}.
+          extraFields: '{"cluster":"core"}'
         # A DaemonSet, on both nodes: tolerated on worker-1, not pinned to it.
         tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         resources:

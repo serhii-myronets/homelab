@@ -35,6 +35,7 @@ are not reused.
 | [0035](0035-worker-1-holds-nothing-volsync-backs-up.md) | worker-1 holds nothing that VolSync backs up | accepted | worker-1, volsync, storage, scheduling |
 | [0037](0037-terraform-state-in-r2.md) | Terraform state in R2 and secrets.yaml in Infisical, where the cluster can read them | accepted | terraform, talos, r2, secrets |
 | [0039](0039-home-served-by-bind-on-the-router.md) | .home is served by BIND on the router, written by each cluster's external-dns | accepted | router, dns, bind, external-dns |
+| [0040](0040-one-observability-stack-on-core.md) | One observability stack, on core; the lab writes to it with a write-only token | accepted | observability, victoriametrics, lab, vmauth |
 | [0036](0036-gatus-on-the-router.md) | Gatus and a metrics exporter run on the router, installed over ssh | accepted | router, gatus, monitoring |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing
