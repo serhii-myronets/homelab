@@ -32,9 +32,9 @@ dns:
   server: AdGuard Home on the router at 192.168.8.1
   home: >-
     .home is BIND on the router, forwarded to by AdGuard. Each cluster's
-    external-dns publishes the .home names of its HTTPRoutes there - owner
-    core at 192.168.8.15, owner lab at 192.168.8.31 - and removes them with
-    the route. proxmox.home, no route of any cluster's, is static in the
+    external-dns publishes the .home names of its HTTPRoutes there and
+    removes them with the route - owner core at 192.168.8.15 since
+    2026-10-03; the lab's, owner lab, is still to come. proxmox.home, no route of any cluster's, is static in the
     zone. decisions/0039.
   note: >-
     A new internal hostname needs only its HTTPRoute for DNS, and an entry in
