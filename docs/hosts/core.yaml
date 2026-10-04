@@ -198,6 +198,11 @@ services:
     auth: >-
       None, with cluster-admin behind it - the owner's choice. headlamp.home
       has no gate at all; anyone on the LAN has full control of the cluster.
+    clusters: >-
+      core and the lab (admin@lab), from two kubeconfigs rather than
+      in-cluster mode, since 2026-10-04 (decisions/0042): the lab as its
+      admin too. Verified that day - each cluster's nodes listed with no
+      token asked.
 
 config:
   talos: core/01-talos/
