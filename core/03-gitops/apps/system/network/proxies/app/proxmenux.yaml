@@ -1,0 +1,72 @@
+# proxmenux.home: ProxMenux Monitor on the Proxmox host (docs/hosts/proxmox.yaml),
+# behind the Gateway for HTTPS and a name without a port. Local only - no
+# serhii.link name. It runs on the host because it reads the host itself; the
+# host still answers at http://192.168.8.30:8008, which is what to use while
+# core is down.
+#
+# Plain HTTP on the host, so plain socat as for Gatus (gatus.yaml), not the
+# TLS hop proxmox.yaml needs. The Monitor reads the X-Forwarded-* headers
+# Envoy adds, and socat passes them through untouched.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxmenux-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxmenux-proxy
+  template:
+    metadata:
+      labels:
+        app: proxmenux-proxy
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: socat
+          image: alpine/socat:1.8.1.3
+          args:
+            - TCP-LISTEN:8008,fork,reuseaddr
+            - TCP:192.168.8.30:8008,connect-timeout=5
+          ports:
+            - {name: http, containerPort: 8008}
+          # Ready only while the host answers, so the Gateway says 503 rather
+          # than hanging when it does not.
+          readinessProbe:
+            exec:
+              command: [socat, -u, /dev/null, "TCP:192.168.8.30:8008,connect-timeout=2"]
+            periodSeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests: {cpu: 5m, memory: 8Mi}
+            limits: {memory: 32Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxmenux
+spec:
+  selector:
+    app: proxmenux-proxy
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: proxmenux
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames: [proxmenux.home]
+  rules:
+    - backendRefs:
+        - {name: proxmenux, port: 80}

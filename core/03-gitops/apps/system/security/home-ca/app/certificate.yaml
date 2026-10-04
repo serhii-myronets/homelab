@@ -25,6 +25,7 @@ spec:
     - immich.home
     - seerr.home
     - prowlarr.home
+    - proxmenux.home
     - proxmox.home
     - radarr.home
     - sonarr.home

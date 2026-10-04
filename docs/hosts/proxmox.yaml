@@ -31,6 +31,15 @@ os:
     pve-no-subscription; enterprise and Ceph enterprise disabled; the
     subscription nag removed by the community post-pve-install script.
   cpu_governor: powersave          # cpu-powersave.service, oneshot at boot
+  proxmenux: >-
+    ProxMenux 1.2.6, installed 2026-10-03 for its Monitor (the web app reports
+    1.2.2): proxmenux-monitor.service, as root, http://192.168.8.30:8008, and
+    https://proxmenux.home through core's Gateway
+    (core/03-gitops/apps/system/network/proxies). Login off at install -
+    nothing stops anyone on the LAN.
+    It added jq, dialog and git from apt, /usr/local/share/proxmenux and
+    /usr/local/bin/menu. Changes made from its menu are drift no Terraform
+    knows of; note each one here.
 
 hardware:
   cpu: {model: Intel Core i9-12900HK, cores: 14, threads: 20}
