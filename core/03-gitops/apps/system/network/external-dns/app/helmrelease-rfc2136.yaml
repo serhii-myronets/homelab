@@ -1,0 +1,61 @@
+# A second external-dns, for the house's own names: it publishes each .home
+# name of an HTTPRoute in the router's BIND over RFC 2136, as owner beelink -
+# the lab publishes its own as owner lab. See decisions/0039.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: external-dns-rfc2136
+  namespace: external-dns
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: external-dns
+      version: "1.23.0"
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+        namespace: flux-system
+  driftDetection:
+    mode: enabled
+  values:
+    # Restarted when its TSIG secret changes (reloader.yaml).
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
+    provider:
+      name: rfc2136
+
+    env:
+      - name: EXTERNAL_DNS_RFC2136_TSIG_SECRET
+        valueFrom:
+          secretKeyRef: {name: bind-tsig, key: TSIG_SECRET}
+
+    sources:
+      - gateway-httproute
+    extraArgs:
+      - --rfc2136-host=192.168.8.1
+      - --rfc2136-port=5300
+      - --rfc2136-zone=home
+      - --rfc2136-tsig-keyname=core
+      - --rfc2136-tsig-secret-alg=hmac-sha256
+      - --rfc2136-tsig-axfr
+      - --rfc2136-min-ttl=60s
+      # Its own annotation prefix, so it does not read the Gateway's
+      # external-dns.kubernetes.io/target - the Cloudflare tunnel, for the
+      # other external-dns - and answers every name at the Gateway's own
+      # address, 192.168.8.15.
+      - --annotation-prefix=rfc2136.external-dns.kubernetes.io/
+      # .home names only, and never a wildcard: home-redirect's *.home would
+      # catch every name the lab publishes.
+      - --regex-domain-filter=\.home$
+      - --regex-domain-exclusion=^\*\.
+
+    # Only its own records: the lab's are owned by lab. Upsert-only until the
+    # first records are checked, then sync.
+    registry: txt
+    txtOwnerId: beelink
+    policy: upsert-only
+
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {memory: 128Mi}
