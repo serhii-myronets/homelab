@@ -30,10 +30,15 @@ load_balancers:
 
 dns:
   server: AdGuard Home on the router at 192.168.8.1
-  wildcard: "*.home -> 192.168.8.15"
+  home: >-
+    .home is BIND on the router, forwarded to by AdGuard. Each cluster's
+    external-dns publishes the .home names of its HTTPRoutes there - owner
+    core at 192.168.8.15, owner lab at 192.168.8.31 - and removes them with
+    the route. proxmox.home, no route of any cluster's, is static in the
+    zone. decisions/0039.
   note: >-
-    New internal hostnames need no DNS work, but need an HTTPRoute and an
-    entry in the Gateway certificate before the Gateway can serve them.
+    A new internal hostname needs only its HTTPRoute for DNS, and an entry in
+    the Gateway certificate before the Gateway can serve it.
 
 vpn:
   wireguard: the router's server, the only way in - see hosts/router.yaml

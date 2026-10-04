@@ -63,11 +63,19 @@ dns:
   resolver: >-
     dnsmasq on port 53 forwards everything to AdGuard Home on 127.0.0.1:3053
     (noresolv). AdGuard's own web UI answers on port 3000.
-  rewrite: "*.home -> 192.168.8.15"    # core's Gateway
-  rewrite_precedence: >-
-    An exact rewrite outranks the wildcard: while headlamp.home had one to
-    192.168.8.21, every other .home name still answered 192.168.8.15.
-    Verified 2026-09-30; no exact rewrite remains.
+  home: >-
+    AdGuard forwards .home to BIND on 127.0.0.1:5300 - the upstream line
+    [/home/]127.0.0.1:5300, beside 8.8.8.8 and 9.9.9.9 - and has no rewrite
+    left; the *.home wildcard to core's Gateway went on 2026-10-03. An
+    unknown .home name answers NXDOMAIN. decisions/0039.
+  bind: >-
+    bind-server 9.18.7 from the router's feed, with bind-check and
+    bind-rndc, installed by router/bind/install.sh. Authoritative for home.
+    on 127.0.0.1:5300 and 192.168.8.1:5300, no recursion, no IPv6.
+    Configuration and the TSIG keys core and lab in /etc/bind, the zone in
+    /etc/bind/dynamic, owned by bind; /etc/bind/ is in sysupgrade.conf.
+    Changes come only signed, from each cluster's external-dns, which also
+    reads the zone by transfer. Verified 2026-10-03.
   adguard_api: >-
     AdGuard Home listens on 0.0.0.0:3000, but GL.iNet guards it with its own
     admin session: /control/* answers 401 and / redirects to the router's

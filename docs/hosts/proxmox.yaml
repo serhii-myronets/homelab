@@ -11,8 +11,7 @@ meta:
   tags: [proxmox, hypervisor, lab, talos, terraform]
 
 identity:
-  hostname: proxmox.home           # *.home is AdGuard's wildcard to core's
-                                   # Gateway; the name needs its own rewrite
+  hostname: proxmox.home           # static in the router's BIND zone
   ip: 192.168.8.30                 # static, set in the installer
   ui: https://192.168.8.30:8006
   ssh: root@192.168.8.30           # key at ~/.ssh/id_ed25519

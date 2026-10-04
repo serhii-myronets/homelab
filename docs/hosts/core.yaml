@@ -90,7 +90,8 @@ platform:
 
 access:
   local: >-
-    *.home resolves to the Gateway through the router's wildcard. HTTP
+    Each .home name of an HTTPRoute is published to the router's BIND by
+    external-dns-bind, owner core, at the Gateway's address. HTTP
     redirects to HTTPS; the exceptions are ca.home, where a device fetches
     the root it does not trust yet, and tv.home, plain HTTP for a television
     whose trust store is not ours to write.
