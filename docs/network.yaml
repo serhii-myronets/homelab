@@ -47,6 +47,12 @@ vpn:
 
 tls:
   internal: home-ca, a root kept in Infisical; served at ca.home/root.crt
+  lab: >-
+    lab-ca, an intermediate home-ca signed on 2026-10-03, limited by a name
+    constraint to .home and to server certificates, valid to 2031-10-03. The
+    lab's cert-manager signs its .home names with it; devices trust them
+    through home-ca. home-ca's key never left core's Infisical project. The
+    lab repository's docs/decisions/0006.
   external: >-
     Cloudflare holds the certificate for serhii.link at its edge; the tunnel
     beelink is locally managed, so its ingress rules are in
