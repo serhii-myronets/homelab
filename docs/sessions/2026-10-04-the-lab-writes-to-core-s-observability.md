@@ -46,11 +46,20 @@ its credential in initial-secret.yaml and the copy at /system/infisical;
 talos-cluster and homelab deleted. All 21 ExternalSecrets synced again with
 only `core` left. Terraform logs in as the owner (the lab's decisions/0009).
 
+## Both clusters from Infisical
+
+Later the same day the lab, then core, were changed alike (0041, and the
+lab's decisions/0010 and 0011): each is made from its Talos secrets in
+Infisical, writes its talosconfig and kubeconfig there and into the Mac's
+standard files, and its External Secrets log in by JWT with the cluster's
+own ServiceAccount token - no credential placed by hand in either. The lab
+was destroyed and rebuilt to prove it. Core's Talos context became `core`;
+the stale `beelink` and `satellite` contexts were removed. Core's R2 backend
+took Terraform 1.16's parameters on the way.
+
 Still open:
 - Whether the Proxmox console's websocket passes through the Gateway on
   proxmox.home; untested.
 - Immich's originals outside the house - R2.
 - Alerting (0008): a Telegram bot and a healthchecks.io account, then
   Gatus's alerting block and its heartbeat.
-- core/01-talos: its README still writes the kubeconfig with `>`. (Its R2
-  backend took Terraform 1.16's parameters on 2026-10-04 and initialises.)

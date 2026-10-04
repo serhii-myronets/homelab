@@ -7,7 +7,6 @@
 /core/01-talos/*.tfplan
 /core/01-talos/crash*.log
 /core/01-talos/secrets.yaml
-/core/02-platform/prepare-hook/initial-secret.yaml
 /core/03-gitops/system/*/charts/
 !/core/01-talos/.terraform.lock.hcl
 

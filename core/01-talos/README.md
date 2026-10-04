@@ -39,28 +39,31 @@ aws_access_key_id = <R2_ACCESS_KEY_ID>
 aws_secret_access_key = <R2_SECRET_ACCESS_KEY>
 ```
 
-`secrets.yaml` is in Infisical at `/system/talos/SECRETS_YAML` and stays here
-as a local, ignored file too; the state imported it once and holds the same
-keys. Both are readable by the cluster itself - accepted in
-`docs/decisions/0037`. Do not import the secrets again over an existing state.
+The cluster is made from its Talos secrets in Infisical,
+`/system/talos/SECRETS_YAML` in `secrets.yaml`'s format: Terraform reads them
+on every run (`docs/decisions/0041`). `secrets.yaml` stays here as a local,
+ignored copy. Both are readable by the cluster itself - accepted in
+`docs/decisions/0037`.
 
-The Talos and Kubernetes client configurations live in their standard paths:
+Terraform logs in to Infisical as the owner, with the CLI's own session. The
+provider cannot read it from the Keychain, where the CLI keeps it, so a
+function in `~/.zshrc` hands it to every run:
 
-```text
-~/.talos/config
-~/.kube/config
+```zsh
+terraform() { INFISICAL_AUTH_METHOD=token INFISICAL_TOKEN=$(infisical user get token --plain 2>/dev/null) command terraform "$@"; }
 ```
 
-Use `talosctl` and `kubectl` normally. The cluster name is `core`, so its
-Talos context is `core` and its Kubernetes context is `admin@core`.
-
-To replace the standard client configurations with the current cluster values,
-run:
+From the secrets, on every run and never kept in the state, Terraform makes
+the admin's talosconfig and kubeconfig, valid as long as their CAs. An apply
+writes them to Infisical as `/system/talos/TALOSCONFIG` and `KUBECONFIG`, and
+`scripts/contexts.sh` merges them into `~/.talos/config` and `~/.kube/config`
+as the contexts `core` and `admin@core`, replacing core's and leaving the
+lab's, and which context is current, alone. On another Mac, after
+`infisical login`:
 
 ```bash
-terraform output -raw talosconfig > ~/.talos/config
-terraform output -raw kubeconfig > ~/.kube/config
-chmod 600 ~/.talos/config ~/.kube/config
+terraform plan -replace=terraform_data.contexts -out=contexts.plan
+terraform apply contexts.plan
 ```
 
 The stable Talos provider 0.11.0 uses the v1.13 configuration contract, while

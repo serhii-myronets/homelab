@@ -21,7 +21,7 @@ one file that answers it. Before debugging anything that should work, check
 
 | Path | |
 |---|---|
-| `core/01-talos/` | Terraform for both nodes; state in R2, `secrets.yaml` local and in Infisical ([0037](docs/decisions/0037-terraform-state-in-r2.md)) |
+| `core/01-talos/` | Terraform for both nodes; state in R2, the Talos secrets read from Infisical ([0037](docs/decisions/0037-terraform-state-in-r2.md), [0041](docs/decisions/0041-core-is-made-from-secrets-in-infisical.md)) |
 | `core/02-platform/` | Helmfile bootstrap, applied by hand |
 | `core/03-gitops/` | everything Flux reconciles |
 | `router/` | what runs on the router, each with an `install.sh` run from the Mac: `gatus/`, the house's watcher, `node-exporter/`, its metrics, and `bind/`, the authoritative server for `.home` ([0039](docs/decisions/0039-home-served-by-bind-on-the-router.md)) |
@@ -35,8 +35,9 @@ procedure lives in one of them, never in two.
 
 The nodes have no shell. `kubectl --context admin@core`; `talosctl -n
 192.168.8.10` for controlplane, `-n 192.168.8.11 -e 192.168.8.10` for
-worker-1. Both configs come from `terraform output` in `core/01-talos`,
-contexts included. The router takes `ssh root@192.168.8.1` with
+worker-1. Both configs are written by `terraform apply` in `core/01-talos`
+into `~/.talos/config` and `~/.kube/config` - contexts `core` and
+`admin@core` - and kept in Infisical at `/system/talos`. The router takes `ssh root@192.168.8.1` with
 `~/.ssh/id_ed25519` — read-only, see the rules.
 
 ## Rules

@@ -2,5 +2,3 @@ resources:
   - namespace.yaml
   # Gateway API CRDs
   - https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.2/standard-install.yaml
-  # External Secrets reads this credential after its Helm release starts.
-  - initial-secret.yaml

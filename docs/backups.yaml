@@ -107,7 +107,8 @@ not_backed_up:
   - Every cache - models, transcodes, thumbnails, incomplete downloads.
   - >-
     Nothing that rebuilds core lives on the Mac alone since 2026-10-02:
-    Terraform's state is in R2, secrets.yaml and the cluster's Infisical
-    credential in Infisical (hosts/core.yaml, config). What opens Infisical
+    Terraform's state is in R2, secrets.yaml in Infisical, and the cluster
+    logs in to Infisical with no credential of its own (hosts/core.yaml,
+    config). What opens Infisical
     and the backups themselves - its login and the restic password - belongs
     in a password manager too.
