@@ -35,10 +35,18 @@ delete and log reads with it. Core's dashboards got a cluster selector,
 VMSingle 1.5 Gi of memory for the second cluster's series, its logs a
 cluster field, and both stores a month's retention.
 
+## Infisical's identities
+
+Core's External Secrets turned out to log in as `talos-cluster`, a member of
+core's project, while `homelab` - the organization admin the notes had taken
+for core's - was used by nothing since the lab got its own. A search printed
+talos-cluster's client secret into the session, so the identities were
+remade: `core`, Viewer on core's project and nothing in the organization,
+its credential in initial-secret.yaml and the copy at /system/infisical;
+talos-cluster and homelab deleted. All 21 ExternalSecrets synced again with
+only `core` left. Terraform logs in as the owner (the lab's decisions/0009).
+
 Still open:
-- Rotate the client secret of the Infisical identity `homelab` - the lab's
-  cluster held it until 2026-10-03 - and narrow it from organization admin
-  to core's project.
 - Whether the Proxmox console's websocket passes through the Gateway on
   proxmox.home; untested.
 - Immich's originals outside the house - R2.

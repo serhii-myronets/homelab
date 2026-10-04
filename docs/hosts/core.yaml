@@ -74,7 +74,10 @@ platform:
     the router, /archive for what nothing reads. Keys are UPPER_SNAKE
     outside /archive, which keeps them as they were.
     Read through one
-    ClusterSecretStore. The machine credential is the one hand-placed secret:
+    ClusterSecretStore, as the machine identity core: no access to the
+    organization, Viewer on this project alone. It replaced talos-cluster, a
+    member here, and homelab, an organization admin nothing used any more,
+    both deleted on 2026-10-04. The machine credential is the one hand-placed secret:
     core/02-platform/prepare-hook/initial-secret.yaml, local and ignored;
     a copy of its two values is in Infisical at /system/infisical, for a
     rebuild from another machine.
