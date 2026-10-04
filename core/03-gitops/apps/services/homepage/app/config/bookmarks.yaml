@@ -9,8 +9,16 @@
     - Repository:
         - icon: github.png
           href: https://github.com/serhii-myronets/homelab
-- When the cluster is down:
+- When core is down:
     - Gatus on the router:
         - icon: gatus.png
           href: http://192.168.8.1:8090
           description: answers without the cluster
+    - Proxmox:
+        - icon: proxmox.png
+          href: https://192.168.8.30:8006
+          description: the host itself
+    - ProxMenux:
+        - icon: mdi-monitor-dashboard
+          href: http://192.168.8.30:8008
+          description: the host itself

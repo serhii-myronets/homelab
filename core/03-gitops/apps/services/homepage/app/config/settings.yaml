@@ -29,19 +29,23 @@ layout:
     style: row
     columns: 2
     icon: mdi-calendar
-  Health:
-    style: row
-    columns: 3
-    icon: mdi-heart-pulse
-  Home:
+  Personal:
     style: row
     columns: 2
-    icon: mdi-home-heart
-  Cluster:
+    icon: mdi-account-heart
+  Health:
     style: row
-    columns: 4
+    columns: 2
+    icon: mdi-heart-pulse
+  Core:
+    style: row
+    columns: 3
     icon: mdi-kubernetes
   Network:
     style: row
     columns: 2
     icon: mdi-router-network
+  Lab:
+    style: row
+    columns: 3
+    icon: mdi-flask

@@ -108,8 +108,36 @@
           url: http://torrent-web.torrent.svc.cluster.local:8080
           enableLeechProgress: true
 
+- Personal:
+    - Sure:
+        href: https://sure.home
+        description: Money
+        icon: sure.png
+        siteMonitor: https://sure.home/up
+        namespace: sure
+        app: sure
+        podSelector: app=sure
+    - Vaultwarden:
+        href: https://vault.home
+        description: Passwords
+        icon: vaultwarden.png
+        siteMonitor: https://vault.home/alive
+        namespace: vaultwarden
+        app: vaultwarden
+        podSelector: app=vaultwarden
+
 - Health:
-    # Straight from VictoriaMetrics, which keeps every number here already.
+    # Gatus first, as what is up or down; the rest straight from
+    # VictoriaMetrics, which keeps every number here already.
+    - Gatus:
+        href: https://gatus.home
+        description: on the router
+        icon: gatus.png
+        siteMonitor: https://gatus.home/health
+        widget:
+          type: gatus
+          url: http://192.168.8.1:8090
+          fields: [up, down, uptime]
     - Disks:
         href: https://grafana.home
         description: Free space
@@ -173,34 +201,7 @@
               query: count(ALERTS{alertstate="firing", severity="warning"}) or vector(0)
               format: {type: number}
 
-- Home:
-    - Sure:
-        href: https://sure.home
-        description: Money
-        icon: sure.png
-        siteMonitor: https://sure.home/up
-        namespace: sure
-        app: sure
-        podSelector: app=sure
-    - Vaultwarden:
-        href: https://vault.home
-        description: Passwords
-        icon: vaultwarden.png
-        siteMonitor: https://vault.home/alive
-        namespace: vaultwarden
-        app: vaultwarden
-        podSelector: app=vaultwarden
-
-- Cluster:
-    - Gatus:
-        href: https://gatus.home
-        description: on the router
-        icon: gatus.png
-        siteMonitor: https://gatus.home/health
-        widget:
-          type: gatus
-          url: http://192.168.8.1:8090
-          fields: [up, down, uptime]
+- Core:
     - Grafana:
         href: https://grafana.home
         description: Metrics · logs
@@ -249,3 +250,30 @@
         href: http://192.168.8.1:3000
         description: DNS
         icon: adguard-home.png
+
+# The lab on Proxmox, built and destroyed on purpose: red here while it is
+# down is expected, which is why it is kept apart from Core.
+- Lab:
+    - Proxmox:
+        href: https://proxmox.home
+        description: The lab's host
+        icon: proxmox.png
+        siteMonitor: https://proxmox.home/
+        widget:
+          type: proxmox
+          url: https://proxmox.home
+          username: homepage@pve!homepage
+          password: "{{HOMEPAGE_VAR_PROXMOX_TOKEN}}"
+          fields: [vms, resources.cpu, resources.mem]
+    - ProxMenux:
+        href: https://proxmenux.home
+        description: Monitor, on the host
+        icon: mdi-monitor-dashboard
+        siteMonitor: https://proxmenux.home/api/health
+    # The lab's Gateway serves a certificate from lab-ca, an intermediate
+    # under home-ca, so the same root verifies it.
+    - Argo CD:
+        href: https://argocd.home
+        description: The lab's GitOps
+        icon: argo-cd.png
+        siteMonitor: https://argocd.home/healthz
