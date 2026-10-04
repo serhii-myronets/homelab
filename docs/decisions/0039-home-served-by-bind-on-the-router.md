@@ -41,7 +41,7 @@ answering the house and forwards `.home` to it - one upstream line,
 `[/home/]127.0.0.1:5300`, set in AdGuard's own UI. Each cluster's
 external-dns writes its names over RFC 2136 with a TSIG key of its own, kept
 in that cluster's Infisical project at /system/bind, and owns them through
-the TXT registry - `beelink` on core, `lab` on the lab - so neither touches
+the TXT registry - `core` on core, `lab` on the lab - so neither touches
 the other's.
 
 It sits under 0036's exception: a package from the router's own feed and

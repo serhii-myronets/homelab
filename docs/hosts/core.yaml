@@ -102,7 +102,7 @@ access:
   public: >-
     *.serhii.link through the Cloudflare tunnel beelink, locally managed from
     core/03-gitops/apps/system/network/cloudflared. external-dns publishes a
-    proxied CNAME per HTTPRoute under serhii.link, as owner beelink.
+    proxied CNAME per HTTPRoute under serhii.link, as owner core.
     Cloudflare Access guards every name, including new ones.
 
 services:
