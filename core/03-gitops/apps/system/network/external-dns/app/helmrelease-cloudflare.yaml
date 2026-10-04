@@ -36,11 +36,14 @@ spec:
       - serhii.link
     extraArgs:
       - --cloudflare-proxied
+      # Once, to rename the owner of the records it already holds; removed
+      # after the first run.
+      - --migrate-from-txt-owner=beelink
 
-    # Each cluster owns only the records it created, so core's tunnel records and
-    # a future Proxmox cluster are left alone.
+    # Each cluster owns only the records it created: core's, and the lab's
+    # as owner lab, are left to each other.
     registry: txt
-    txtOwnerId: beelink
+    txtOwnerId: core
     policy: sync
 
     resources:

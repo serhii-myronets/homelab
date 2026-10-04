@@ -5,5 +5,5 @@ resources:
 - namespace.yaml
 - externalsecret-cloudflare.yaml
 - helmrelease-cloudflare.yaml
-- externalsecret-rfc2136.yaml
-- helmrelease-rfc2136.yaml
+- externalsecret-bind.yaml
+- helmrelease-bind.yaml

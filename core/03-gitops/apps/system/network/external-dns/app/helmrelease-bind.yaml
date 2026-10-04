@@ -1,10 +1,10 @@
 # A second external-dns, for the house's own names: it publishes each .home
-# name of an HTTPRoute in the router's BIND over RFC 2136, as owner beelink -
+# name of an HTTPRoute in the router's BIND over RFC 2136, as owner core -
 # the lab publishes its own as owner lab. See decisions/0039.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: external-dns-rfc2136
+  name: external-dns-bind
   namespace: external-dns
 spec:
   interval: 30m
@@ -44,16 +44,19 @@ spec:
       # external-dns.kubernetes.io/target - the Cloudflare tunnel, for the
       # other external-dns - and answers every name at the Gateway's own
       # address, 192.168.8.15.
-      - --annotation-prefix=rfc2136.external-dns.kubernetes.io/
+      - --annotation-prefix=bind.external-dns.kubernetes.io/
       # .home names only, and never a wildcard: home-redirect's *.home would
       # catch every name the lab publishes.
       - --regex-domain-filter=\.home$
       - --regex-domain-exclusion=^\*\.
+      # Once, to rename the owner of the records it already holds; removed
+      # after the first run.
+      - --migrate-from-txt-owner=beelink
 
     # Only its own records: the lab's are owned by lab, and the zone's
     # static names by no one.
     registry: txt
-    txtOwnerId: beelink
+    txtOwnerId: core
     policy: sync
 
     resources:
