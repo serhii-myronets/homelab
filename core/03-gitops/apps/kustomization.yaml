@@ -22,6 +22,7 @@ resources:
   - system/network/cloudflared/ks.yaml
   - system/network/external-dns/ks.yaml
   - system/network/gateway-system/ks.yaml
+  - system/network/proxmox/ks.yaml
   - system/network/router/ks.yaml
 
   - system/observability/ks.yaml

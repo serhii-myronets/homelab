@@ -1,0 +1,8 @@
+# The lab's hypervisor, reached through core's Gateway, so it has a .home name
+# and home-ca's certificate like everything else. Here, not in the lab: the
+# lab is destroyed and rebuilt, and its host's UI matters most when the lab is
+# down. Only the proxy that carries the traffic runs in the cluster.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: proxmox
