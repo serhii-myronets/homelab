@@ -1514,3 +1514,25 @@ traps:
       on 2026-10-03. .home is BIND on the router instead (decisions/0039);
       AdGuard only forwards to it.
     diagnosed: 2026-09-29 for Homepage's widget, confirmed 2026-10-03 for external-dns
+
+  - id: infisical-jwt-auth-refuses-a-computed-public-key
+    applies_to: [terraform, infisical, jwt, proxmox]
+    symptom: >-
+      terraform validate and plan stop at infisical_identity_jwt_auth with
+      configuration_type static: "public_keys[0] is not a valid PEM-encoded
+      key", although the key is a sound PEM.
+    cause: >-
+      The provider's ValidateConfig (0.19.38, internal/provider/resource/
+      identity_jwt_auth.go; the same since the resource appeared in March
+      2026) reads public_keys while Terraform still holds a computed element
+      as unknown, turns it into an empty string and fails pem.Decode on it.
+      It checks only that the list itself is known, not its elements.
+    tell: >-
+      The same key from file() validates; from tls_public_key, or any other
+      resource or data source, it does not.
+    fix: >-
+      None in the provider yet. The lab gave Infisical the key by hand once,
+      which holds because its Talos secrets no longer change at a rebuild
+      (the lab repository's decisions/0010 and 0011). A key from a file
+      kept in step with the secrets would also pass.
+    diagnosed: 2026-10-04, moving the lab's External Secrets to JWT
