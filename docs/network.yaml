@@ -13,8 +13,9 @@ subnets:
 address_plan:                      # the LAN in tens, set 2026-09-29
   core: 192.168.8.10-19            # controlplane .10, worker-1 .11, load
                                    # balancer .15-.19; .20-.29 is free again
-  lab: 192.168.8.30-50             # proxmox .30, control planes .40-.44,
-                                   # workers .45-.49, the API VIP .50
+  lab: 192.168.8.30-50             # proxmox .30, load balancers .31-.35,
+                                   # control planes .40-.44, workers .45-.49,
+                                   # the API VIP .50
   dhcp_pool: 192.168.8.100-249
 
 load_balancers:
@@ -22,6 +23,10 @@ load_balancers:
     range: 192.168.8.15-192.168.8.19
     announced_by: core
     interface: br0
+  cilium_lab:
+    range: 192.168.8.31-192.168.8.35   # the lab's Gateway at .31
+    announced_by: lab, from its workers
+    interface: eth0
 
 dns:
   server: AdGuard Home on the router at 192.168.8.1
@@ -40,6 +45,9 @@ tls:
     Cloudflare holds the certificate for serhii.link at its edge; the tunnel
     beelink is locally managed, so its ingress rules are in
     core/03-gitops/apps/system/network/cloudflared, not in the dashboard.
+    The lab has its own tunnel, lab (2026-10-03), and its own external-dns
+    as owner lab: each publishes only its own names under serhii.link, and
+    a name the other already holds is skipped.
 
 reachability:                      # who can reach whom, as configured today
   vpn_to_internet: yes             # wgserver2wan
