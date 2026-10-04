@@ -1,0 +1,12 @@
+# What runs outside the cluster and is reached through the cluster's Gateway,
+# so it has a .home name and home-ca's certificate like everything else: Gatus
+# on the router and the Proxmox host. Only the small pods that carry the
+# traffic run here - Cilium's Gateway does not route to an address outside the
+# cluster itself (traps.yaml, cilium-gateway-cannot-reach-outside-the-cluster).
+#
+# The Proxmox host's proxy belongs here and not in the lab: the lab is
+# destroyed and rebuilt, and its host's UI matters most when the lab is down.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: proxies

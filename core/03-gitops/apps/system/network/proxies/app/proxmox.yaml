@@ -3,7 +3,7 @@
 # Local only - no serhii.link name. The host itself still answers at
 # https://192.168.8.30:8006, and ssh goes to that address, not to this name.
 #
-# Through a pod, as gatus.home is (router/app/gatus.yaml): Cilium's Gateway
+# Through a pod, as gatus.home is (gatus.yaml): Cilium's Gateway
 # does not route to addresses outside the cluster (traps.yaml,
 # cilium-gateway-cannot-reach-outside-the-cluster). Unlike Gatus, the host
 # speaks only HTTPS, with its own self-signed certificate: the Gateway hands

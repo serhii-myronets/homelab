@@ -15,7 +15,7 @@ identity:
   ip: 192.168.8.30                 # static, set in the installer
   ui: >-
     https://proxmox.home, through core's Gateway with home-ca's certificate
-    (core/03-gitops/apps/system/network/proxmox); the host itself at
+    (core/03-gitops/apps/system/network/proxies); the host itself at
     https://192.168.8.30:8006, which is what to use while core is down.
   ssh: root@192.168.8.30           # key at ~/.ssh/id_ed25519
   deployed_from_here: no           # its Terraform lives elsewhere:

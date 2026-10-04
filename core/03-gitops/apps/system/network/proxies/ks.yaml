@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: router
+  name: proxies
   namespace: flux-system
 spec:
   interval: 10m
@@ -9,5 +9,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: homelab
-  path: ./core/03-gitops/apps/system/network/router/app
+  path: ./core/03-gitops/apps/system/network/proxies/app
   prune: true
