@@ -38,6 +38,11 @@ os:
     homepage@pve, PVEAuditor on /, with the token homepage@pve!homepage
     (privilege separation off) for Homepage's Proxmox card on core; its
     secret is in core's Infisical at /services/homepage/PROXMOX_TOKEN.
+    root@pam!terraform (privilege separation off) for the lab's Terraform,
+    in the lab's Infisical at /system/proxmox/API_TOKEN. kubernetes-csi@pve,
+    role CSI on /, with the token kubernetes-csi@pve!csi (privilege
+    separation on, same role) for the lab's Proxmox CSI, in the lab's
+    Infisical at /system/proxmox-csi. Verified with pveum on 2026-10-04.
   proxmenux: >-
     ProxMenux 1.2.6, installed 2026-10-03 for its Monitor (the web app reports
     1.2.2): proxmenux-monitor.service, as root, http://192.168.8.30:8008, and
