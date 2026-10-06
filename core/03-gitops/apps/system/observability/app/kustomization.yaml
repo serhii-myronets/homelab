@@ -7,6 +7,7 @@ resources:
   - httproute.yaml
   - ingest.yaml
   - loki.yaml
+  - obi.yaml
   - otel-collector.yaml
   - otel-collector-rules.yaml
   - tempo.yaml
