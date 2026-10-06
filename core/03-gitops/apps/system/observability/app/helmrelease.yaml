@@ -32,9 +32,9 @@ spec:
     # satellite cluster, and from 2026-09-30 on worker-1 - every lesson in the
     # comments below was paid for in one of the first two.
     #
-    # Everything but the two DaemonSets is pinned to worker-1, off
-    # controlplane's memory (decisions/0035); node-exporter tolerates every
-    # taint by default, vlagent is given worker-1's below.
+    # Everything but node-exporter, a DaemonSet that tolerates every taint by
+    # default, is pinned to worker-1, off controlplane's memory
+    # (decisions/0035).
     global:
       # The label the chart's rules and dashboards group by.
       clusterLabel: cluster
@@ -47,13 +47,13 @@ spec:
     # One release carries the whole stack: the operator, VMSingle, vmagent,
     # vmalert, Alertmanager, Grafana, kube-state-metrics and node-exporter.
     #
-    # Metrics only to begin with. VictoriaLogs lives in this same chart, as
-    # vlsingle and vlagent at the bottom of this file, so adding logs later is
-    # a change here rather than a second application.
+    # VictoriaLogs lives in this same chart, as vlsingle at the bottom of this
+    # file; what reads the logs is the OpenTelemetry Collector, beside it in
+    # otel-collector.yaml.
     #
-    # The chart ships no resources block for any of its eight workloads - every
-    # one renders with neither request nor limit. This node's limits already
-    # exceed its memory, so all eight are set below. Requests are what each is
+    # The chart ships no resources block for any of its workloads - every one
+    # renders with neither request nor limit. This node's limits already
+    # exceed its memory, so each is set below. Requests are what each is
     # expected to hold; limits leave room to spike without taking the node.
 
     victoria-metrics-operator:
@@ -212,8 +212,8 @@ spec:
         limits: {memory: 96Mi}
 
     # Logs, since 2026-09-30, once the metrics half had been measured here.
-    # VictoriaLogs keeps a month; vlagent reads every pod's log from each node
-    # and writes it here.
+    # VictoriaLogs keeps a month; the OpenTelemetry Collector reads every pod's
+    # log from each node and writes it here.
     vlsingle:
       enabled: true
       spec:
@@ -227,19 +227,6 @@ spec:
         resources:
           requests: {cpu: 50m, memory: 128Mi}
           limits: {memory: 512Mi}
-    vlagent:
-      enabled: true
-      spec:
-        k8sCollector:
-          enabled: true
-          # Logs carry no external labels; this field tells core's from the
-          # lab's, which writes {"cluster":"lab"}.
-          extraFields: '{"cluster":"core"}'
-        # A DaemonSet, on both nodes: tolerated on worker-1, not pinned to it.
-        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
-        resources:
-          requests: {cpu: 25m, memory: 64Mi}
-          limits: {memory: 256Mi}
 
     # vmalert's datasource once logs are on: the chart adds this proxy by itself,
     # routing rule queries to VMSingle or VLSingle. Helm merges these keys into
