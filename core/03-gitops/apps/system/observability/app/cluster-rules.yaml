@@ -1,0 +1,30 @@
+# What the chart's rules do not cover: the router, outside the cluster, and
+# CronJobs that run but stop succeeding - every backup here is one.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cluster
+spec:
+  groups:
+    - name: router
+      rules:
+        - alert: RouterConntrackFilling
+          expr: node_nf_conntrack_entries{job="router"} / node_nf_conntrack_entries_limit{job="router"} > 0.8
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: The router's connection table is {{ $value | humanizePercentage }} full
+            description: New connections through the router are dropped once it is full.
+    - name: cronjobs
+      rules:
+        # Late by the CronJob's own interval - the gap between its last and
+        # next run - plus two hours, whatever its schedule.
+        - alert: CronJobNotSucceeding
+          expr: |
+            time() - kube_cronjob_status_last_successful_time
+              > (kube_cronjob_next_schedule_time - kube_cronjob_status_last_schedule_time) + 7200
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} has not succeeded on its last run
+            description: "`kubectl -n {{ $labels.namespace }} get jobs -l cronjob={{ $labels.cronjob }}`"

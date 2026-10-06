@@ -1,0 +1,22 @@
+# Both releases sync every minute: Cloudflare for serhii.link, BIND on the
+# router for .home. A stale sync means new names go unpublished.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: external-dns
+spec:
+  groups:
+    - name: external-dns
+      rules:
+        - alert: ExternalDNSNotSyncing
+          expr: time() - external_dns_controller_last_sync_timestamp_seconds > 15 * 60
+          for: 5m
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.job }} has not synced DNS for 15 minutes"
+        - alert: ExternalDNSErrors
+          expr: increase(external_dns_registry_errors_total[15m]) > 0 or increase(external_dns_source_errors_total[15m]) > 0
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.job }} keeps failing to read or write records"

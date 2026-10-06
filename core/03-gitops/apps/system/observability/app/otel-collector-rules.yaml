@@ -1,0 +1,30 @@
+# The collector holds logs in its queue on the node while VictoriaLogs is
+# away, and drops them once the queue is full.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: otel-collector
+spec:
+  groups:
+    - name: otel-collector
+      rules:
+        - alert: OTelCollectorExportFailing
+          expr: rate(otelcol_exporter_send_failed_log_records[5m]) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.pod }} cannot deliver logs through {{ $labels.exporter }}"
+        - alert: OTelCollectorQueueFilling
+          expr: otelcol_exporter_queue_size / otelcol_exporter_queue_capacity > 0.5
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.pod }}'s log queue is {{ $value | humanizePercentage }} full"
+            description: Logs are dropped once it is full.
+        # The memory limiter refusing: logs read from disk but not taken in.
+        - alert: OTelCollectorRefusingLogs
+          expr: rate(otelcol_receiver_refused_log_records[5m]) > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.pod }} is refusing logs, short of memory"

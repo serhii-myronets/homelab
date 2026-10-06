@@ -1,0 +1,18 @@
+# Every Secret the services read comes through an ExternalSecret; one that
+# stops syncing keeps its last value until the source changes under it.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: external-secrets
+  namespace: external-secrets
+spec:
+  groups:
+    - name: external-secrets
+      rules:
+        - alert: ExternalSecretNotSynced
+          expr: externalsecret_status_condition{condition="Ready", status="False"} == 1
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: ExternalSecret {{ $labels.exported_namespace }}/{{ $labels.name }} is not syncing from Infisical
+            description: The Secret keeps its last value. `kubectl -n {{ $labels.exported_namespace }} describe externalsecret {{ $labels.name }}`.

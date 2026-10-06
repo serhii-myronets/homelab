@@ -1,0 +1,33 @@
+# A full thin pool stops every volume on it at once - traps.yaml has
+# VictoriaLogs at 100%.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: lvm
+spec:
+  groups:
+    - name: lvm
+      rules:
+        - alert: LVMThinPoolFillingUp
+          expr: lvm_lv_used_percent{segtype="thin-pool"} > 80
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: Thin pool {{ $labels.name }} is {{ $value | humanize }}% full
+        - alert: LVMThinPoolAlmostFull
+          expr: lvm_lv_used_percent{segtype="thin-pool"} > 90
+          for: 5m
+          labels: {severity: critical}
+          annotations:
+            summary: Thin pool {{ $labels.name }} is {{ $value | humanize }}% full
+            description: At 100% every volume on it stops writing.
+        # The driver reports no volume at all on a node while a thin snapshot
+        # there has no device node (traps.yaml,
+        # lvm-driver-reports-no-volumes-while-a-snapshot-exists), and the two
+        # rules above then see nothing.
+        - alert: LVMVolumesNotReported
+          expr: count by (cluster, pod) (lvm_vg_total_size_bytes) unless count by (cluster, pod) (lvm_lv_used_percent)
+          for: 1h
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.pod }} reports its volume group but no volumes, so its thin pool is not watched"

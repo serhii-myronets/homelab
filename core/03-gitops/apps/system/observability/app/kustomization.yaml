@@ -7,4 +7,6 @@ resources:
   - httproute.yaml
   - ingest.yaml
   - otel-collector.yaml
+  - otel-collector-rules.yaml
+  - cluster-rules.yaml
   - router-scrape.yaml

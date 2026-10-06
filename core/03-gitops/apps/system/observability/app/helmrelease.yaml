@@ -298,6 +298,16 @@ spec:
     # - fifteen of them, and RecordingRulesNoData firing for good. The alerts
     # on top of them, kube-apiserver-slos, could never fire either.
     defaultRules:
+      rules:
+        # Both ask whether the cluster could lose its largest node and still
+        # place every pod. With two nodes and worker-1 tainted it never
+        # could, by design, so both fired for good - while requests sat at
+        # two-thirds of what the nodes hold.
+        KubeCPUOvercommit: {enabled: false}
+        KubeMemoryOvercommit: {enabled: false}
+        # count(up == 0) is empty when every target is up, which made
+        # RecordingRulesNoData fire for as long as nothing was down.
+        "count:up0": {enabled: false}
       groups:
         kube-apiserver-availability.rules: {enabled: false}
         kube-apiserver-burnrate.rules: {enabled: false}

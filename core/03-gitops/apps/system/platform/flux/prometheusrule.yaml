@@ -1,0 +1,26 @@
+# From the Flux Operator's flux_resource_info, which carries every Flux
+# object's readiness - the controllers' own metrics do not.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux
+  namespace: flux-system
+spec:
+  groups:
+    - name: flux
+      rules:
+        - alert: FluxResourceNotReady
+          expr: flux_resource_info{ready!="True", suspended="False"}
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} is not Ready: {{ $labels.reason }}"
+            description: "`flux get {{ $labels.kind | toLower }} -n {{ $labels.exported_namespace }} {{ $labels.name }}`"
+        # A suspension is meant to be brief; one forgotten lets the cluster
+        # drift from Git without a word.
+        - alert: FluxResourceSuspended
+          expr: flux_resource_info{suspended="True"}
+          for: 24h
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $labels.kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} has been suspended for a day"

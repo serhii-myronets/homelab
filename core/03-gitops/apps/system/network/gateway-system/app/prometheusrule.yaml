@@ -1,0 +1,35 @@
+# Cilium's own health, and the Gateway its Envoy serves.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cilium
+  namespace: gateway-system
+spec:
+  groups:
+    - name: cilium
+      rules:
+        - alert: CiliumUnreachableNodes
+          expr: cilium_unreachable_nodes > 0
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: Cilium on {{ $labels.node }} cannot reach {{ $value }} other node(s)
+        - alert: CiliumBPFMapPressure
+          expr: cilium_bpf_map_pressure > 0.9
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: BPF map {{ $labels.map_name }} on {{ $labels.node }} is {{ $value | humanizePercentage }} full
+            description: A full map drops new connections or endpoints.
+    - name: gateway
+      rules:
+        # Only with some traffic: one failed request out of three is not news.
+        - alert: GatewayBackendErrors
+          expr: |
+            sum by (cluster, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class="5"}[10m]))
+              / sum by (cluster, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_total[10m])) > 0.1
+            and sum by (cluster, envoy_cluster_name) (rate(envoy_cluster_upstream_rq_total[10m])) > 0.05
+          for: 10m
+          labels: {severity: warning}
+          annotations:
+            summary: "{{ $value | humanizePercentage }} of requests to {{ $labels.envoy_cluster_name }} end in 5xx"

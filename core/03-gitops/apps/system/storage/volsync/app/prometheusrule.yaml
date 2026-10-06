@@ -1,0 +1,17 @@
+# A source that has missed its scheduled sync: the newest copy in R2 is older
+# than it should be.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: volsync
+spec:
+  groups:
+    - name: volsync
+      rules:
+        - alert: VolSyncVolumeOutOfSync
+          expr: volsync_volume_out_of_sync == 1
+          for: 1h
+          labels: {severity: warning}
+          annotations:
+            summary: Backup of {{ $labels.obj_namespace }}/{{ $labels.obj_name }} has missed its schedule
+            description: "`kubectl -n {{ $labels.obj_namespace }} describe replicationsource {{ $labels.obj_name }}`."

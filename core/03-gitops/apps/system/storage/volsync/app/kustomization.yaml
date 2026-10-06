@@ -5,3 +5,4 @@ namespace: storage
 resources:
 - helmrelease.yaml
 - servicemonitor.yaml
+- prometheusrule.yaml

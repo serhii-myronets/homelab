@@ -7,3 +7,4 @@ resources:
 - helmrelease-cloudflare.yaml
 - externalsecret-bind.yaml
 - helmrelease-bind.yaml
+- prometheusrule.yaml

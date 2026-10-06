@@ -1,0 +1,24 @@
+# cert-manager renews a certificate well before it expires, so one that gets
+# close has failed to renew; one not Ready has failed to issue.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cert-manager
+spec:
+  groups:
+    - name: cert-manager
+      rules:
+        - alert: CertificateExpiringSoon
+          expr: certmanager_certificate_expiration_timestamp_seconds - time() < 14 * 86400
+          for: 1h
+          labels: {severity: warning}
+          annotations:
+            summary: Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} expires in under 14 days
+            description: cert-manager should have renewed it by now; see `kubectl -n {{ $labels.exported_namespace }} describe certificate {{ $labels.name }}`.
+        - alert: CertificateNotReady
+          expr: certmanager_certificate_ready_status{condition=~"False|Unknown"} == 1
+          for: 15m
+          labels: {severity: warning}
+          annotations:
+            summary: Certificate {{ $labels.exported_namespace }}/{{ $labels.name }} is not Ready
+            description: Issued by {{ $labels.issuer_kind }}/{{ $labels.issuer_name }}.
