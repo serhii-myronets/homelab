@@ -12,3 +12,9 @@ spec:
     - targets: ["192.168.8.1:9100"]
       labels:
         node: router
+  # The VictoriaMetrics operator does not carry jobName over: the job came
+  # out as scrapeConfig/observability/router, and Homepage's router widgets,
+  # which ask for job="router", went blank.
+  relabelings:
+    - targetLabel: job
+      replacement: router
