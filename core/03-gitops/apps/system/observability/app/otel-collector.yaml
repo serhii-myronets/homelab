@@ -60,6 +60,10 @@ spec:
         otlp: null
         prometheus: null
         filelog:
+          # Not the default 200ms. Polling some fifty files five times a
+          # second, checkpointing each time, held 76m of worker-1's Celeron
+          # for one log line every six seconds; a second's delay costs nothing.
+          poll_interval: 1s
           # Restates the preset's container parser, since this list replaces
           # it, and lifts what JSON-logging controllers write into fields.
           operators:
