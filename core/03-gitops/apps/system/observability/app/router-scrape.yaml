@@ -2,13 +2,13 @@
 # installs there: CPU, memory, every interface - eth1 is the WAN - conntrack
 # and Wi-Fi clients. A static target, as the router is outside the cluster;
 # vmagent reaches it like any pod reaches the LAN.
-apiVersion: operator.victoriametrics.com/v1beta1
-kind: VMStaticScrape
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
 metadata:
   name: router
 spec:
   jobName: router
-  targetEndpoints:
+  staticConfigs:
     - targets: ["192.168.8.1:9100"]
       labels:
         node: router

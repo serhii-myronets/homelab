@@ -1,16 +1,16 @@
 # VolSync's own metrics - above all volsync_volume_out_of_sync, a backup that
-# has missed its run - for Grafana and Homepage. The controller serves them
-# over HTTPS and asks the API server whether the caller may read /metrics;
-# rather than switch that check off, vmagent is given the chart's own
-# metrics-reader role. Here rather than beside VolSync, because the scrape is
-# a VictoriaMetrics kind and this stack brings its CRD.
-apiVersion: operator.victoriametrics.com/v1beta1
-kind: VMServiceScrape
+# has missed its run - for Grafana and Homepage. The chart ships no monitor.
+#
+# The controller serves them over HTTPS and asks the API server whether the
+# caller may read /metrics; rather than switch that check off, vmagent is
+# given the chart's own metrics-reader role and sends its service account's
+# token. bearerTokenFile is deprecated in favour of a token in a Secret, but
+# a service account's token can only be minted into its own namespace.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
 metadata:
   name: volsync
 spec:
-  namespaceSelector:
-    matchNames: [storage]
   selector:
     matchLabels:
       app.kubernetes.io/name: volsync

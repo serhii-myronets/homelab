@@ -70,6 +70,12 @@ spec:
       # That is not worth a certificate that cannot hold still.
       admissionWebhooks:
         enabled: false
+      # ServiceMonitors, PodMonitors, PrometheusRules and the rest are converted
+      # into VictoriaMetrics kinds (decisions/0044). Owned by their source, a
+      # converted object goes when Flux prunes the monitor it came from;
+      # otherwise vmagent would go on scraping a target nobody declares.
+      operator:
+        enable_converter_ownership: true
       nodeSelector: {kubernetes.io/hostname: worker-1}
       tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
       resources:

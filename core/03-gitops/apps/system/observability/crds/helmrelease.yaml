@@ -1,0 +1,34 @@
+# The Prometheus Operator's resource types, without the operator. They are
+# how charts and people describe what to scrape and alert on; the
+# VictoriaMetrics operator converts each into its own kind, which vmagent and
+# vmalert act on (decisions/0044).
+#
+# In flux-system, since the release has to live in a namespace that exists
+# before observability's own.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus-operator-crds
+  namespace: flux-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: prometheus-operator-crds
+      version: "32.0.1"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: flux-system
+  values:
+    # Only the kinds the VictoriaMetrics operator converts. Prometheus,
+    # Alertmanager, PrometheusAgent and ThanosRuler would be types nothing
+    # here acts on.
+    crds:
+      # The chart ships these as templates, not in crds/, so removing the
+      # release would delete them and every ServiceMonitor and rule with them.
+      annotations: {helm.sh/resource-policy: keep}
+      prometheuses: {enabled: false}
+      prometheusagents: {enabled: false}
+      alertmanagers: {enabled: false}
+      thanosrulers: {enabled: false}
