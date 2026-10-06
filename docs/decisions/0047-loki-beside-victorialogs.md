@@ -1,13 +1,14 @@
 ---
 id: "0047"
-title: Loki runs beside VictoriaLogs on the same logs, until one is chosen
+title: Loki keeps the logs; VictoriaLogs, run beside it to compare, is gone
 date: 2026-10-05
-status: open
+status: accepted
+updated: 2026-10-06
 tags: [observability, logs, loki, victorialogs, opentelemetry]
 hosts: [core]
 ---
 
-# Loki runs beside VictoriaLogs on the same logs, until one is chosen
+# Loki keeps the logs; VictoriaLogs, run beside it to compare, is gone
 
 0043 kept VictoriaLogs as the store and rejected Loki as no more of a
 standard. That undersold Loki: LogQL is what the field knows, and Grafana's
@@ -48,10 +49,16 @@ index covers several times faster; a substring is a full scan in either.
 Loki's figures are early - it holds recent chunks in memory and flushes
 them over hours.
 
-## Deciding
+## Decided, 2026-10-06
 
-Worth comparing after a week or so: memory and disk of each, the time a
-search over a few days takes in each - a word, not a label - and which of
-Grafana's log views is the one used. Whichever loses goes, with its
-datasource and its exporter; if it is VictoriaLogs, the lab moves to the
-collector first, and the `lab` VMUser forwards to Loki's OTLP path.
+Loki. At this size the measurements above leave nothing to choose on
+resources, and VictoriaLogs' faster search is a matter of a tenth of a
+second against two-thirds; what remains is LogQL and Grafana's log
+tooling, which favour Loki. The owner chose it the day after the two were
+started.
+
+VictoriaLogs went that day, with its volume: the collector writes to Loki
+alone, and the chart's VLSingle, the vmauth it brought for vmalert,
+Grafana's plugin and the chart's VictoriaLogs rules are off. The lab's log
+path through `ingest.home` went with it; the lab's logs arrive again when
+its own collector writes to Loki's OTLP path, through the `lab` VMUser.

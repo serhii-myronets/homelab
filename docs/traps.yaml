@@ -1668,3 +1668,24 @@ traps:
       only pods of the same revision; the change itself rolls the pods and
       spreads them.
     diagnosed: 2026-10-05, giving cloudflared a replica per node
+
+  - id: a-removed-taint-was-pinning-more-than-it-said
+    applies_to: [kubernetes, scheduling, worker-1, talos, etcd]
+    symptom: >-
+      After worker-1's taint went, the nightly etcd backup failed: talosctl
+      in the Job answered "etcd snapshot is only available on control plane
+      nodes", three times, and the Job hit its backoff limit.
+    cause: >-
+      Its pod asks the Talos API of the node it runs on (status.hostIP) and
+      had no node selector; only the taint had kept it on controlplane.
+      Anything that works on its own node - host paths, a node's API, its
+      disks by ID - can carry the same unspoken pin.
+    tell: >-
+      The failed pod ran on worker-1; Loki has its lines under
+      k8s_namespace_name="etcd-backup".
+    fix: >-
+      Pin such a workload by what it needs - here
+      `node-role.kubernetes.io/control-plane: ""` - and before taking a
+      taint off, look for status.hostIP, hostPath and Talos API use in what
+      ran on the other node.
+    diagnosed: 2026-10-06, the morning after decisions/0046

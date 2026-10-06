@@ -38,6 +38,13 @@ That puts more on the older machine, and its loss would take more with it,
 until Kubernetes moves the pods after five minutes. cloudflared, which
 carries every serhii.link name, therefore runs a replica on each node.
 
+The taint had also kept off worker-1, without saying so, what needs a
+control plane node by what it does rather than by a volume: the etcd
+backup, which asks its own node's Talos API for a snapshot, failed there
+the next morning and is now pinned to the control-plane role. The
+`nvme-thinpool` Job, which prepares controlplane's disk by its ID, has no
+such pin yet; it ran long ago, and would only run again when recreated.
+
 VolSync's movers, which take no tolerations, can now run on worker-1, so
 the reason 0035 gave for keeping backed-up claims off it no longer holds.
 They stay on controlplane for now; moving one is its own decision.

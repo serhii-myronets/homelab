@@ -111,10 +111,24 @@ cluster-scale extras (caches, gateway, canary, MinIO), and its monitor
 stamping `cluster="loki"` on every series, which `clusterLabelOverride`
 fixed.
 
+## The next day: Loki alone, and the backup the taint had held
+
+Measured side by side after thirteen hours, the two stores matched line
+for line and differed only by fractions of a second; the owner chose Loki
+(0047) and VictoriaLogs went, its volume deleted. The lab's logs have
+nowhere to go until it moves to the collector.
+
+The new CronJobNotSucceeding rule caught the night's etcd backup failing:
+its pod had landed on worker-1, whose taint had been its only pin, and
+talosctl cannot snapshot etcd there (traps.yaml). It is pinned to the
+control-plane role; a manual run succeeded on controlplane.
+
 ## Next
 
-- Loki against VictoriaLogs after a week: memory, disk, a search for a
-  word over days, which view in Grafana gets used (0047).
+- nvme-thinpool has the same unspoken pin: recreating it with a node
+  selector reruns its LVM script on controlplane's disk once - the
+  owner's call.
+- The lab onto the collector, writing to Loki through ingest.home.
 - Somewhere to send the alerts (0008): a Telegram bot and a
   healthchecks.io account, which only the owner can create.
 - VolSync's restore snapshots of 2026-09-30 on controlplane: the owner's
