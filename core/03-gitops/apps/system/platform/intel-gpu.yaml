@@ -40,3 +40,9 @@ spec:
         - op: add
           path: /spec/template/spec/containers/0/args
           value: ["-shared-dev-num=3"]
+        # controlplane's iGPU only. worker-1's UHD 600 makes Immich's face
+        # detector find nothing (traps.yaml, uhd-600-finds-no-faces), and
+        # with no taint on worker-1 the plugin would offer it to any pod.
+        - op: add
+          path: /spec/template/spec/nodeSelector/kubernetes.io~1hostname
+          value: controlplane
