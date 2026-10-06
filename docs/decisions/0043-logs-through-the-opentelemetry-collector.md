@@ -49,4 +49,5 @@ cost worker-1 76m.
 - **Vector.** The strongest at transforming logs, which nothing here needs.
 - **Loki as the store.** No more of a standard than VictoriaLogs, and the
   move would cost the month already kept. VictoriaLogs takes OTLP, so the
-  store can still be changed without touching what collects.
+  store can still be changed without touching what collects. Reopened in
+  0047: Loki now runs beside it on the same logs.

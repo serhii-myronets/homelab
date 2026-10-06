@@ -101,8 +101,20 @@ tolerations out of the manifests, and cloudflared at one replica per node.
 Its first rollout put both replicas on worker-1 until the spread counted
 one revision only (traps.yaml).
 
+## Loki beside VictoriaLogs
+
+Asked what Loki would cost, the owner chose to run it beside VictoriaLogs
+and compare (0047). Loki 3.6 in single-binary mode on worker-1, its
+config checked with Loki's own binary before the push; the collector
+writes to both. Two things in the chart's defaults needed undoing: its
+cluster-scale extras (caches, gateway, canary, MinIO), and its monitor
+stamping `cluster="loki"` on every series, which `clusterLabelOverride`
+fixed.
+
 ## Next
 
+- Loki against VictoriaLogs after a week: memory, disk, a search for a
+  word over days, which view in Grafana gets used (0047).
 - Somewhere to send the alerts (0008): a Telegram bot and a
   healthchecks.io account, which only the owner can create.
 - VolSync's restore snapshots of 2026-09-30 on controlplane: the owner's
