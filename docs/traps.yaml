@@ -8,7 +8,7 @@
 
 meta:
   updated: 2026-10-05
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics]
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1598,3 +1598,29 @@ traps:
       as written, and set the job with a relabeling as well:
       `relabelings: [{targetLabel: job, replacement: <name>}]`.
     diagnosed: 2026-10-05, moving the router's scrape to a ScrapeConfig
+
+  - id: lvm-driver-reports-no-volumes-while-a-snapshot-exists
+    applies_to: [openebs, lvm, volsync, metrics]
+    symptom: >-
+      The LVM node plugin's metrics on controlplane carry the volume group
+      and physical volume (lvm_vg_*, lvm_pv_*) but no lvm_lv_* at all - so
+      no lvm_lv_used_percent for nvme_thinpool - while worker-1's carry
+      every volume. The plugin logs "failed to resolve device mapper from
+      lv path /dev/nvme/<uuid>" on every scrape.
+    cause: >-
+      A thin snapshot is created with activation skip (lvs attr `Vri---t--k`)
+      and has no node under /dev. lvm-driver 1.10.1's decodeLvsJSON returns
+      nil for the whole list at the first volume whose device it cannot
+      resolve. The snapshots here are VolSync's restore images of
+      2026-09-30, one per restored service (decisions/0024); worker-1 holds
+      nothing VolSync backs up (0035), so it has none.
+    tell: >-
+      `kubectl -n openebs exec <lvm-node pod on controlplane> -c
+      openebs-lvm-plugin -- lvs nvme` lists the <uuid> with attr `k`, and
+      `kubectl get volumesnapshot -A` shows its snapcontent-<uuid>.
+    fix: >-
+      None on our side while any snapshot exists: the thin pool's fill on
+      controlplane is not in the metrics. It returns once the snapshots are
+      gone or the driver skips volumes it cannot resolve; no upstream issue
+      existed on 2026-10-05.
+    diagnosed: 2026-10-05, switching on the LVM driver's ServiceMonitor
