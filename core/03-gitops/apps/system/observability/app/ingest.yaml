@@ -1,13 +1,11 @@
-# Where the lab's agents write (decisions/0040). The lab's vmagent and
-# vlagent push to https://ingest.home, through core's Gateway, to this
-# vmauth; it lets a request in only with the lab's token and only on the two
-# write paths, and forwards it to VMSingle or VLSingle. Reads, queries and
-# deletes are refused - the token is worth a flood of junk series at worst,
-# never core's data.
+# Where the lab's agents write (decisions/0040). The lab's vmagent pushes to
+# https://ingest.home, through core's Gateway, to this vmauth; it lets a
+# request in only with the lab's token and only on the write path, and
+# forwards it to VMSingle. Reads, queries and deletes are refused - the token
+# is worth a flood of junk series at worst, never core's data.
 #
-# Not the chart's vmauth (vm-internal), which serves vmalert inside the
-# cluster without any login. That one selects no VMUser, as nothing sets
-# selectAllByDefault; this one selects only users labelled for it.
+# The lab's logs have no path here since VictoriaLogs went (decisions/0047):
+# they return when the lab's collector writes to Loki's OTLP path.
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMAuth
 metadata:
@@ -31,8 +29,6 @@ spec:
   targetRefs:
     - crd: {kind: VMSingle, name: vm, namespace: observability}
       paths: ["/api/v1/write"]
-    - crd: {kind: VLSingle, name: vm, namespace: observability}
-      paths: ["/insert/native"]
 ---
 # The lab holds the same token at /system/observability/INGEST_TOKEN in its
 # own Infisical project.

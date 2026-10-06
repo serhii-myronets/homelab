@@ -1,6 +1,6 @@
-# Loki beside VictoriaLogs, both fed by the same collector, to weigh one
-# against the other on the same logs (decisions/0047). One process, the
-# chunks and index on worker-1's disk, a month kept.
+# The logs' store, chosen over VictoriaLogs after the two ran side by side
+# (decisions/0047). One process, the chunks and index on worker-1's disk, a
+# month kept.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:

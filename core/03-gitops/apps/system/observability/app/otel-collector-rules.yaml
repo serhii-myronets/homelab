@@ -1,5 +1,5 @@
-# The collector holds logs in its queue on the node while VictoriaLogs is
-# away, and drops them once the queue is full.
+# The collector holds logs in its queue on the node while Loki is away, and
+# drops them once the queue is full.
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:

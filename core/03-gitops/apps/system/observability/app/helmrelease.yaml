@@ -47,9 +47,8 @@ spec:
     # One release carries the whole stack: the operator, VMSingle, vmagent,
     # vmalert, Alertmanager, Grafana, kube-state-metrics and node-exporter.
     #
-    # VictoriaLogs lives in this same chart, as vlsingle at the bottom of this
-    # file; what reads the logs is the OpenTelemetry Collector, beside it in
-    # otel-collector.yaml.
+    # Metrics only. The logs are Loki's, beside this file in loki.yaml; the
+    # chart's VictoriaLogs ran here until 2026-10-06 (decisions/0047).
     #
     # The chart ships no resources block for any of its workloads - every one
     # renders with neither request nor limit. This node's limits already
@@ -174,9 +173,6 @@ spec:
           org_role: Admin
         users:
           allow_sign_up: false
-      # The datasource for VictoriaLogs is a plugin, fetched when Grafana starts.
-      plugins:
-        - victoriametrics-logs-datasource
       # No claim, deliberately. Every dashboard is provisioned by the sidecar
       # from ConfigMaps and the datasource by the chart, so Grafana's database
       # holds only sessions and preferences. A claim would also need the
@@ -209,33 +205,6 @@ spec:
       resources:
         requests: {cpu: 25m, memory: 32Mi}
         limits: {memory: 96Mi}
-
-    # Logs, since 2026-09-30, once the metrics half had been measured here.
-    # VictoriaLogs keeps a month; the OpenTelemetry Collector reads every pod's
-    # log from each node and writes it here.
-    vlsingle:
-      enabled: true
-      spec:
-        retentionPeriod: "30d"
-        nodeSelector: {kubernetes.io/hostname: worker-1}
-        storage:
-          storageClassName: lvm-worker-1
-          resources:
-            requests: {storage: 50Gi}
-        resources:
-          requests: {cpu: 50m, memory: 128Mi}
-          limits: {memory: 512Mi}
-
-    # vmalert's datasource once logs are on: the chart adds this proxy by itself,
-    # routing rule queries to VMSingle or VLSingle. Helm merges these keys into
-    # the chart's spec, whose routing stays as it is.
-    internal:
-      vmauth:
-        spec:
-          nodeSelector: {kubernetes.io/hostname: worker-1}
-          resources:
-            requests: {cpu: 10m, memory: 32Mi}
-            limits: {memory: 128Mi}
 
     # Talos binds the controller manager and the scheduler to localhost, and
     # serves etcd only to clients holding its certificate, so none of the three
@@ -304,3 +273,6 @@ spec:
         kube-apiserver-burnrate.rules: {enabled: false}
         kube-apiserver-histogram.rules: {enabled: false}
         kube-apiserver-slos: {enabled: false}
+        # VictoriaLogs' own, with no VictoriaLogs to watch.
+        vl-health: {enabled: false}
+        vlogs: {enabled: false}
