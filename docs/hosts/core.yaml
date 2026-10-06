@@ -64,9 +64,10 @@ platform:
   flux_ui: flux.home and flux.serhii.link, anonymous and read-only (decisions/0021)
   storage: >-
     Two StorageClasses of thin volumes, each bound to one node: lvm on
-    controlplane's nvme group, lvm-worker-1 on worker-1's ssd group. A pod
-    on lvm-worker-1 must tolerate worker-1's taint. Nothing crosses between
-    nodes except over the network - the HDDs are controlplane's alone.
+    controlplane's nvme group - held there by the capacity the LVM driver
+    reports, none on worker-1, not by a topology - and lvm-worker-1 on
+    worker-1's ssd group, by its topology. Nothing crosses between nodes
+    except over the network - the HDDs are controlplane's alone.
   secrets: >-
     Infisical, project homelab, environment prod, laid out as the repository
     is: /system/<component> for the cluster's own (home-ca, cloudflare,

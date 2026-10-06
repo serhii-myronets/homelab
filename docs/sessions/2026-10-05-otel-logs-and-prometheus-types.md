@@ -86,6 +86,21 @@ The services themselves expose no metrics here, and need none yet:
 kube-state-metrics sees their pods, cAdvisor their use, Envoy their
 requests and errors, Gatus whether they answer.
 
+## worker-1 untainted
+
+The owner asked what removing worker-1's taint could break. Nothing at
+once - running pods are not evicted - but unpinned pods would drift there
+on restarts, worker-1's loss would take more with it, and the GPU plugin
+would offer the UHD 600. Claims turned out safe: the LVM driver reports no
+`lvm` capacity on worker-1, so the scheduler keeps them on controlplane.
+
+So (0046): the GPU plugin pinned to controlplane first, then the taint
+out of worker-1's kubelet registration in Talos - dry run, no reboot,
+`terraform apply` of the read plan - and off the node with kubectl, the
+tolerations out of the manifests, and cloudflared at one replica per node.
+Its first rollout put both replicas on worker-1 until the spread counted
+one revision only (traps.yaml).
+
 ## Next
 
 - Somewhere to send the alerts (0008): a Telegram bot and a

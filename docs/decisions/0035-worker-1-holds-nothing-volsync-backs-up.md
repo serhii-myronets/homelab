@@ -2,12 +2,15 @@
 id: "0035"
 title: worker-1 holds nothing that VolSync backs up
 date: 2026-09-30
-status: accepted
+status: superseded in part by 0046
 tags: [worker-1, controlplane, volsync, storage, scheduling, memory]
 hosts: [core, worker-1]
 ---
 
 # worker-1 holds nothing that VolSync backs up
+
+> worker-1 has had no taint since 2026-10-05 (0046), so the movers could
+> now run there. The division below still stands until a move is decided.
 
 controlplane's memory is reserved to 89% by requests, and worker-1 has most of
 its 7.6 GB free, so services were weighed for moving. Everything that reads

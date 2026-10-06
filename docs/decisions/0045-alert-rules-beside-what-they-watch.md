@@ -34,8 +34,8 @@ driver does not report while VolSync's restore snapshots exist
 
 Three of the chart's rules are off. `KubeCPUOvercommit` and
 `KubeMemoryOvercommit` ask whether the cluster could lose its largest node
-and still place every pod; with two nodes and worker-1 tainted it never
-could, by design, so they fired for good. `count:up0` records nothing while
+and still place every pod; with two nodes, the HDDs and the GPU on one and
+7.6 GB on the other, it never could, so they fired for good. `count:up0` records nothing while
 every target is up, which kept `RecordingRulesNoData` firing.
 
 Nothing is delivered yet: alerts show in vmalert, Alertmanager and Grafana.

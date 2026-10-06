@@ -8,7 +8,7 @@
 
 meta:
   updated: 2026-10-05
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm]
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm, scheduling]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1302,7 +1302,8 @@ traps:
     fix: >-
       Keep backed-up claims off tainted nodes - decisions/0035. The
       namespace-wide way round it, the PodTolerationRestriction admission
-      plugin, was weighed there and not taken.
+      plugin, was weighed there and not taken. No node here is tainted since
+      2026-10-05 (decisions/0046); this returns with any taint.
     diagnosed: 2026-09-30, planning Sure's move to worker-1
 
   - id: uhd-600-finds-no-faces
@@ -1648,3 +1649,22 @@ traps:
       the cilium DaemonSet as a minute's outage of every .home and
       serhii.link name, and make it when that is acceptable.
     diagnosed: 2026-10-05, enabling the agent's metrics through Helmfile
+
+  - id: topology-spread-counts-the-old-revision
+    applies_to: [kubernetes, scheduling, cloudflared]
+    symptom: >-
+      A Deployment spread one replica per node with topologySpreadConstraints
+      (maxSkew 1, DoNotSchedule) ends a rolling update with both replicas on
+      the same node.
+    cause: >-
+      The constraint's labelSelector matches the old ReplicaSet's pods too.
+      The first new pod goes to the node the old pods are not on; once they
+      are gone nothing moves it, and the second lands beside it.
+    tell: >-
+      The replicas share a node right after a rollout, and `kubectl get rs`
+      shows the old ReplicaSet scaled to zero.
+    fix: >-
+      `matchLabelKeys: [pod-template-hash]` in the constraint, so it counts
+      only pods of the same revision; the change itself rolls the pods and
+      spreads them.
+    diagnosed: 2026-10-05, giving cloudflared a replica per node

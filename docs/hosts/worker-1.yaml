@@ -1,13 +1,14 @@
 # worker-1 — core's second node, on the old OpenMediaVault box: called core
 # until 2026-09-29, then satellite, a Talos cluster of its own for a day, and a
-# worker in core since 2026-09-30 (decisions/0034). Nothing runs here unless it
-# tolerates the node's taint, and nothing VolSync backs up runs here at all
-# (decisions/0035): compute and data that can be lost or remade.
-# Verified 2026-09-30.
+# worker in core since 2026-09-30 (decisions/0034). Untainted since 2026-10-05
+# (decisions/0046): the scheduler places pods here as on controlplane, and
+# what must stay off is held by its volume or a node selector. Nothing VolSync
+# backs up runs here yet (decisions/0035).
+# Verified 2026-09-30; taint and DaemonSets 2026-10-05.
 
 meta:
   host: worker-1
-  updated: 2026-09-30
+  updated: 2026-10-05
   tags: [worker-1, satellite, core, talos, hardware, storage]
 
 identity:
@@ -15,8 +16,7 @@ identity:
   ip: 192.168.8.11                 # static in Talos, on br0 over enp1s0
   cluster: core
   role: worker
-  taint: homelab/dedicated=worker-1:NoSchedule   # set by the kubelet at registration;
-                                                 # renamed from homelab/satellite with kubectl
+  taint: none                      # homelab/dedicated=worker-1:NoSchedule until 2026-10-05
   access:
     talos: talosctl -n 192.168.8.11 -e 192.168.8.10
     kubernetes_context: core
@@ -63,6 +63,7 @@ nics:
   - {name: enp2s0, state: down}     # spare wired
   - {name: wlo1, state: absent}     # Talos has no Wi-Fi support
 
-daemonsets_here: [cilium, cilium-envoy, openebs-lvm-localpv-node]
-                                          # intel-gpu-plugin stops at the taint on
-                                          # purpose: traps.yaml, uhd-600-finds-no-faces
+daemonsets_here: [cilium, cilium-envoy, openebs-lvm-localpv-node, prometheus-node-exporter,
+                  otel-collector-agent]
+                                          # not intel-gpu-plugin, pinned to controlplane
+                                          # on purpose: traps.yaml, uhd-600-finds-no-faces

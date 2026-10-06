@@ -32,7 +32,7 @@ are not reused.
 | [0029](0029-swap-on-the-system-disk.md) | Swap on the system disk, behind zswap | accepted | talos, swap, zswap, memory |
 | [0030](0030-nightly-etcd-backup-with-restic.md) | Back etcd up nightly with talosctl and restic | accepted | talos, etcd, backup, restic, r2 |
 | [0034](0034-satellite-joins-core.md) | The old box is core's worker, not a cluster of its own | accepted | worker-1, core, talos, memory |
-| [0035](0035-worker-1-holds-nothing-volsync-backs-up.md) | worker-1 holds nothing that VolSync backs up | accepted | worker-1, volsync, storage, scheduling |
+| [0035](0035-worker-1-holds-nothing-volsync-backs-up.md) | worker-1 holds nothing that VolSync backs up | superseded in part by 0046 | worker-1, volsync, storage, scheduling |
 | [0037](0037-terraform-state-in-r2.md) | Terraform state in R2 and secrets.yaml in Infisical, where the cluster can read them | accepted | terraform, talos, r2, secrets |
 | [0039](0039-home-served-by-bind-on-the-router.md) | .home is served by BIND on the router, written by each cluster's external-dns | accepted | router, dns, bind, external-dns |
 | [0040](0040-one-observability-stack-on-core.md) | One observability stack, on core; the lab writes to it with a write-only token | accepted | observability, victoriametrics, lab, vmauth |
@@ -41,6 +41,7 @@ are not reused.
 | [0043](0043-logs-through-the-opentelemetry-collector.md) | The OpenTelemetry Collector reads the logs; VictoriaLogs keeps them | accepted | observability, logs, opentelemetry, victorialogs |
 | [0044](0044-prometheus-operator-types-on-victoriametrics.md) | Scrapes and rules are written in the Prometheus Operator's types; VictoriaMetrics runs them | accepted | observability, metrics, prometheus-operator, victoriametrics |
 | [0045](0045-alert-rules-beside-what-they-watch.md) | Alert rules are PrometheusRules beside what they watch, written for what the chart's rules miss | accepted | observability, alerting, prometheus-operator |
+| [0046](0046-worker-1-untainted.md) | worker-1 carries no taint; what must stay off it is held by its own constraint | accepted | worker-1, scheduling, taint, cloudflared, gpu |
 | [0036](0036-gatus-on-the-router.md) | Gatus and a metrics exporter run on the router, installed over ssh | accepted | router, gatus, monitoring |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing
