@@ -43,6 +43,7 @@ are not reused.
 | [0045](0045-alert-rules-beside-what-they-watch.md) | Alert rules are PrometheusRules beside what they watch, written for what the chart's rules miss | accepted | observability, alerting, prometheus-operator |
 | [0046](0046-worker-1-untainted.md) | worker-1 carries no taint; what must stay off it is held by its own constraint | accepted | worker-1, scheduling, taint, cloudflared, gpu |
 | [0047](0047-loki-beside-victorialogs.md) | Loki keeps the logs; VictoriaLogs, run beside it to compare, is gone | accepted | observability, logs, loki, victorialogs |
+| [0048](0048-traces-in-tempo.md) | Traces go through the collector to Tempo; Grafana's OSS charts come from grafana-community | accepted | observability, traces, tempo, opentelemetry |
 | [0036](0036-gatus-on-the-router.md) | Gatus and a metrics exporter run on the router, installed over ssh | accepted | router, gatus, monitoring |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing
