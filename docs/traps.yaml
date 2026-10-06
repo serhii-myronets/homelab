@@ -8,7 +8,7 @@
 
 meta:
   updated: 2026-10-05
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry]
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1578,3 +1578,23 @@ traps:
       every file a DaemonSet agent reads is on its node. Workload attributes
       stay absent for static pods.
     diagnosed: 2026-10-05, moving core's logs from vlagent to the collector
+
+  - id: victoriametrics-converter-drops-scrapeconfig-jobname
+    applies_to: [victoriametrics, prometheus-operator, metrics]
+    symptom: >-
+      A target from a ScrapeConfig is scraped, but under
+      job="scrapeConfig/<namespace>/<name>"; queries and panels that ask for
+      the job by its jobName come back empty. Homepage's router widgets went
+      blank this way.
+    cause: >-
+      The VictoriaMetrics operator (v0.75.0) does not carry a ScrapeConfig's
+      jobName into the VMScrapeConfig it converts it to, and vmagent names
+      the job after the object instead.
+    tell: >-
+      `kubectl get vmscrapeconfig <name> -o yaml` has no jobName, and
+      up{instance="<target>"} shows the long job name.
+    fix: >-
+      Keep jobName for anything that reads the Prometheus Operator's types
+      as written, and set the job with a relabeling as well:
+      `relabelings: [{targetLabel: job, replacement: <name>}]`.
+    diagnosed: 2026-10-05, moving the router's scrape to a ScrapeConfig
