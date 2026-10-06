@@ -1,0 +1,16 @@
+# The Flux controllers' metrics: reconciliation durations and errors, and
+# the controller-runtime queues behind them. The controllers come from the
+# FluxInstance in core/02-platform, which offers no monitor, and they serve
+# metrics on a pod port with no Service in front; this is the PodMonitor of
+# Flux's own monitoring example. The operator's metrics come from its chart.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: flux-controllers
+  namespace: flux-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: flux
+  podMetricsEndpoints:
+    - port: http-prom

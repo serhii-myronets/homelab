@@ -1,0 +1,14 @@
+# The Prometheus Operator's resource types, without the operator. They are
+# how charts and people describe what to scrape and alert on; the
+# VictoriaMetrics operator converts each into its own kind (decisions/0044).
+crds:
+  # The chart ships these as templates, not in crds/, so removing the
+  # release would delete them and every ServiceMonitor and rule with them.
+  annotations: {helm.sh/resource-policy: keep}
+  # Only the kinds the VictoriaMetrics operator converts. Prometheus,
+  # Alertmanager, PrometheusAgent and ThanosRuler would be types nothing
+  # here acts on.
+  prometheuses: {enabled: false}
+  prometheusagents: {enabled: false}
+  alertmanagers: {enabled: false}
+  thanosrulers: {enabled: false}

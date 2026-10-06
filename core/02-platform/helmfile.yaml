@@ -9,6 +9,8 @@ repositories:
     url: https://helm.cilium.io
   - name: external-secrets
     url: https://charts.external-secrets.io
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
 
 hooks:
   - events: [ "prepare" ]
@@ -17,6 +19,17 @@ hooks:
     args: [ "--context", "core", "apply", "-k", "./prepare-hook/", "--server-side" ]
 
 releases:
+  # First, so that every chart here and under 03-gitops can ship its
+  # ServiceMonitor from the first apply. Types only, no workload, so it needs
+  # nothing running - not even the network. In flux-system because Flux
+  # installed it there first, and the CRDs carry that release's name.
+  - name: prometheus-operator-crds
+    namespace: flux-system
+    chart: prometheus-community/prometheus-operator-crds
+    version: 32.0.1
+    values:
+      - values/prometheus-operator-crds-values.yaml
+
   - name: cilium
     namespace: kube-system
     chart: cilium/cilium

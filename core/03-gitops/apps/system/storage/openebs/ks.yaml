@@ -13,9 +13,6 @@ spec:
   prune: true
   wait: true
   timeout: 5m
-  # The volume driver's ServiceMonitor is a Prometheus Operator kind.
-  dependsOn:
-  - name: prometheus-crds
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

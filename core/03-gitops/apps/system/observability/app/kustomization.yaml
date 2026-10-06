@@ -4,7 +4,6 @@ namespace: observability
 resources:
   - namespace.yaml
   - helmrelease.yaml
-  - flux-podmonitor.yaml
   - httproute.yaml
   - ingest.yaml
   - otel-collector.yaml

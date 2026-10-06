@@ -15,4 +15,3 @@ spec:
   timeout: 5m
   dependsOn:
   - name: external-secrets-config
-  - name: prometheus-crds

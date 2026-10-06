@@ -15,4 +15,3 @@ spec:
   timeout: 5m
   dependsOn:
   - name: openebs-classes
-  - name: prometheus-crds

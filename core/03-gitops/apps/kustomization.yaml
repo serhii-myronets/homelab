@@ -32,6 +32,9 @@ resources:
   - system/platform/metrics-server.yaml
   - system/platform/reloader.yaml
   - system/platform/headlamp/ks.yaml
+  # Flux's own monitor, applied here directly: Flux is installed by
+  # 02-platform, so there is no Kustomization of its own to carry it.
+  - system/platform/flux/podmonitor.yaml
 
   - system/security/cert-manager/ks.yaml
   - system/security/external-secrets/ks.yaml
