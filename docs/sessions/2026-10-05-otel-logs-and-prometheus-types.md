@@ -125,6 +125,16 @@ control-plane role; a manual run succeeded on controlplane. The
 nvme-thinpool Job had the same unspoken pin; with the owner's go it was
 pinned and replaced, and its rerun changed nothing.
 
+## Tempo
+
+Tempo 3.1 came next (0048), and on the way the finding that Grafana's OSS
+charts moved to grafana-community, so Loki moved too, to 3.7. Each config
+was checked with its own binary first - Tempo's `-config.verify` needs
+`=true`, or it prints its help and exits 2. Grafana traces its own
+requests through the collector's new node-local OTLP Service; the first
+spans reached Tempo with their pod's names, and the generator's series
+reached VMSingle.
+
 ## Next
 
 - The lab onto the collector, writing to Loki through ingest.home.

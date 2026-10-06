@@ -22,8 +22,8 @@ written to VictoriaLogs over OTLP. Fields follow the OpenTelemetry semantic
 conventions - `k8s.cluster.name`, `k8s.namespace.name`, `k8s.pod.name`,
 `k8s.deployment.name`, `severity_text` - where vlagent wrote
 `kubernetes.pod_namespace` and a `cluster` field. Nothing queried the old
-names. The same collector is where traces will come in, over the same
-protocol, when something sends them.
+names. The same collector is where traces come in, over the same
+protocol - to Tempo since 2026-10-06 (0048).
 
 vlagent was retired on core on 2026-10-05, after fifteen minutes side by
 side gave the same lines per container. The lab's vlagent still writes
