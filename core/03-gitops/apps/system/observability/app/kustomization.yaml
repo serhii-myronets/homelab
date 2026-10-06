@@ -6,6 +6,7 @@ resources:
   - helmrelease.yaml
   - httproute.yaml
   - ingest.yaml
+  - loki.yaml
   - otel-collector.yaml
   - otel-collector-rules.yaml
   - cluster-rules.yaml

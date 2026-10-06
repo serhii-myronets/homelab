@@ -113,6 +113,13 @@ spec:
           # Queued on the node while VictoriaLogs is away.
           sending_queue:
             storage: file_storage
+        # The same logs to Loki, while the two are weighed (decisions/0047).
+        # Loki takes OTLP itself and indexes the usual resource attributes -
+        # namespace, pod, container, cluster - as its labels.
+        otlphttp/loki:
+          endpoint: http://loki.observability.svc:3100/otlp
+          sending_queue:
+            storage: file_storage
       service:
         pipelines:
           metrics: null
@@ -120,4 +127,4 @@ spec:
           logs:
             receivers: [filelog]
             processors: [memory_limiter, k8sattributes, resource, batch]
-            exporters: [otlphttp/victorialogs]
+            exporters: [otlphttp/victorialogs, otlphttp/loki]

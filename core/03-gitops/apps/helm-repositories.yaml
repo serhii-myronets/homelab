@@ -23,6 +23,13 @@ spec:
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
+metadata: {name: grafana, namespace: flux-system}
+spec:
+  interval: 24h
+  url: https://grafana.github.io/helm-charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
 metadata: {name: headlamp, namespace: flux-system}
 spec:
   interval: 24h
