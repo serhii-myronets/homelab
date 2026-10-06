@@ -3,15 +3,15 @@ id: "0008"
 title: Nothing tells anyone when something breaks
 status: open
 date: 2026-09-06
-updated: 2026-09-30
+updated: 2026-10-05
 tags: [monitoring, alerting, healthchecks, telegram, risk]
 ---
 
 # Nothing tells anyone when something breaks
 
 Failures here are quiet. Gatus on the router sees a service stop answering
-(0036), and VictoriaMetrics evaluates the chart's alert rules on worker-1,
-but neither has anywhere to send yet. Flux's notification-controller runs
+(0036), and VictoriaMetrics evaluates the chart's alert rules and this
+cluster's own (0045) on worker-1, but neither has anywhere to send yet. Flux's notification-controller runs
 with nowhere to send either. So nothing tells anyone about memory, disks, the
 thin pool or a backup that stopped. A disk can
 fail, a VolSync source can stop syncing (traps.yaml), and the first sign is

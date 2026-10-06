@@ -73,11 +73,26 @@ again (traps.yaml, cilium-agent-restart-takes-the-gateway-down). It was
 expected to be transparent; it was not, and was found only by checking
 the names afterwards.
 
+The owner asked what the new metrics cost: about 100 MiB more across
+VMSingle and vmagent and 20 MB of disk a day, for 9k series. Kept as they
+are; most are worth something only once a rule reads them.
+
+So rules came next (0045): PrometheusRules beside each component for what
+the chart's rules miss, each evaluated against VMSingle before the push.
+Three of the chart's rules went off as permanent noise. Only
+LVMVolumesNotReported fires, for controlplane's thin pool.
+
+The services themselves expose no metrics here, and need none yet:
+kube-state-metrics sees their pods, cAdvisor their use, Envoy their
+requests and errors, Gatus whether they answer.
+
 ## Next
 
-- Alert rules as PrometheusRules - cert-manager's expiry, Flux objects not
-  ready, VolSync out of sync - together with somewhere to send them
-  (0008).
+- Somewhere to send the alerts (0008): a Telegram bot and a
+  healthchecks.io account, which only the owner can create.
+- VolSync's restore snapshots of 2026-09-30 on controlplane: the owner's
+  call whether to delete them, which would let the LVM driver report the
+  thin pool again.
 - The lab, paused for now: its vlagent still writes `cluster=lab` through
   ingest.home. It moves to the same collector, with
   `/insert/opentelemetry/v1/logs` added to the `lab` VMUser in ingest.yaml.
