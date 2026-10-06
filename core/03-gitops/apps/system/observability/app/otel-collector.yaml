@@ -70,6 +70,10 @@ spec:
             - type: container
               id: container-parser
               max_log_size: 102400
+            # Blank lines - Prowlarr writes them - would be stored as
+            # VictoriaLogs' "missing _msg field" placeholder.
+            - type: filter
+              expr: 'body matches "^\\s*$"'
             - type: json_parser
               if: 'body matches "^\\{"'
               parse_to: attributes
