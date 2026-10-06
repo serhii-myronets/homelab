@@ -83,10 +83,14 @@ spec:
               parse_from: attributes.level
               on_error: send_quiet
       processors:
-        # The OpenTelemetry name for what core's series carry as `cluster`.
-        resource/cluster:
+        resource:
           attributes:
+            # The OpenTelemetry name for what core's series carry as `cluster`.
             - {key: k8s.cluster.name, value: core, action: upsert}
+            # Every file this agent reads is on its own node. Static pods -
+            # the apiserver and its kind - are not matched by k8sattributes,
+            # since the UID in their log path is not their mirror pod's.
+            - {key: k8s.node.name, value: "${env:K8S_NODE_NAME}", action: upsert}
       exporters:
         debug: null
         otlphttp/victorialogs:
@@ -105,5 +109,5 @@ spec:
           traces: null
           logs:
             receivers: [filelog]
-            processors: [memory_limiter, k8sattributes, resource/cluster, batch]
+            processors: [memory_limiter, k8sattributes, resource, batch]
             exporters: [otlphttp/victorialogs]
