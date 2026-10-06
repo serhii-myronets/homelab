@@ -13,3 +13,6 @@ spec:
   prune: true
   wait: true
   timeout: 5m
+  # Its ServiceMonitor is a Prometheus Operator kind.
+  dependsOn:
+  - name: prometheus-crds

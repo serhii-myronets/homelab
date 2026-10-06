@@ -20,6 +20,11 @@ spec:
     crds:
       enabled: true
 
+    # The controller's metrics: certificate expiry and readiness, ACME calls.
+    prometheus:
+      servicemonitor:
+        enabled: true
+
     resources:
       requests: {cpu: 10m, memory: 64Mi}
       limits: {memory: 256Mi}
