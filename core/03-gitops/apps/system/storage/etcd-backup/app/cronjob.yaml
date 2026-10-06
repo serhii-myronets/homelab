@@ -17,6 +17,12 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          # talosctl asks its own node's Talos API for the snapshot, and only
+          # a control plane node has etcd. worker-1's taint used to keep this
+          # pod off it; since that went (decisions/0046) the run of
+          # 2026-10-06 landed there and failed.
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: ""
           securityContext:
             runAsNonRoot: true
             runAsUser: 65534
