@@ -173,6 +173,15 @@ spec:
           org_role: Admin
         users:
           allow_sign_up: false
+        # Grafana's own requests, traced, as the first thing to send spans:
+        # through the collector on its node to Tempo (tempo.yaml). Every
+        # request, as there are few.
+        tracing.opentelemetry:
+          sampler_type: const
+          sampler_param: 1
+        tracing.opentelemetry.otlp:
+          address: otel-collector.observability.svc:4317
+          propagation: w3c
       # No claim, deliberately. Every dashboard is provisioned by the sidecar
       # from ConfigMaps and the datasource by the chart, so Grafana's database
       # holds only sessions and preferences. A claim would also need the

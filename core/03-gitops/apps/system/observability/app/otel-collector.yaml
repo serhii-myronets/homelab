@@ -44,11 +44,15 @@ spec:
     podMonitor:
       enabled: true
 
-    # Nothing sends to this collector yet, so none of the chart's receiving
-    # ports are opened; 8888 serves its own metrics.
+    # OTLP from applications, through a Service whose traffic stays on the
+    # sender's node, so k8sattributes knows the pod by its address. Not on
+    # the host's ports: nothing outside the cluster sends here. 8888 serves
+    # the collector's own metrics.
+    service:
+      enabled: true
     ports:
-      otlp: {enabled: false}
-      otlp-http: {enabled: false}
+      otlp: {enabled: true, hostPort: null}
+      otlp-http: {enabled: true, hostPort: null}
       jaeger-compact: {enabled: false}
       jaeger-thrift: {enabled: false}
       jaeger-grpc: {enabled: false}
@@ -59,8 +63,11 @@ spec:
       receivers:
         jaeger: null
         zipkin: null
-        otlp: null
         prometheus: null
+        otlp:
+          protocols:
+            grpc: {endpoint: "${env:MY_POD_IP}:4317"}
+            http: {endpoint: "${env:MY_POD_IP}:4318"}
         filelog:
           # Not the default 200ms. Polling some fifty files five times a
           # second, checkpointing each time, held 76m of worker-1's Celeron
@@ -110,10 +117,18 @@ spec:
           # Queued on the node while Loki is away.
           sending_queue:
             storage: file_storage
+        otlp/tempo:
+          endpoint: tempo.observability.svc:4317
+          tls: {insecure: true}
+          sending_queue:
+            storage: file_storage
       service:
         pipelines:
           metrics: null
-          traces: null
+          traces:
+            receivers: [otlp]
+            processors: [memory_limiter, k8sattributes, resource, batch]
+            exporters: [otlp/tempo]
           logs:
             receivers: [filelog]
             processors: [memory_limiter, k8sattributes, resource, batch]

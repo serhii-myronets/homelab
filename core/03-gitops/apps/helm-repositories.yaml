@@ -23,10 +23,12 @@ spec:
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
-metadata: {name: grafana, namespace: flux-system}
+metadata: {name: grafana-community, namespace: flux-system}
 spec:
   interval: 24h
-  url: https://grafana.github.io/helm-charts
+  # Grafana's OSS charts - Loki, Tempo - since March 2026; grafana/helm-charts
+  # keeps Loki's only for its enterprise edition.
+  url: https://grafana-community.github.io/helm-charts
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository

@@ -1,0 +1,82 @@
+# Traces. Applications send OTLP to the collector on their own node, which
+# adds the pod's names and forwards here (otel-collector.yaml). One process
+# on worker-1, a week kept; traces are the bulkiest signal and the least
+# looked back at.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tempo
+spec:
+  interval: 30m
+  timeout: 10m
+  chart:
+    spec:
+      chart: tempo
+      version: "3.1.0"
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-community
+        namespace: flux-system
+  values:
+    fullnameOverride: tempo
+    tempo:
+      retention: 168h
+      # OTLP is what the collector sends. The chart's Jaeger receivers stay:
+      # its Service template cannot render without them.
+      receivers:
+        otlp:
+          protocols:
+            grpc: {endpoint: "0.0.0.0:4317"}
+            http: {endpoint: "0.0.0.0:4318"}
+      # Request rates, errors and durations per service, and the calls
+      # between services, computed from the spans and written to VMSingle -
+      # what Grafana's service graph and RED panels read.
+      metricsGenerator:
+        enabled: true
+        remoteWriteUrl: http://vmsingle-vm.observability.svc:8428/api/v1/write
+        registry:
+          external_labels: {cluster: core}
+      overrides:
+        defaults:
+          metrics_generator:
+            processors: [service-graphs, span-metrics]
+      resources:
+        requests: {cpu: 25m, memory: 128Mi}
+        limits: {memory: 512Mi}
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClassName: lvm-worker-1
+    nodeSelector: {kubernetes.io/hostname: worker-1}
+    serviceMonitor:
+      enabled: true
+---
+# For Grafana's datasource sidecar. A span links to the logs of its pod in
+# Loki, and the service graph reads the generator's series in VMSingle.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-grafana-ds
+  labels:
+    grafana_datasource: "1"
+data:
+  tempo.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Tempo
+        uid: tempo
+        type: tempo
+        access: proxy
+        url: http://tempo.observability.svc:3200
+        jsonData:
+          serviceMap: {datasourceUid: VictoriaMetrics}
+          nodeGraph: {enabled: true}
+          tracesToLogsV2:
+            datasourceUid: loki
+            spanStartTimeShift: -5m
+            spanEndTimeShift: 5m
+            filterByTraceID: true
+            customQuery: false
+            tags:
+              - {key: k8s.namespace.name, value: k8s_namespace_name}
+              - {key: k8s.pod.name, value: k8s_pod_name}
