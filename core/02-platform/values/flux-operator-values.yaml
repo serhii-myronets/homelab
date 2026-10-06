@@ -30,3 +30,9 @@ web:
     hostnames:
       - flux.home
       - flux.serhii.link
+
+# The operator's metrics: flux_resource_info carries the readiness of every
+# Flux object, which the controllers' own metrics do not. The controllers'
+# PodMonitor is in core/03-gitops/apps/system/platform/flux.
+serviceMonitor:
+  create: true

@@ -48,6 +48,18 @@ envoy:
   resources:
     requests: {cpu: 50m, memory: 128Mi}
     limits: {memory: 512Mi}
+  # Envoy serves its metrics already; this only asks for them. Whole, it was
+  # 7,237 series per node - a hundred statistics for each Gateway backend,
+  # half of them histogram buckets. Kept: requests and their response
+  # classes, timeouts, latency as sum and count, connections, backend health
+  # and the server's own - about 300 per node.
+  prometheus:
+    serviceMonitor:
+      enabled: true
+      metricRelabelings:
+        - action: keep
+          sourceLabels: [__name__]
+          regex: "envoy_(cluster_upstream_rq_(xx|total|timeout)|cluster_upstream_rq_time_(sum|count)|cluster_upstream_cx_(active|connect_fail)|cluster_membership_(healthy|total)|http_downstream_rq_(xx|total)|http_downstream_cx_active|listener_downstream_cx_active|server_.*)"
 
 # =========================
 # LOAD BALANCER
@@ -71,6 +83,10 @@ bpf:
 
 operator:
   replicas: 1
+  # Its metrics are served by default; the monitor is what was missing.
+  prometheus:
+    serviceMonitor:
+      enabled: true
   resources:
     requests: {cpu: 25m, memory: 64Mi}
     limits: {memory: 256Mi}
@@ -82,6 +98,17 @@ operator:
     - --leader-election-lease-duration=60s
     - --leader-election-renew-deadline=40s
     - --leader-election-retry-period=5s
+
+# =========================
+# METRICS
+# =========================
+
+# The agent's own metrics - endpoints, policy drops, BPF map pressure - off
+# in the chart by default.
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
 
 # =========================
 # RESOURCES

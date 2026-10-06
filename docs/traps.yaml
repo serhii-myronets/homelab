@@ -1624,3 +1624,27 @@ traps:
       gone or the driver skips volumes it cannot resolve; no upstream issue
       existed on 2026-10-05.
     diagnosed: 2026-10-05, switching on the LVM driver's ServiceMonitor
+
+  - id: cilium-agent-restart-takes-the-gateway-down
+    applies_to: [cilium, gateway, envoy, helmfile]
+    symptom: >-
+      Every name behind the Gateway (192.168.8.15) refuses connections for
+      about a minute after the Cilium agents are rolled - a Helmfile change
+      to the agent's pod template is enough - while LoadBalancer Services
+      with plain backends (jellyfin, torrent) keep answering.
+    cause: >-
+      Gateway traffic is an L7 load-balancer service handed to the external
+      Envoy DaemonSet, which takes its listeners from the agent over xDS.
+      A restarted agent tears that stream down and serves the listeners
+      again only once it has finished starting; until then the frontend has
+      nothing to hand the connection to. Envoy itself is not restarted.
+    tell: >-
+      cilium-envoy logs "gRPC config stream to xds-grpc-cilium closed" at the
+      agent's restart, and the agent logs "Triggering full policy
+      recalculation ... Envoy Listeners changed" when service returns -
+      71 seconds later on 2026-10-05.
+    fix: >-
+      Nothing to repair; it comes back by itself. Treat a change that rolls
+      the cilium DaemonSet as a minute's outage of every .home and
+      serhii.link name, and make it when that is acceptable.
+    diagnosed: 2026-10-05, enabling the agent's metrics through Helmfile
