@@ -42,6 +42,10 @@ spec:
       requests: {cpu: 25m, memory: 64Mi}
       limits: {memory: 256Mi}
 
+    # Its own metrics on 8888: records read, sent and refused, queue size.
+    podMonitor:
+      enabled: true
+
     # Nothing sends to this collector yet, so none of the chart's receiving
     # ports are opened; 8888 serves its own metrics.
     ports:
