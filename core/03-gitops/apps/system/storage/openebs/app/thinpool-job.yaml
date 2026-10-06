@@ -28,11 +28,21 @@ kind: Job
 metadata:
   name: nvme-thinpool
   namespace: openebs
+  # A Job's template cannot change in place; with this Flux replaces the Job
+  # instead, which reruns it - harmless, as every step checks first.
+  annotations:
+    kustomize.toolkit.fluxcd.io/force: enabled
 spec:
   backoffLimit: 30
   template:
     spec:
       restartPolicy: OnFailure
+      # The disk is controlplane's, by its ID. worker-1's taint used to keep
+      # this off worker-1, where the disk is missing and the Job would retry
+      # there and never make the pool (traps.yaml,
+      # a-removed-taint-was-pinning-more-than-it-said).
+      nodeSelector:
+        kubernetes.io/hostname: controlplane
       containers:
         - name: lvm
           image: docker.io/openebs/lvm-driver:1.10.1
