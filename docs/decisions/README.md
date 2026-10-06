@@ -38,6 +38,7 @@ are not reused.
 | [0040](0040-one-observability-stack-on-core.md) | One observability stack, on core; the lab writes to it with a write-only token | accepted | observability, victoriametrics, lab, vmauth |
 | [0041](0041-core-is-made-from-secrets-in-infisical.md) | core is made from its Talos secrets in Infisical, writes its client configurations back, and its External Secrets log in by JWT | accepted | talos, terraform, infisical, external-secrets, jwt |
 | [0042](0042-headlamp-shows-the-lab-too.md) | core's Headlamp shows the lab too, reading both clusters from kubeconfigs | accepted | headlamp, lab, kubeconfig |
+| [0043](0043-logs-through-the-opentelemetry-collector.md) | The OpenTelemetry Collector reads the logs; VictoriaLogs keeps them | accepted | observability, logs, opentelemetry, victorialogs |
 | [0036](0036-gatus-on-the-router.md) | Gatus and a metrics exporter run on the router, installed over ssh | accepted | router, gatus, monitoring |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing

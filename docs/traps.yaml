@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-10-04
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd]
+  updated: 2026-10-05
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1557,3 +1557,24 @@ traps:
       kubectl -n argocd rollout restart deploy/argocd-redis, then a hard
       refresh of the Application. Redis holds only cache.
     diagnosed: 2026-10-04, on the lab's Tetragon DaemonSet; cert-manager's and CloudNativePG's stale OutOfSync the same day cleared with a hard refresh alone
+
+  - id: k8sattributes-misses-static-pods
+    applies_to: [opentelemetry, talos, kubernetes, logs]
+    symptom: >-
+      Logs from the apiserver, controller manager and scheduler reach
+      VictoriaLogs without k8s.node.name, k8s.pod.start_time or any workload
+      attribute, while every other pod's lines carry them.
+    cause: >-
+      The collector's k8sattributes processor finds a log's pod by the UID
+      the container parser takes from the path under /var/log/pods. For a
+      static pod that UID is the kubelet's hash of its manifest, not the
+      UID of the mirror pod the API serves, so no pod matches.
+    tell: >-
+      The path's UID differs from `kubectl get pod kube-apiserver-<node> -o
+      jsonpath='{.metadata.uid}'`, and equals its kubernetes.io/config.hash
+      annotation.
+    fix: >-
+      Set k8s.node.name from the agent's own node in a resource processor -
+      every file a DaemonSet agent reads is on its node. Workload attributes
+      stay absent for static pods.
+    diagnosed: 2026-10-05, moving core's logs from vlagent to the collector
