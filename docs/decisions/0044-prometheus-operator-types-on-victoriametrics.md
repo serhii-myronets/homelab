@@ -16,20 +16,29 @@ declared: `VMServiceScrape` and its kin, where nearly every chart and every
 team writes `ServiceMonitor`, `PodMonitor`, `PrometheusRule` and
 `ScrapeConfig`.
 
-So the Prometheus Operator's CRDs are installed, without the operator
-(`core/03-gitops/apps/system/observability/crds`), in a Kustomization of
-their own, `prometheus-crds`, that every Kustomization carrying one of
-those kinds depends on. The VictoriaMetrics operator converts each into its
+So the Prometheus Operator's CRDs are installed, without the operator, as
+the first release of the platform bootstrap (`core/02-platform`), before
+Cilium. A monitor lives in the release of what it watches - the chart's own
+when it ships one - and the platform's charts are installed by Helmfile
+before Flux exists, so the types have to be there from the first apply.
+For a day they were a Flux Kustomization of their own that others
+depended on; that could not serve Cilium, External Secrets or the Flux
+Operator. The VictoriaMetrics operator converts each into its
 own kind, which vmagent and vmalert act on; it owns what it converts, so a
 monitor Flux prunes takes its scrape with it. Only the kinds it converts are
 installed - not `Prometheus`, `Alertmanager`, `PrometheusAgent` or
 `ThanosRuler`, which nothing here would act on.
 
-The router's scrape became a `ScrapeConfig`, VolSync's a `ServiceMonitor`
-beside VolSync. The chart's own scrapes - kubelet, kube-state-metrics,
-node-exporter - stay as the chart renders them. Next are the monitors that
-charts ship, switched on one at a time with an eye on the series count:
-VMSingle held 73k series of core's and 81k of the lab's on 2026-10-05.
+Where a chart ships a monitor it is switched on in that release:
+cert-manager, both external-dns releases, OpenEBS's LVM driver. VolSync's
+chart ships none, so its `ServiceMonitor` is written beside the release;
+the Flux controllers, which no release installs, have the `PodMonitor` of
+Flux's own example in `core/03-gitops/apps/system/platform/flux`. The
+router is not a cluster resource, and its `ScrapeConfig` stays in
+observability. The VictoriaMetrics chart's own scrapes - kubelet,
+kube-state-metrics, node-exporter - stay as the chart renders them.
+Together these took core from 69k series to 73k on 2026-10-05; the lab
+added 81k.
 
 ## Rejected
 

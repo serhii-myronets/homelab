@@ -58,8 +58,8 @@ network:
 
 platform:
   bootstrap: >-
-    Cilium, External Secrets and the Flux Operator by Helmfile from
-    core/02-platform, then the FluxInstance and core/03-gitops/flux.yaml by
+    The Prometheus Operator's CRDs, Cilium, External Secrets and the Flux
+    Operator by Helmfile from core/02-platform, then the FluxInstance and core/03-gitops/flux.yaml by
     hand; everything else is Flux. See each directory's README.
   flux_ui: flux.home and flux.serhii.link, anonymous and read-only (decisions/0021)
   storage: >-

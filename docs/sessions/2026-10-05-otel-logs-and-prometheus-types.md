@@ -46,12 +46,26 @@ beside VolSync; both converted and are scraped. The converter dropped the
 ScrapeConfig's jobName, which blanked Homepage's router widgets until a
 relabeling put job="router" back (traps.yaml).
 
+Then the monitors charts ship, one release at a time: cert-manager,
+external-dns, OpenEBS's LVM driver, and a PodMonitor for the Flux
+controllers, which no release installs - about 4k series together. The
+LVM driver turned out to report no volumes at all on controlplane while
+VolSync's restore snapshots of 2026-09-30 exist (traps.yaml); deleting
+them is the owner's call, and no upstream issue was filed.
+
+The owner wants each monitor in the release of what it watches. Helmfile
+installs Cilium, External Secrets and the Flux Operator before Flux
+exists, so the CRDs moved from a Flux Kustomization into Helmfile, as its
+first release under the same name: Flux uninstalled its release, the CRDs
+stayed by their keep policy, and `helmfile apply` adopted them without
+recreating them.
+
 ## Next
 
-- The monitors charts ship, one at a time with an eye on the series count:
-  cert-manager, external-secrets, external-dns, OpenEBS, Flux, Cilium -
-  the last two and external-secrets through Helmfile, applied by hand -
-  and a PodMonitor for the collector's own metrics on :8888.
+- The Helmfile releases' monitors: Cilium (the heaviest in series),
+  External Secrets and the Flux Operator, whose metrics carry the state of
+  every Flux object; and a PodMonitor for the collector's own metrics on
+  :8888.
 - The lab, paused for now: its vlagent still writes `cluster=lab` through
   ingest.home. It moves to the same collector, with
   `/insert/opentelemetry/v1/logs` added to the `lab` VMUser in ingest.yaml.
