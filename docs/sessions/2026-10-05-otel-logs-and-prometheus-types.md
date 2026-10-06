@@ -121,13 +121,12 @@ nowhere to go until it moves to the collector.
 The new CronJobNotSucceeding rule caught the night's etcd backup failing:
 its pod had landed on worker-1, whose taint had been its only pin, and
 talosctl cannot snapshot etcd there (traps.yaml). It is pinned to the
-control-plane role; a manual run succeeded on controlplane.
+control-plane role; a manual run succeeded on controlplane. The
+nvme-thinpool Job had the same unspoken pin; with the owner's go it was
+pinned and replaced, and its rerun changed nothing.
 
 ## Next
 
-- nvme-thinpool has the same unspoken pin: recreating it with a node
-  selector reruns its LVM script on controlplane's disk once - the
-  owner's call.
 - The lab onto the collector, writing to Loki through ingest.home.
 - Somewhere to send the alerts (0008): a Telegram bot and a
   healthchecks.io account, which only the owner can create.
