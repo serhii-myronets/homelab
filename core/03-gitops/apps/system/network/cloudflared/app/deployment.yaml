@@ -19,13 +19,16 @@ spec:
         app: cloudflared
     spec:
       # Never both on one node. With a node gone the second waits, Pending,
-      # rather than join the first.
+      # rather than join the first. Counted within one revision: across all
+      # of them, a rolling update set both new pods beside each other while
+      # the old one still held the other node.
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
           whenUnsatisfiable: DoNotSchedule
           labelSelector:
             matchLabels: {app: cloudflared}
+          matchLabelKeys: [pod-template-hash]
       securityContext:
         runAsNonRoot: true
         seccompProfile: {type: RuntimeDefault}
