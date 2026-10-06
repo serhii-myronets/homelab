@@ -44,9 +44,6 @@ spec:
         resources:
           requests: {cpu: 25m, memory: 32Mi}
           limits: {memory: 256Mi}
-        # worker-1's taint; without this its `ssd` volume group has no driver.
-        tolerations:
-          - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
         # Each node's volume groups and volumes - lvm_lv_used_percent is how
         # full the thin pool is, the failure traps.yaml records for VictoriaLogs.
         serviceMonitor:

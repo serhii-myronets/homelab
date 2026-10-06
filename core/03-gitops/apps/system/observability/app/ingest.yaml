@@ -16,7 +16,6 @@ spec:
   userSelector:
     matchLabels: {vmauth: ingest}
   nodeSelector: {kubernetes.io/hostname: worker-1}
-  tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
   resources:
     requests: {cpu: 10m, memory: 32Mi}
     limits: {memory: 128Mi}

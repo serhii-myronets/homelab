@@ -77,7 +77,6 @@ spec:
       operator:
         enable_converter_ownership: true
       nodeSelector: {kubernetes.io/hostname: worker-1}
-      tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
       resources:
         requests: {cpu: 25m, memory: 96Mi}
         limits: {memory: 256Mi}
@@ -88,7 +87,6 @@ spec:
         # days, and since 2026-10-04 the lab's series are stored too.
         retentionPeriod: "30d"
         nodeSelector: {kubernetes.io/hostname: worker-1}
-        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         storage:
           storageClassName: lvm-worker-1
           resources:
@@ -118,7 +116,6 @@ spec:
         externalLabels:
           cluster: core
         nodeSelector: {kubernetes.io/hostname: worker-1}
-        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         resources:
           requests: {cpu: 50m, memory: 128Mi}
           limits: {memory: 384Mi}
@@ -130,7 +127,6 @@ spec:
     vmalert:
       spec:
         nodeSelector: {kubernetes.io/hostname: worker-1}
-        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         resources:
           requests: {cpu: 25m, memory: 64Mi}
           limits: {memory: 192Mi}
@@ -141,7 +137,6 @@ spec:
         # chart's emptyDir they vanished with every restart, so a silenced
         # alert came back and a sent one could go out again.
         nodeSelector: {kubernetes.io/hostname: worker-1}
-        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         storage:
           volumeClaimTemplate:
             spec:
@@ -157,7 +152,6 @@ spec:
       # release happens to be called.
       fullnameOverride: grafana
       nodeSelector: {kubernetes.io/hostname: worker-1}
-      tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
       # Grafana's own metrics were 24,616 series, a fifth of everything stored,
       # and their largest family was which feature flags are switched on.
       # Whether Grafana is alive is already answered by kube-state-metrics.
@@ -207,7 +201,6 @@ spec:
 
     kube-state-metrics:
       nodeSelector: {kubernetes.io/hostname: worker-1}
-      tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
       resources:
         requests: {cpu: 25m, memory: 48Mi}
         limits: {memory: 192Mi}
@@ -225,7 +218,6 @@ spec:
       spec:
         retentionPeriod: "30d"
         nodeSelector: {kubernetes.io/hostname: worker-1}
-        tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
         storage:
           storageClassName: lvm-worker-1
           resources:
@@ -241,7 +233,6 @@ spec:
       vmauth:
         spec:
           nodeSelector: {kubernetes.io/hostname: worker-1}
-          tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
           resources:
             requests: {cpu: 10m, memory: 32Mi}
             limits: {memory: 128Mi}

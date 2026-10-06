@@ -21,8 +21,6 @@ spec:
       serviceAccountName: homepage
       nodeSelector:
         kubernetes.io/hostname: worker-1
-      tolerations:
-        - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

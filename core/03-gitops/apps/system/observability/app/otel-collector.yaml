@@ -36,8 +36,6 @@ spec:
       kubernetesAttributes:
         enabled: true
 
-    # On both nodes: tolerated on worker-1, not pinned to it.
-    tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
     resources:
       requests: {cpu: 25m, memory: 64Mi}
       limits: {memory: 256Mi}

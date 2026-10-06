@@ -72,6 +72,8 @@ spec:
       restartPolicy: OnFailure
       nodeSelector:
         kubernetes.io/hostname: worker-1
+      # For worker-1's taint, gone since 2026-10-05; kept because a Job's
+      # template cannot change in place, and it does no harm.
       tolerations:
         - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
       containers:

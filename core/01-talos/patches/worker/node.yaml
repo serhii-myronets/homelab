@@ -12,16 +12,11 @@ machine:
   kernel:
     modules:
       - name: dm_thin_pool
-  # Only what is sent here runs here: other pods would otherwise land on a
-  # node without the `nvme` volume group or the HDDs, or take its weaker GPU.
-  # What belongs here carries a toleration - DaemonSets included: Cilium's
-  # tolerate every taint, OpenEBS's node plugin only this one.
+  # No taint, since 2026-10-05 (docs/decisions/0046): the scheduler places
+  # pods on either node. What must not run here is kept off by its own
+  # constraint - its volume, a node selector, the GPU plugin's.
   #
-  # Through the kubelet at registration, not machine.nodeTaints: on a worker
-  # Talos applies those with the node's own credentials, and NodeRestriction
-  # forbids a node to change its taints. Registration is the one moment it
-  # may; on a node already registered, change the taint with kubectl too.
-  kubelet:
-    extraConfig:
-      registerWithTaints:
-        - {key: homelab/dedicated, value: worker-1, effect: NoSchedule}
+  # Were a taint wanted again: through the kubelet at registration,
+  # kubelet.extraConfig.registerWithTaints, not machine.nodeTaints - on a
+  # worker Talos applies those with the node's own credentials, and
+  # NodeRestriction forbids a node to change its taints (traps.yaml).
