@@ -60,12 +60,24 @@ first release under the same name: Flux uninstalled its release, the CRDs
 stayed by their keep policy, and `helmfile apply` adopted them without
 recreating them.
 
+Last, the Helmfile releases: Cilium's agent (its metrics switched on),
+operator and Envoy, External Secrets and the Flux Operator, each from its
+chart, and the collector's PodMonitor from its own. A server-side dry run
+showed Cilium's CA would be kept, which helm-diff cannot see. Envoy was
+cut to a keep-list, 7,237 series per node to about 300. Core ended at 78k
+series.
+
+Rolling the Cilium agents took the Gateway down for 71 seconds - every
+.home and serhii.link name - until the agent served Envoy its listeners
+again (traps.yaml, cilium-agent-restart-takes-the-gateway-down). It was
+expected to be transparent; it was not, and was found only by checking
+the names afterwards.
+
 ## Next
 
-- The Helmfile releases' monitors: Cilium (the heaviest in series),
-  External Secrets and the Flux Operator, whose metrics carry the state of
-  every Flux object; and a PodMonitor for the collector's own metrics on
-  :8888.
+- Alert rules as PrometheusRules - cert-manager's expiry, Flux objects not
+  ready, VolSync out of sync - together with somewhere to send them
+  (0008).
 - The lab, paused for now: its vlagent still writes `cluster=lab` through
   ingest.home. It moves to the same collector, with
   `/insert/opentelemetry/v1/logs` added to the `lab` VMUser in ingest.yaml.

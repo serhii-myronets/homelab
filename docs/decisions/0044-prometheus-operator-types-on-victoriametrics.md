@@ -30,14 +30,19 @@ installed - not `Prometheus`, `Alertmanager`, `PrometheusAgent` or
 `ThanosRuler`, which nothing here would act on.
 
 Where a chart ships a monitor it is switched on in that release:
-cert-manager, both external-dns releases, OpenEBS's LVM driver. VolSync's
+cert-manager, both external-dns releases, OpenEBS's LVM driver, the
+OpenTelemetry Collector, and through Helmfile Cilium's agent, operator and
+Envoy, External Secrets and the Flux Operator - whose `flux_resource_info`
+carries the readiness of every Flux object. Envoy is kept to a list of its
+statistics in the Cilium values: whole, it was 7,237 series per node.
+VolSync's
 chart ships none, so its `ServiceMonitor` is written beside the release;
 the Flux controllers, which no release installs, have the `PodMonitor` of
 Flux's own example in `core/03-gitops/apps/system/platform/flux`. The
 router is not a cluster resource, and its `ScrapeConfig` stays in
 observability. The VictoriaMetrics chart's own scrapes - kubelet,
 kube-state-metrics, node-exporter - stay as the chart renders them.
-Together these took core from 69k series to 73k on 2026-10-05, beside the
+Together these took core from 69k series to 78k on 2026-10-05, beside the
 lab's 81k.
 
 ## Rejected
