@@ -29,6 +29,25 @@ container and workload names; everything else is structured metadata. On
 2026-10-05, minutes in, it had 75 lines of a minute against VictoriaLogs'
 72 - the window's edges - and held 57 MiB.
 
+## First measurement, 2026-10-06
+
+Twelve hours and 40 minutes of core's logs, the same 91,372 lines in each:
+
+| | Loki | VictoriaLogs |
+|---|---|---|
+| memory, working set at most | 92 MiB | 190 MiB, the lab's logs too |
+| CPU, average over an hour | 13m | 13m |
+| bytes stored per line | about 34, chunks only | about 20, over all its data |
+| count every line in the window | 0.67 s | 0.02 s |
+| a word, `error` as a whole word | no such query - lines only | 0.10 s, 2,137 lines |
+| a substring, `(?i)error` | 0.66 s, 3,201 lines | 0.68 s, 3,201 lines |
+| one namespace by label | 0.17 s | 0.04 s |
+
+Both are small and quick at this size. VictoriaLogs answers what its word
+index covers several times faster; a substring is a full scan in either.
+Loki's figures are early - it holds recent chunks in memory and flushes
+them over hours.
+
 ## Deciding
 
 Worth comparing after a week or so: memory and disk of each, the time a
