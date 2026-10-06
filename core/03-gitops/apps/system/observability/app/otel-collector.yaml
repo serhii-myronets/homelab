@@ -1,0 +1,109 @@
+# Reads every pod's log on each node and writes it to VictoriaLogs over OTLP.
+# The vendor-neutral collector rather than vlagent, so the agent and its
+# protocol are the ones used outside this stack, and the same collector can
+# take traces later; VictoriaLogs stays the store.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: otel-collector
+spec:
+  interval: 30m
+  timeout: 10m
+  chart:
+    spec:
+      chart: opentelemetry-collector
+      version: "0.175.1"
+      sourceRef:
+        kind: HelmRepository
+        name: open-telemetry
+        namespace: flux-system
+  values:
+    fullnameOverride: otel-collector
+    mode: daemonset
+    # The chart names no image of its own. The k8s distribution carries
+    # filelog, k8sattributes and file_storage, and nothing this does not use.
+    image:
+      repository: otel/opentelemetry-collector-k8s
+    command:
+      name: otelcol-k8s
+
+    presets:
+      logsCollection:
+        enabled: true
+        # Read positions on the node, in /var/lib/otelcol, so a restart
+        # neither repeats nor skips; this runs the collector as root.
+        storeCheckpoints: true
+      kubernetesAttributes:
+        enabled: true
+
+    # On both nodes: tolerated on worker-1, not pinned to it.
+    tolerations: [{key: homelab/dedicated, value: worker-1, effect: NoSchedule}]
+    resources:
+      requests: {cpu: 25m, memory: 64Mi}
+      limits: {memory: 256Mi}
+
+    # Nothing sends to this collector yet, so none of the chart's receiving
+    # ports are opened; 8888 serves its own metrics.
+    ports:
+      otlp: {enabled: false}
+      otlp-http: {enabled: false}
+      jaeger-compact: {enabled: false}
+      jaeger-thrift: {enabled: false}
+      jaeger-grpc: {enabled: false}
+      zipkin: {enabled: false}
+      metrics: {enabled: true}
+
+    config:
+      receivers:
+        jaeger: null
+        zipkin: null
+        otlp: null
+        prometheus: null
+        filelog:
+          # Restates the preset's container parser, since this list replaces
+          # it, and lifts what JSON-logging controllers write into fields.
+          operators:
+            - type: container
+              id: container-parser
+              max_log_size: 102400
+            - type: json_parser
+              if: 'body matches "^\\{"'
+              parse_to: attributes
+              on_error: send_quiet
+            - type: move
+              if: 'attributes.msg != nil'
+              from: attributes.msg
+              to: body
+            - type: move
+              if: 'attributes.message != nil'
+              from: attributes.message
+              to: body
+            - type: severity_parser
+              if: 'attributes.level != nil'
+              parse_from: attributes.level
+              on_error: send_quiet
+      processors:
+        # The OpenTelemetry name for what core's series carry as `cluster`.
+        resource/cluster:
+          attributes:
+            - {key: k8s.cluster.name, value: core, action: upsert}
+      exporters:
+        debug: null
+        otlphttp/victorialogs:
+          logs_endpoint: http://vlsingle-vm.observability.svc:9428/insert/opentelemetry/v1/logs
+          headers:
+            # VictoriaLogs makes every resource attribute a stream field by
+            # default, the pod's UID and start time among them; a stream per
+            # container is what vlagent kept.
+            VL-Stream-Fields: k8s.cluster.name,k8s.namespace.name,k8s.pod.name,k8s.container.name
+          # Queued on the node while VictoriaLogs is away.
+          sending_queue:
+            storage: file_storage
+      service:
+        pipelines:
+          metrics: null
+          traces: null
+          logs:
+            receivers: [filelog]
+            processors: [memory_limiter, k8sattributes, resource/cluster, batch]
+            exporters: [otlphttp/victorialogs]

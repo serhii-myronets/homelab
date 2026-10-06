@@ -6,5 +6,6 @@ resources:
   - helmrelease.yaml
   - httproute.yaml
   - ingest.yaml
+  - otel-collector.yaml
   - volsync-scrape.yaml
   - router-scrape.yaml
