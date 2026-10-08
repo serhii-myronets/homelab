@@ -1,7 +1,7 @@
 ---
 date: 2026-10-05
 title: Core's logs move to the OpenTelemetry Collector, its scrapes to the Prometheus Operator's types
-tags: [observability, logs, opentelemetry, victorialogs, metrics, prometheus-operator]
+tags: [observability, logs, opentelemetry, victorialogs, metrics, prometheus-operator, traces, obi]
 hosts: [core]
 ---
 
@@ -135,6 +135,17 @@ requests through the collector's new node-local OTLP Service; the first
 spans reached Tempo with their pod's names, and the generator's series
 reached VMSingle.
 
+## OBI
+
+The services send no traces of their own, so OBI reads them from the
+kernel (0049). Its first spans each stood alone - context propagation is
+off by default - and the service graph held only users. With `headers`
+the callers' spans and the callees' joined: Immich's server to
+machine-learning, the library to Jellyfin and qBittorrent. A check that
+counted multi-service traces by their spans' resources said 0 while the
+traces existed; TraceQL's `{A} >> {B}` is the query that finds them.
+PostgreSQL calls do not show up yet.
+
 ## Next
 
 - The lab onto the collector, writing to Loki through ingest.home.
@@ -143,9 +154,10 @@ reached VMSingle.
 - VolSync's restore snapshots of 2026-09-30 on controlplane: the owner's
   call whether to delete them, which would let the LVM driver report the
   thin pool again.
-- The lab, paused for now: its vlagent still writes `cluster=lab` through
-  ingest.home. It moves to the same collector, with
-  `/insert/opentelemetry/v1/logs` added to the `lab` VMUser in ingest.yaml.
+- The lab, paused for now: its vlagent writes to a VictoriaLogs that is
+  gone. It moves to the same collector, with a Loki route added to the
+  `lab` VMUser in ingest.yaml.
+- Why OBI sees no PostgreSQL queries from Immich or Sure.
 - Kubernetes events and Talos's own service logs, both through the
   collector.
 

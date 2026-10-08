@@ -44,6 +44,7 @@ are not reused.
 | [0046](0046-worker-1-untainted.md) | worker-1 carries no taint; what must stay off it is held by its own constraint | accepted | worker-1, scheduling, taint, cloudflared, gpu |
 | [0047](0047-loki-beside-victorialogs.md) | Loki keeps the logs; VictoriaLogs, run beside it to compare, is gone | accepted | observability, logs, loki, victorialogs |
 | [0048](0048-traces-in-tempo.md) | Traces go through the collector to Tempo; Grafana's OSS charts come from grafana-community | accepted | observability, traces, tempo, opentelemetry |
+| [0049](0049-services-traced-by-obi.md) | The services are traced from the kernel by OBI, with trace context written into their HTTP calls | accepted | observability, traces, opentelemetry, ebpf, obi |
 | [0036](0036-gatus-on-the-router.md) | Gatus and a metrics exporter run on the router, installed over ssh | accepted | router, gatus, monitoring |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing
