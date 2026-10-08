@@ -34,7 +34,22 @@ spec:
         extensions:
           obi:
             version: "2.0"
+            enrich:
+              enrichers:
+                kubernetes:
+                  # Not found by itself: Cilium's cluster name here is
+                  # "default".
+                  cluster_name: core
             capture:
+              # Off by default, and then every service's spans stand alone:
+              # the service graph showed nothing but users calling services.
+              # `traceparent` written into plain HTTP calls links a caller
+              # to its callee. Not `tcp`: a TCP option is dropped by L7
+              # proxies - the Gateway's Envoy - and resets connections on
+              # some paths.
+              engine:
+                propagation:
+                  context_propagation: headers
               # The services only. Left to the chart, it would watch the
               # controllers' every call to the API server, and the
               # observability stack itself - each span Tempo took in would
