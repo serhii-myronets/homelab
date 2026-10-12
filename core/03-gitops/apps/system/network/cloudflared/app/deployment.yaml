@@ -34,7 +34,7 @@ spec:
         seccompProfile: {type: RuntimeDefault}
       containers:
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.9.3
+          image: cloudflare/cloudflared:2026.10.0
           args: [tunnel, --config, /etc/cloudflared/config/config.yaml, run]
           securityContext:
             allowPrivilegeEscalation: false

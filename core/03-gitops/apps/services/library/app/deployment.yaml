@@ -69,7 +69,7 @@ spec:
         # The indexer manager: it holds the tracker definitions and pushes
         # them to the two below, which then store none of their own.
         - name: prowlarr
-          image: ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls162
+          image: ghcr.io/linuxserver/prowlarr:2.6.5.5623-ls163
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: PUID, value: "1000"}
@@ -94,7 +94,7 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /config, subPath: prowlarr}
         - name: sonarr
-          image: ghcr.io/linuxserver/sonarr:4.0.20.3014-ls326
+          image: ghcr.io/linuxserver/sonarr:4.0.20.3014-ls327
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: PUID, value: "1000"}
@@ -120,7 +120,7 @@ spec:
             - {name: data, mountPath: /config, subPath: sonarr}
             - {name: hdd-a, mountPath: /data}
         - name: radarr
-          image: ghcr.io/linuxserver/radarr:6.4.4.10685-ls318
+          image: ghcr.io/linuxserver/radarr:6.4.4.10685-ls320
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: PUID, value: "1000"}

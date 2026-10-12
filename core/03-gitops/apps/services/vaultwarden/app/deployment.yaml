@@ -33,7 +33,7 @@ spec:
             - {name: data, mountPath: /data}
       containers:
         - name: vaultwarden
-          image: vaultwarden/server:1.37.3
+          image: vaultwarden/server:1.37.4
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
