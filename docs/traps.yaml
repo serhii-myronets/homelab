@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-10-05
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm, scheduling]
+  updated: 2026-10-15
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm, scheduling, renovate]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1689,3 +1689,20 @@ traps:
       taint off, look for status.hostIP, hostPath and Talos API use in what
       ran on the other node.
     diagnosed: 2026-10-06, the morning after decisions/0046
+
+  - id: renovate-can-move-immich-server-without-machine-learning
+    applies_to: [renovate, immich]
+    symptom: >-
+      Renovate's grouped PR raises immich-server and leaves
+      immich-machine-learning at the old version; the two would run apart.
+    cause: >-
+      The machine-learning image is looked up on its own, and a failed lookup
+      drops it from the run without failing the PR. The Dependency Dashboard
+      says "Failed to look up docker package
+      ghcr.io/immich-app/immich-machine-learning: no-result" while the tag
+      exists on ghcr.
+    fix: >-
+      Before merging, check both images in the diff move together; if not,
+      confirm the `-openvino` tag on ghcr and commit the bump onto the
+      Renovate branch.
+    diagnosed: 2026-10-15, PR #15 with immich v3.3.1
