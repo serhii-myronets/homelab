@@ -26,7 +26,7 @@ releases:
   - name: prometheus-operator-crds
     namespace: flux-system
     chart: prometheus-community/prometheus-operator-crds
-    version: 32.0.1
+    version: 32.0.2
     values:
       - values/prometheus-operator-crds-values.yaml
 
