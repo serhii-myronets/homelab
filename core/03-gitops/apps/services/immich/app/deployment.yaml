@@ -34,7 +34,7 @@ spec:
             - {name: hdd-a, mountPath: /data, subPath: photos}
       containers:
         - name: server
-          image: ghcr.io/immich-app/immich-server:v3.3.3
+          image: ghcr.io/immich-app/immich-server:v3.3.5
           env:
             - {name: TZ, value: America/Los_Angeles}
             - {name: DB_HOSTNAME, value: postgres}
