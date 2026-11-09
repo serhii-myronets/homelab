@@ -281,7 +281,9 @@ traps:
       Several pods share one ReadWriteOnce claim on a single-node cluster.
       The first starts; the rest stay in ContainerCreating with
       `verifyMount: device already mounted at /var/lib/kubelet/pods/<the
-      first pod>/...`.
+      first pod>/...`. The same happens to a single-replica Deployment
+      rolling out: the new pod waits in Init for the volume, and the old one
+      is not stopped until the new one is ready.
     cause: >-
       ReadWriteOnce allows many pods on one node, but the LVM driver checks
       whether the logical volume is already mounted and refuses the second
@@ -289,8 +291,10 @@ traps:
     fix: >-
       Put the containers that share the volume in one pod, each under its
       own subPath, as the torrent and library stacks do, or give each its
-      own claim.
-    diagnosed: 2026-09-19, on the Beelink
+      own claim. A Deployment with a claim needs `strategy: Recreate`; where
+      a controller writes the Deployment and offers no strategy, as kmcp's
+      MCPServer does, the pod cannot have a claim.
+    diagnosed: 2026-09-19, on the Beelink; the rollout, 2026-11-08 on webull-mcp
 
   - id: volsync-populator-races-csi-leak-protection
     applies_to: [volsync, openebs, kubernetes]

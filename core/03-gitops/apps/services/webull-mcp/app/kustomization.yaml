@@ -4,6 +4,5 @@ namespace: webull-mcp
 resources:
   - namespace.yaml
   - externalsecret.yaml
-  - pvc.yaml
   - mcpserver.yaml
   - networkpolicy.yaml

@@ -37,10 +37,15 @@ spec:
       UV_CACHE_DIR: /data/uv-cache
       UV_PYTHON_DOWNLOADS: never
       HOME: /data
+    # Not a claim: kmcp's Deployment rolls out new pod first, and the LVM
+    # driver will not mount one volume into two pods (traps.yaml,
+    # openebs-lvm-mounts-a-volume-into-one-pod-only), so every change would
+    # hang. The sandbox needs no
+    # token, and the cache and audit log are lost with the pod. Prod's
+    # 15-day token will need somewhere else to live.
     volumes:
       - name: data
-        persistentVolumeClaim:
-          claimName: data
+        emptyDir: {}
     volumeMounts:
       - name: data
         mountPath: /data

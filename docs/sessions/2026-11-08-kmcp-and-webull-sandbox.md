@@ -43,10 +43,16 @@ To use it from the Mac:
     kubectl --context core -n webull-mcp port-forward svc/webull-mcp 3000
     claude mcp add --transport http webull-sandbox http://localhost:3000/mcp
 
+Then made read-only: `WEBULL_TOOLSETS` leaves out `trading`, since kmcp's
+MCPServer has no way to filter tools itself. That rollout hung on the `data`
+claim (traps.yaml, openebs-lvm-mounts-a-volume-into-one-pod-only, now with
+the rollout case), and kmcp offers no `Recreate`; the claim was removed with
+the owner's agreement, and `/data` is an emptyDir.
+
 ## Open
 
-- Every tool is exposed, ordering included; only the server's own limits
-  ($1000, 10 shares an order) stand between a client and the sandbox.
-  Filtering tools in an agentgateway in front, and an order path with a
-  person's confirmation, come before any prod key.
+- Prod's 15-day token needs a home that survives the pod - not a claim
+  while kmcp writes the Deployment.
+- Ordering back on only behind an agentgateway that filters tools and an
+  order path with a person's confirmation.
 - Nothing yet: the Telegram bridge, the agent, kagent.
