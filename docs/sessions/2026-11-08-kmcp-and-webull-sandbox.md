@@ -1,11 +1,11 @@
 ---
 date: 2026-11-08
-title: kmcp on core, and Webull's MCP server waiting for sandbox keys
+title: kmcp on core, serving Webull's MCP server against the sandbox
 tags: [mcp, kmcp, agentgateway, webull, trading, agents]
 hosts: [core]
 ---
 
-# kmcp on core, and Webull's MCP server waiting for sandbox keys
+# kmcp on core, serving Webull's MCP server against the sandbox
 
 The owner wants an advisor to be able to buy and sell through a Telegram
 chat, by way of an AI agent calling a broker over MCP. Most of the session
@@ -31,20 +31,22 @@ HelmReleases from `oci://ghcr.io/kagent-dev/kmcp/helm`, the first OCI
 HelmRepository in `helm-repositories.yaml`. kagent's chart carries the same
 controller as a subchart; installing kagent later means `kmcp.enabled: false`.
 
+Webull's server (`apps/services/webull-mcp/`, package 1.2.6) runs against
+the US sandbox. Checked through a port-forward: a session lists 109 tools,
+and `get_account_list` returns the sandbox's five accounts. The sandbox asked
+for no 2FA, so no token has been written; `WEBULL_TOKEN_DIR` stays for prod.
+The uv image runs as uid 1000, and the CiliumNetworkPolicy - the first on
+core - lets through all the server needed.
+
+To use it from the Mac:
+
+    kubectl --context core -n webull-mcp port-forward svc/webull-mcp 3000
+    claude mcp add --transport http webull-sandbox http://localhost:3000/mcp
+
 ## Open
 
-`apps/services/webull-mcp/` is written and passes a server-side dry run, but
-is not listed in `apps/kustomization.yaml`: the owner has a Webull US account
-and no API keys yet. To bring it up:
-
-1. Register at developer.webull.com and generate sandbox (UAT) keys.
-2. Put them in Infisical at `/services/webull-mcp/WEBULL_APP_KEY` and
-   `/services/webull-mcp/WEBULL_APP_SECRET`.
-3. Add `services/webull-mcp/ks.yaml` to `apps/kustomization.yaml`, diff, push.
-4. If the server asks for 2FA, run its `auth` inside the pod and approve in
-   the Webull app; the token lands on the `data` claim for 15 days.
-5. Port-forward port 3000 and point an MCP client at `http://localhost:3000/mcp`.
-
-Untested until then: the uv image as uid 1000, and whether the sandbox needs
-hosts beyond the two in the CiliumNetworkPolicy - the first Cilium policy on
-core.
+- Every tool is exposed, ordering included; only the server's own limits
+  ($1000, 10 shares an order) stand between a client and the sandbox.
+  Filtering tools in an agentgateway in front, and an order path with a
+  person's confirmation, come before any prod key.
+- Nothing yet: the Telegram bridge, the agent, kagent.
