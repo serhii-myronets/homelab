@@ -5,4 +5,5 @@ resources:
   - namespace.yaml
   - externalsecret.yaml
   - mcpserver.yaml
+  - mcpserver-prod.yaml
   - networkpolicy.yaml

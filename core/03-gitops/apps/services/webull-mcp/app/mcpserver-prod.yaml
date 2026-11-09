@@ -1,0 +1,48 @@
+# The same server against the real account, read-only. What it shares with the
+# sandbox server is explained in mcpserver.yaml; what differs is here.
+#   kubectl --context core -n webull-mcp port-forward svc/webull-mcp-prod 3000
+apiVersion: kagent.dev/v1alpha1
+kind: MCPServer
+metadata:
+  name: webull-mcp-prod
+spec:
+  transportType: stdio
+  timeout: 60s
+  deployment:
+    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58
+    cmd: uvx
+    args: ["webull-openapi-mcp==1.2.6", "serve"]
+    port: 3000
+    secretRefs:
+      - name: webull-mcp-prod
+    env:
+      WEBULL_ENVIRONMENT: prod
+      WEBULL_REGION_ID: us
+      WEBULL_TOKEN_DIR: /data/conf
+      # No `trading`: nothing here can place, change or cancel an order. Turning
+      # it on waits for an order path with a person's confirmation.
+      WEBULL_TOOLSETS: account,market-data,instrument
+      WEBULL_AUDIT_LOG_FILE: /data/audit.log
+      UV_CACHE_DIR: /data/uv-cache
+      UV_PYTHON_DOWNLOADS: never
+      HOME: /data
+    volumes:
+      - name: data
+        emptyDir: {}
+    volumeMounts:
+      - name: data
+        mountPath: /data
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+    resources:
+      requests: {cpu: 20m, memory: 128Mi}
+      limits: {memory: 512Mi}

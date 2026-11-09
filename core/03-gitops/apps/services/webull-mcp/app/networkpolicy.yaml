@@ -1,12 +1,14 @@
-# Whoever reaches port 3000 can trade with these keys, and whoever runs code in
-# the pod can send them anywhere. Both directions are closed to all but what
-# the server needs.
+# Whoever reaches port 3000 can use these keys, and whoever runs code in a pod
+# can send them anywhere. Both directions are closed to all but what each
+# server needs: its own Webull environment, DNS, and PyPI for uvx.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: webull-mcp
 spec:
-  endpointSelector: {}
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: webull-mcp
   ingress:
     # `kubectl port-forward` arrives from the node itself.
     - fromEntities: [host]
@@ -25,7 +27,37 @@ spec:
         # The US sandbox, from UAT_ENDPOINTS in the server's sdk_client.py.
         - matchName: api.sandbox.webull.com
         - matchName: events-api.sandbox.webull.com
-        # uvx fetching the pinned package.
+        - matchName: pypi.org
+        - matchName: files.pythonhosted.org
+      toPorts:
+        - ports: [{port: "443", protocol: TCP}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: webull-mcp-prod
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: webull-mcp-prod
+  ingress:
+    - fromEntities: [host]
+      toPorts:
+        - ports: [{port: "3000", protocol: TCP}]
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports: [{port: "53", protocol: ANY}]
+          rules:
+            dns: [{matchPattern: "*"}]
+    - toFQDNs:
+        # US production, from endpoints.json in webull-openapi-python-sdk.
+        - matchName: api.webull.com
+        - matchName: data-api.webull.com
+        - matchName: events-api.webull.com
         - matchName: pypi.org
         - matchName: files.pythonhosted.org
       toPorts:
