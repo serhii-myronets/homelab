@@ -26,6 +26,10 @@ spec:
       WEBULL_ENVIRONMENT: uat
       WEBULL_REGION_ID: us
       WEBULL_TOKEN_DIR: /data/conf
+      # Read-only for now: without `trading` the server registers no tool that
+      # places, changes or cancels an order - nor the ones that list orders.
+      # `market-data` still writes watchlists and community posts.
+      WEBULL_TOOLSETS: account,market-data,instrument
       # The server's own guards, checked before an order leaves the pod.
       WEBULL_MAX_ORDER_NOTIONAL_USD: "1000"
       WEBULL_MAX_ORDER_QUANTITY: "10"
