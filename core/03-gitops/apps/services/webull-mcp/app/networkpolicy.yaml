@@ -1,6 +1,10 @@
 # Whoever reaches port 3000 can use these keys, and whoever runs code in a pod
 # can send them anywhere. Both directions are closed to all but what each
 # server needs: its own Webull environment, DNS, and PyPI for uvx.
+#
+# Only the `mcp` Gateway's proxy may reach port 3000, so its key check and
+# tool filter cannot be walked around - not even with a port-forward, which
+# arrives from the node.
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -10,8 +14,9 @@ spec:
     matchLabels:
       app.kubernetes.io/name: webull-mcp
   ingress:
-    # `kubectl port-forward` arrives from the node itself.
-    - fromEntities: [host]
+    - fromEndpoints:
+        - matchLabels:
+            gateway.networking.k8s.io/gateway-name: mcp
       toPorts:
         - ports: [{port: "3000", protocol: TCP}]
   egress:
@@ -41,7 +46,9 @@ spec:
     matchLabels:
       app.kubernetes.io/name: webull-mcp-prod
   ingress:
-    - fromEntities: [host]
+    - fromEndpoints:
+        - matchLabels:
+            gateway.networking.k8s.io/gateway-name: mcp
       toPorts:
         - ports: [{port: "3000", protocol: TCP}]
   egress:

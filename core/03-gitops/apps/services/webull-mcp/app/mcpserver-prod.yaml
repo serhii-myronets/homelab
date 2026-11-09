@@ -1,6 +1,6 @@
 # The same server against the real account, read-only. What it shares with the
 # sandbox server is explained in mcpserver.yaml; what differs is here.
-#   kubectl --context core -n webull-mcp port-forward svc/webull-mcp-prod 3000
+# Reached through https://mcp.home/prod (gateway.yaml).
 apiVersion: kagent.dev/v1alpha1
 kind: MCPServer
 metadata:

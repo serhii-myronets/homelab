@@ -3,8 +3,7 @@
 # MCP over HTTP at webull-mcp.webull-mcp:3000/mcp, one server process per
 # session.
 #
-# Not exposed outside the cluster. From the Mac:
-#   kubectl --context core -n webull-mcp port-forward svc/webull-mcp 3000
+# Reached through https://mcp.home/sandbox (gateway.yaml), never directly.
 apiVersion: kagent.dev/v1alpha1
 kind: MCPServer
 metadata:
@@ -40,9 +39,8 @@ spec:
     # Not a claim: kmcp's Deployment rolls out new pod first, and the LVM
     # driver will not mount one volume into two pods (traps.yaml,
     # openebs-lvm-mounts-a-volume-into-one-pod-only), so every change would
-    # hang. The sandbox needs no
-    # token, and the cache and audit log are lost with the pod. Prod's
-    # 15-day token will need somewhere else to live.
+    # hang. The sandbox needs no token, and the cache and audit log are lost
+    # with the pod. Prod's 15-day token will need somewhere else to live.
     volumes:
       - name: data
         emptyDir: {}

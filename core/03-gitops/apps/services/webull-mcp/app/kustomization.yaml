@@ -7,3 +7,7 @@ resources:
   - mcpserver.yaml
   - mcpserver-prod.yaml
   - networkpolicy.yaml
+  - gateway.yaml
+  - routes.yaml
+  - policy.yaml
+  - httproute-home.yaml

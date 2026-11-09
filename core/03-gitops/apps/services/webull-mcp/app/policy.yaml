@@ -1,0 +1,31 @@
+# Everything through the `mcp` Gateway needs a key, and sees only the tools
+# that read.
+#
+# The servers' own WEBULL_TOOLSETS leaves trading out, but it switches whole
+# groups: `market-data` brings quotes along with eight tools that create,
+# change or delete watchlists and post to Webull's community in the owner's
+# name. Every tool that only reads is named get_, search_ or list_, so the
+# rule below lets 81 of the 89 through; a tool it does not allow is dropped
+# from tools/list and refused on tools/call.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: mcp
+spec:
+  targetRefs:
+    - {group: gateway.networking.k8s.io, kind: Gateway, name: mcp}
+  traffic:
+    # `Authorization: Bearer <key>`; the keys are in mcp-gateway-keys.
+    apiKeyAuthentication:
+      mode: Strict
+      secretRef:
+        name: mcp-gateway-keys
+  backend:
+    mcp:
+      authorization:
+        policy:
+          matchExpressions:
+            - >-
+              mcp.tool.name.startsWith("get_") ||
+              mcp.tool.name.startsWith("search_") ||
+              mcp.tool.name.startsWith("list_")

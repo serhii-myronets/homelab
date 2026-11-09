@@ -1,0 +1,15 @@
+# Local only: no serhii.link name, so nothing of this leaves the house through
+# the tunnel. The `mcp` Gateway's own key check is what stands between the
+# LAN and the account.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mcp-home
+spec:
+  parentRefs:
+    - {name: main-gateway, namespace: gateway-system}
+  hostnames:
+    - mcp.home
+  rules:
+    - backendRefs:
+        - {name: mcp, port: 8080}

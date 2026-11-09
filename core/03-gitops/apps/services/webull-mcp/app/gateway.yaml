@@ -1,0 +1,38 @@
+# The way in to both Webull servers: https://mcp.home/prod and /sandbox.
+#
+#   main-gateway (Cilium, TLS for mcp.home)  httproute-home.yaml
+#     -> this Gateway's proxy, ClusterIP only
+#       -> key check and tool filter         policy.yaml
+#         -> webull-mcp-prod / webull-mcp    routes.yaml
+#
+# The proxy gets no address of its own: without the overlay below the
+# controller makes a LoadBalancer Service, and Cilium would hand it an address
+# from the house's pool. The standard way, `addresses` with Cluster
+# routability, is still experimental in Gateway API.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayParameters
+metadata:
+  name: mcp
+spec:
+  service:
+    spec:
+      type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: mcp
+spec:
+  gatewayClassName: agentgateway
+  infrastructure:
+    parametersRef:
+      group: agentgateway.dev
+      kind: AgentgatewayParameters
+      name: mcp
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 8080
+      allowedRoutes:
+        namespaces:
+          from: Same

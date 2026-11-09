@@ -13,3 +13,4 @@ spec:
   prune: true
   dependsOn:
     - name: kmcp
+    - name: agentgateway

@@ -24,6 +24,7 @@ spec:
     - jellyfin.home
     - immich.home
     - ingest.home
+    - mcp.home
     - seerr.home
     - prowlarr.home
     - proxmenux.home
