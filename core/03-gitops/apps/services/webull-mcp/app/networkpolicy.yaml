@@ -1,0 +1,32 @@
+# Whoever reaches port 3000 can trade with these keys, and whoever runs code in
+# the pod can send them anywhere. Both directions are closed to all but what
+# the server needs.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: webull-mcp
+spec:
+  endpointSelector: {}
+  ingress:
+    # `kubectl port-forward` arrives from the node itself.
+    - fromEntities: [host]
+      toPorts:
+        - ports: [{port: "3000", protocol: TCP}]
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports: [{port: "53", protocol: ANY}]
+          rules:
+            dns: [{matchPattern: "*"}]
+    - toFQDNs:
+        # The US sandbox, from UAT_ENDPOINTS in the server's sdk_client.py.
+        - matchName: api.sandbox.webull.com
+        - matchName: events-api.sandbox.webull.com
+        # uvx fetching the pinned package.
+        - matchName: pypi.org
+        - matchName: files.pythonhosted.org
+      toPorts:
+        - ports: [{port: "443", protocol: TCP}]

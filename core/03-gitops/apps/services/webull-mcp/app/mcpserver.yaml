@@ -1,0 +1,56 @@
+# Webull's own MCP server (github.com/webull-inc/webull-openapi-mcp), against
+# the sandbox. It speaks only stdio, so kmcp puts agentgateway in front of it:
+# MCP over HTTP at webull-mcp.webull-mcp:3000/mcp, one server process per
+# session.
+#
+# Not exposed outside the cluster. From the Mac:
+#   kubectl --context core -n webull-mcp port-forward svc/webull-mcp 3000
+apiVersion: kagent.dev/v1alpha1
+kind: MCPServer
+metadata:
+  name: webull-mcp
+spec:
+  transportType: stdio
+  # The first session of a pod downloads the package before it answers.
+  timeout: 60s
+  deployment:
+    image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58
+    cmd: uvx
+    # Pinned: uvx resolves the package at every session start, and an
+    # unpinned name would run whatever was published last with these keys.
+    args: ["webull-openapi-mcp==1.2.6", "serve"]
+    port: 3000
+    secretRefs:
+      - name: webull-mcp
+    env:
+      WEBULL_ENVIRONMENT: uat
+      WEBULL_REGION_ID: us
+      WEBULL_TOKEN_DIR: /data/conf
+      # The server's own guards, checked before an order leaves the pod.
+      WEBULL_MAX_ORDER_NOTIONAL_USD: "1000"
+      WEBULL_MAX_ORDER_QUANTITY: "10"
+      WEBULL_AUDIT_LOG_FILE: /data/audit.log
+      UV_CACHE_DIR: /data/uv-cache
+      UV_PYTHON_DOWNLOADS: never
+      HOME: /data
+    volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
+    volumeMounts:
+      - name: data
+        mountPath: /data
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+    resources:
+      requests: {cpu: 20m, memory: 128Mi}
+      limits: {memory: 512Mi}
