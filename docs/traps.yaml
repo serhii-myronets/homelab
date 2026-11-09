@@ -1729,3 +1729,24 @@ traps:
       Webull app within five minutes. It overwrites the PENDING token; no
       restart is needed, since each session starts a new server process.
     diagnosed: 2026-11-08, the first prod call
+
+  - id: kmcp-stdio-server-runs-a-process-per-open-session
+    applies_to: [kmcp, mcp, webull, memory]
+    symptom: >-
+      A Webull MCP pod's container is OOMKilled; through the `mcp` Gateway the
+      next session's initialize answers 500, "connection closed before
+      message completed".
+    cause: >-
+      kmcp's agentgateway adapter starts one stdio server process - uvx and
+      Python, near 70 MB with Webull's SDK - for every MCP session, and keeps
+      it until the session ends. A client that opens sessions and never sends
+      DELETE leaves them all running, and a few dozen pass the 512Mi limit.
+    tell: >-
+      `kubectl -n webull-mcp get pod` shows a restart; lastState says
+      OOMKilled. The emptyDir survives a container restart, so prod's token
+      is still there.
+    fix: >-
+      Close sessions (DELETE with the mcp-session-id) in anything scripted.
+      Raising the limit recreates the pod, and for prod that means `auth`
+      and the phone again (webull-mcp-approval-on-the-phone-is-not-enough).
+    diagnosed: 2026-11-08, after a series of test sessions

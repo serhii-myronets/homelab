@@ -1,11 +1,11 @@
 ---
 date: 2026-11-08
-title: kmcp on core, serving Webull's MCP server - the sandbox, and the real account read-only
-tags: [mcp, kmcp, agentgateway, webull, trading, agents]
+title: Webull's MCP servers on core through kmcp and agentgateway, read-only on mcp.home
+tags: [mcp, kmcp, agentgateway, gateway-api, webull, trading, agents]
 hosts: [core]
 ---
 
-# kmcp on core, serving Webull's MCP server - the sandbox, and the real account read-only
+# Webull's MCP servers on core through kmcp and agentgateway, read-only on mcp.home
 
 The owner wants an advisor to be able to buy and sell through a Telegram
 chat, by way of an AI agent calling a broker over MCP. Most of the session
@@ -56,12 +56,43 @@ did not help until `auth` ran in the pod (traps.yaml,
 webull-mcp-approval-on-the-phone-is-not-enough). It then listed three
 accounts.
 
+## agentgateway in front, on mcp.home
+
+The owner chose a full Gateway API implementation over a standalone proxy.
+kgateway turned out to be Envoy only since 2.3; the MCP side is agentgateway's
+own controller, now in `apps/system/network/agentgateway/` (1.7.0). Built
+against Gateway API 1.7, so the CRDs were applied from 02-platform's prepare
+hook first - with the owner's go-ahead, after checking that no served version
+Cilium uses changed. Cilium itself (1.20.2 live, 1.20.4 in the repository)
+was not touched.
+
+In `webull-mcp`: a Gateway `mcp` of class agentgateway on a ClusterIP Service
+(an AgentgatewayParameters overlay - Cluster routability is still
+experimental), `/prod` and `/sandbox` routes to the two kmcp Services, and one
+AgentgatewayPolicy: an API key from Infisical
+(`/services/webull-mcp/MCP_GATEWAY_KEY`) and only tools named get_, search_
+or list_ - 81 of 89. Cilium's main-gateway serves `mcp.home` with the home
+certificate; the Webull pods accept only the proxy now.
+
+Checked end to end with `curl --resolve`: 401 without or with a wrong key;
+with it, both paths list 81 tools, quote AAPL, and refuse create_watchlist
+and create_community_post. On the way:
+
+- The first key leaked into this session's output: a zsh loop variable named
+  `path` (AGENTS.md warns of it) emptied PATH, and zsh printed the failed
+  commands with their headers. Rotated at once; the old key gets 401.
+- A wait loop asked the router for mcp.home before external-dns had written
+  it, and the NXDOMAIN stuck in the router's cache (traps.yaml,
+  a-new-public-name-is-cached-as-missing-twice) - BIND on :5300 already
+  answered.
+- Test sessions left open OOM-killed the prod server (traps.yaml,
+  kmcp-stdio-server-runs-a-process-per-open-session).
+
 ## Open
 
-- The prod token lives in an emptyDir: every new pod - a Renovate bump, a
-  reboot - needs `auth` and the phone again. A home that survives the pod
-  is not a claim while kmcp writes the Deployment.
-- `market-data` still writes watchlists and community posts, on the real
-  account too; only an agentgateway that filters tools can take those away.
+- Prod's token lives in an emptyDir: every new pod needs `auth` and the
+  phone again. A home that survives the pod is not a claim while kmcp writes
+  the Deployment. The same holds back raising the 512Mi limit.
 - Ordering stays off until an order path with a person's confirmation
   exists. The Telegram bridge is set aside for now.
+- Cilium 1.20.4 from Renovate is still to be applied with Helmfile.
