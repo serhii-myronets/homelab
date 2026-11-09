@@ -1,11 +1,11 @@
 ---
 date: 2026-11-08
-title: kmcp on core, serving Webull's MCP server against the sandbox
+title: kmcp on core, serving Webull's MCP server - the sandbox, and the real account read-only
 tags: [mcp, kmcp, agentgateway, webull, trading, agents]
 hosts: [core]
 ---
 
-# kmcp on core, serving Webull's MCP server against the sandbox
+# kmcp on core, serving Webull's MCP server - the sandbox, and the real account read-only
 
 The owner wants an advisor to be able to buy and sell through a Telegram
 chat, by way of an AI agent calling a broker over MCP. Most of the session
@@ -49,10 +49,19 @@ claim (traps.yaml, openebs-lvm-mounts-a-volume-into-one-pod-only, now with
 the rollout case), and kmcp offers no `Recreate`; the claim was removed with
 the owner's agreement, and `/data` is an emptyDir.
 
+A second server, `webull-mcp-prod`, reads the real account with the same
+toolsets and a Cilium policy of its own for Webull's production hosts. Prod
+asks for 2FA: its first call left a PENDING token, and approving on the phone
+did not help until `auth` ran in the pod (traps.yaml,
+webull-mcp-approval-on-the-phone-is-not-enough). It then listed three
+accounts.
+
 ## Open
 
-- Prod's 15-day token needs a home that survives the pod - not a claim
-  while kmcp writes the Deployment.
-- Ordering back on only behind an agentgateway that filters tools and an
-  order path with a person's confirmation.
-- Nothing yet: the Telegram bridge, the agent, kagent.
+- The prod token lives in an emptyDir: every new pod - a Renovate bump, a
+  reboot - needs `auth` and the phone again. A home that survives the pod
+  is not a claim while kmcp writes the Deployment.
+- `market-data` still writes watchlists and community posts, on the real
+  account too; only an agentgateway that filters tools can take those away.
+- Ordering stays off until an order path with a person's confirmation
+  exists. The Telegram bridge is set aside for now.

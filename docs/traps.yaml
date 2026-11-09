@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-10-15
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm, scheduling, renovate]
+  updated: 2026-11-08
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm, scheduling, renovate, webull, mcp]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1710,3 +1710,22 @@ traps:
       confirm the `-openvino` tag on ghcr and commit the bump onto the
       Renovate branch.
     diagnosed: 2026-10-15, PR #15 with immich v3.3.1
+
+  - id: webull-mcp-approval-on-the-phone-is-not-enough
+    applies_to: [webull, mcp, kmcp]
+    symptom: >-
+      webull-mcp-prod answers every call, or the session itself, after a long
+      wait or not at all; its log repeats "2FA Authentication Required ...
+      Your token status is PENDING", even after the request was approved in
+      the Webull app.
+    cause: >-
+      With no token in WEBULL_TOKEN_DIR, the first call creates one and Webull
+      sends the approval request, but the server writes it as PENDING and
+      never asks again; only the `auth` command polls until it is approved.
+      The token lives in the pod's emptyDir, so any new pod starts from none.
+    fix: >-
+      kubectl --context core -n webull-mcp exec deploy/webull-mcp-prod -c
+      mcp-server -- uvx webull-openapi-mcp==1.2.6 auth, then approve in the
+      Webull app within five minutes. It overwrites the PENDING token; no
+      restart is needed, since each session starts a new server process.
+    diagnosed: 2026-11-08, the first prod call
