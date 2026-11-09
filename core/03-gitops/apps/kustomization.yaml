@@ -18,6 +18,7 @@ resources:
   - services/sure/ks.yaml
   - services/torrent/ks.yaml
   - services/vaultwarden/ks.yaml
+  - services/webull-mcp/ks.yaml
 
   - system/network/cloudflared/ks.yaml
   - system/network/external-dns/ks.yaml
