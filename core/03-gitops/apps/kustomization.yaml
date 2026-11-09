@@ -20,6 +20,7 @@ resources:
   - services/vaultwarden/ks.yaml
   - services/webull-mcp/ks.yaml
 
+  - system/network/agentgateway/ks.yaml
   - system/network/cloudflared/ks.yaml
   - system/network/external-dns/ks.yaml
   - system/network/gateway-system/ks.yaml

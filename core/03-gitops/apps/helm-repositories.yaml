@@ -9,6 +9,14 @@
 # ../02-platform/flux-instance.yaml.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
+metadata: {name: agentgateway, namespace: flux-system}
+spec:
+  interval: 24h
+  type: oci
+  url: oci://ghcr.io/agentgateway/charts
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
 metadata: {name: cert-manager, namespace: flux-system}
 spec:
   interval: 24h
