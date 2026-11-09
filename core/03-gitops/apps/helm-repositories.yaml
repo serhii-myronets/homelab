@@ -39,6 +39,15 @@ spec:
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
+metadata: {name: kmcp, namespace: flux-system}
+spec:
+  interval: 24h
+  # The project publishes its charts to GHCR only.
+  type: oci
+  url: oci://ghcr.io/kagent-dev/kmcp/helm
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
 metadata: {name: metrics-server, namespace: flux-system}
 spec:
   interval: 24h

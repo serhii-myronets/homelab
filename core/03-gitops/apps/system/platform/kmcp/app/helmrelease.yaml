@@ -1,0 +1,46 @@
+# The controller behind the MCPServer resource: given an image and a command,
+# it writes the Deployment, Service and ConfigMap that serve an MCP server over
+# HTTP. A server that speaks only stdio gets agentgateway copied into its pod
+# by an init container, which spawns the server once per MCP session.
+#
+# kagent's chart carries this same controller as a subchart. If kagent is
+# installed later, its `kmcp.enabled: false` keeps one controller and one CRD.
+#
+# The project ships the CRD as a chart of its own, installed first.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kmcp-crds
+  namespace: kmcp-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: kmcp-crds
+      version: "0.4.0"
+      sourceRef:
+        kind: HelmRepository
+        name: kmcp
+        namespace: flux-system
+  driftDetection:
+    mode: enabled
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kmcp
+  namespace: kmcp-system
+spec:
+  interval: 30m
+  dependsOn:
+    - name: kmcp-crds
+  chart:
+    spec:
+      chart: kmcp
+      version: "0.4.0"
+      sourceRef:
+        kind: HelmRepository
+        name: kmcp
+        namespace: flux-system
+  driftDetection:
+    mode: enabled
