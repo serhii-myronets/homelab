@@ -11,3 +11,7 @@ resources:
   - routes.yaml
   - policy.yaml
   - httproute-home.yaml
+  - ibkr.yaml
+configMapGenerator:
+  - name: ibkr-refresh
+    files: [ibkr-refresh.py]
