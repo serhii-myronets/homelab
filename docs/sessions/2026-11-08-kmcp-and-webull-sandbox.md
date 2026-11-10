@@ -1,11 +1,11 @@
 ---
 date: 2026-11-08
-title: Webull's MCP servers on core through kmcp and agentgateway, read-only on mcp.home
-tags: [mcp, kmcp, agentgateway, gateway-api, webull, trading, agents]
+title: Webull's and IBKR's MCP servers behind agentgateway, read-only on mcp.home
+tags: [mcp, kmcp, agentgateway, gateway-api, webull, ibkr, trading, agents]
 hosts: [core]
 ---
 
-# Webull's MCP servers on core through kmcp and agentgateway, read-only on mcp.home
+# Webull's and IBKR's MCP servers behind agentgateway, read-only on mcp.home
 
 The owner wants an advisor to be able to buy and sell through a Telegram
 chat, by way of an AI agent calling a broker over MCP. Most of the session
@@ -88,6 +88,28 @@ and create_community_post. On the way:
 - Test sessions left open OOM-killed the prod server (traps.yaml,
   kmcp-stdio-server-runs-a-process-per-open-session).
 
+## IBKR on /ibkr (2026-11-09)
+
+IBKR turned out to host an MCP server of its own, for any individual
+account: `https://api.ibkr.com/v1/api/mcp-public`, OAuth with dynamic client
+registration and PKCE, scopes `mcp.read`, `mcp.write`, `mcp.orders.submit`.
+Through Claude Code directly it lists 57 tools, among them `submit_order`,
+`modify_order`, `cancel_order` and `answer_order_question`.
+
+Behind the `mcp` Gateway instead (`apps/services/webull-mcp/app/ibkr.yaml`):
+an AgentgatewayBackend to api.ibkr.com whose `auth.secretRef` swaps the
+client's gateway key for the account's access token from Secret
+`ibkr-token`. agentgateway cannot refresh a token itself, so a CronJob does
+it every five minutes from the refresh token in `ibkr-oauth`; both Secrets
+are outside git. `ibkr-login.py`, run once from the Mac with the client_id
+of a registration made for the cluster, signs in and writes them.
+
+The token was granted `mcp.read` only, so IBKR itself refuses orders; the
+Gateway's filter is a second lock. Checked with `curl --resolve`: 401
+without the key; with it, 35 tools, `get_account_summary` answers, and
+`submit_order` is refused. Access tokens live 600 s; each refresh returns a
+new refresh token (traps.yaml, ibkr-refresh-token-rotates).
+
 ## Open
 
 - Prod's token lives in an emptyDir: every new pod needs `auth` and the
@@ -95,4 +117,6 @@ and create_community_post. On the way:
   the Deployment. The same holds back raising the 512Mi limit.
 - Ordering stays off until an order path with a person's confirmation
   exists. The Telegram bridge is set aside for now.
+- How long an IBKR refresh token lives unused is not known yet.
+- The Gateway now serves IBKR too, from a namespace named `webull-mcp`.
 - Cilium 1.20.4 from Renovate is still to be applied with Helmfile.

@@ -7,8 +7,8 @@
 # described; git remembers them if that stack is ever started again.
 
 meta:
-  updated: 2026-11-08
-  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm, scheduling, renovate, webull, mcp]
+  updated: 2026-11-09
+  tags: [traps, gotchas, debugging, kubernetes, talos, cilium, openebs, volsync, networking, media, flux, immich, router, dns, external-dns, argocd, opentelemetry, victoriametrics, lvm, scheduling, renovate, webull, mcp, ibkr, oauth]
 
 traps:
   - id: cilium-bridge-needs-explicit-device
@@ -1750,3 +1750,41 @@ traps:
       Raising the limit recreates the pod, and for prod that means `auth`
       and the phone again (webull-mcp-approval-on-the-phone-is-not-enough).
     diagnosed: 2026-11-08, after a series of test sessions
+
+  - id: ibkr-mcp-registration-grants-every-scope
+    applies_to: [ibkr, mcp, oauth]
+    symptom: >-
+      A client registered at https://api.ibkr.com/oauth2/register with
+      `scope: mcp.read` comes back registered for mcp.read, mcp.write,
+      mcp.orders.submit and an undocumented mcp.orders.stage; Claude Code's
+      own login sees submit_order among 57 tools.
+    cause: >-
+      The registration ignores the requested scope. What a token may do is
+      decided by the `scope` of the authorization request alone, and a client
+      that asks for nothing gets what the owner clicks through.
+    tell: >-
+      The token response's `scope` field; ibkr-login.py prints it.
+    fix: >-
+      Ask for `scope=mcp.read` on /oauth2/authorize, as ibkr-login.py does,
+      and check the printed scope. The plain `/v1/api/mcp` path answers 400
+      "Unsupported client" to anything but Anthropic's connector; use
+      `/v1/api/mcp-public`.
+    diagnosed: 2026-11-09, registering the cluster's client
+
+  - id: ibkr-refresh-token-rotates
+    applies_to: [ibkr, mcp, oauth, agentgateway]
+    symptom: >-
+      https://mcp.home/ibkr answers with IBKR's 401 to a valid gateway key;
+      the ibkr-token CronJob's jobs fail at the token request.
+    cause: >-
+      Every refresh returns a new refresh token and the old one stops being
+      good. Anything else that spends the one in Secret ibkr-oauth - a manual
+      run, a copy restored from elsewhere - leaves the CronJob holding a dead
+      token; so does a gap longer than the refresh token's unknown lifetime.
+    tell: >-
+      `kubectl -n webull-mcp logs job/<last ibkr-token job>` shows an HTTP
+      400 or 401 from /oauth2/api/v1/token.
+    fix: >-
+      Run core/03-gitops/apps/services/webull-mcp/ibkr-login.py with the
+      cluster's client_id (kept in Secret ibkr-oauth) and sign in again.
+    diagnosed: 2026-11-09, the first refresh
