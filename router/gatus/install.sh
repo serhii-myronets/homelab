@@ -10,7 +10,7 @@
 # config.yaml, run this. After a reflash it is the whole recovery.
 set -eu
 
-VERSION=v5.37.0
+VERSION=v5.38.0
 ROUTER=root@192.168.8.1
 HERE=$(cd "$(dirname "$0")" && pwd)
 TMP=$(mktemp -d)
