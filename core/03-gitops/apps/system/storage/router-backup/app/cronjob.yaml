@@ -30,7 +30,7 @@ spec:
             # ssh fetches the archive; restic below uploads it. The router
             # ignores the command asked for and runs the one its key forces.
             - name: fetch
-              image: alpine/git:v2.54.0
+              image: alpine/git:v2.54.1
               command:
                 - sh
                 - -c
