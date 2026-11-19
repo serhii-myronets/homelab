@@ -24,7 +24,7 @@ load_balancers:
     announced_by: core
     interface: br0
   cilium_lab:
-    range: 192.168.8.31-192.168.8.35   # the lab's Gateway at .31
+    range: 192.168.8.31-192.168.8.35   # the lab's Gateway at .31; the Appraisal Workbench's PostgreSQL at .32 (appraisal-db) and .33 (geo-db), port 5432, since 2026-11-18
     announced_by: lab, from its workers
     interface: eth0
 
