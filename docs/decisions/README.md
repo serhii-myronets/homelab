@@ -45,6 +45,7 @@ are not reused.
 | [0047](0047-loki-beside-victorialogs.md) | Loki keeps the logs; VictoriaLogs, run beside it to compare, is gone | accepted | observability, logs, loki, victorialogs |
 | [0048](0048-traces-in-tempo.md) | Traces go through the collector to Tempo; Grafana's OSS charts come from grafana-community | accepted | observability, traces, tempo, opentelemetry |
 | [0049](0049-services-not-traced.md) | The services are not traced; OBI was tried for two days and removed | accepted | observability, traces, opentelemetry, ebpf, obi |
+| [0050](0050-otlp-from-the-lan.md) | Traces from the LAN come through the Gateway as otlp.home, traces only | accepted | observability, traces, tempo, opentelemetry, gateway |
 | [0036](0036-gatus-on-the-router.md) | Gatus and a metrics exporter run on the router, installed over ssh | accepted | router, gatus, monitoring |
 
 Open: [0008](0008-nothing-tells-anyone-when-something-breaks.md) - nothing

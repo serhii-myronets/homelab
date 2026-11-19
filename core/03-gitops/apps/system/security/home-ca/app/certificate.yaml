@@ -25,6 +25,7 @@ spec:
     - immich.home
     - ingest.home
     - mcp.home
+    - otlp.home
     - seerr.home
     - prowlarr.home
     - proxmenux.home

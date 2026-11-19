@@ -9,6 +9,7 @@ resources:
   - loki.yaml
   - otel-collector.yaml
   - otel-collector-rules.yaml
+  - otlp.yaml
   - tempo.yaml
   - cluster-rules.yaml
   - router-scrape.yaml

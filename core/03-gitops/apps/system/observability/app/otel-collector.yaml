@@ -46,8 +46,9 @@ spec:
 
     # OTLP from applications, through a Service whose traffic stays on the
     # sender's node, so k8sattributes knows the pod by its address. Not on
-    # the host's ports: nothing outside the cluster sends here. 8888 serves
-    # the collector's own metrics.
+    # the host's ports; the one sender outside the cluster comes through the
+    # Gateway as otlp.home (otlp.yaml). 8888 serves the collector's own
+    # metrics.
     service:
       enabled: true
     ports:
