@@ -54,6 +54,18 @@ etcd_to_r2:
     The rebuilt cluster's first run was 2026-10-01 at 03:30, snapshot
     8c746e83, 36.8 MiB read and 6.7 MiB stored.
 
+lab_cnpg_to_r2:
+  what: the lab's appraisal-db (the Appraisal Workbench's data), CloudNativePG
+  how: >-
+    The Barman Cloud plugin archives every WAL segment and takes a daily base
+    backup at 04:30 into homelab-backups/lab/cnpg/appraisal-db; 30 days kept,
+    restorable to any moment of them. The lab reads the key pair from its own
+    Infisical project, /system/backups (a copy of core's). The lab repository's
+    decisions/0014. geo-db is not backed up: its maps are copied again.
+  verified: >-
+    2026-11-18: the first base backup completed and the WAL archive was working;
+    restored into a temporary cluster (recovery from the object store), whose
+    tables matched the live database row for row, then deleted.
 router_to_r2:
   what: >-
     The router's own backup - sysupgrade -b, the archive GL.iNet's UI exports:
