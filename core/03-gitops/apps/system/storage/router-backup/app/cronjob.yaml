@@ -30,7 +30,7 @@ spec:
             # ssh fetches the archive; restic below uploads it. The router
             # ignores the command asked for and runs the one its key forces.
             - name: fetch
-              image: alpine/git:v2.54.0
+              image: alpine/git:v2.54.1
               command:
                 - sh
                 - -c
@@ -60,7 +60,7 @@ spec:
                 - {name: known-hosts, mountPath: /known, readOnly: true}
           containers:
             - name: restic
-              image: restic/restic:0.19.1
+              image: restic/restic:0.20.0
               command:
                 - sh
                 - -c

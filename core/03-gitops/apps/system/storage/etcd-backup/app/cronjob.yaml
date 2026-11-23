@@ -32,7 +32,7 @@ spec:
           initContainers:
             # talosctl writes the snapshot; restic below uploads it.
             - name: snapshot
-              image: ghcr.io/siderolabs/talosctl:v1.14.5
+              image: ghcr.io/siderolabs/talosctl:v1.14.6
               env:
                 - name: NODE_IP
                   valueFrom:
@@ -59,7 +59,7 @@ spec:
                 - {name: talos, mountPath: /var/run/secrets/talos.dev, readOnly: true}
           containers:
             - name: restic
-              image: restic/restic:0.19.1
+              image: restic/restic:0.20.0
               command:
                 - sh
                 - -c
